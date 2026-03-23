@@ -1,0 +1,75 @@
+﻿{
+  "version": "0.1.0-mock",
+  "nodes": [
+    {
+      "id": 1,
+      "label": "二进制基础",
+      "description": "理解 0 和 1 如何表示信息。",
+      "category": "fundamentals",
+      "dependencies": []
+    },
+    {
+      "id": 2,
+      "label": "布尔逻辑",
+      "description": "掌握与、或、非等逻辑运算。",
+      "category": "fundamentals",
+      "dependencies": [1]
+    },
+    {
+      "id": 3,
+      "label": "CPU",
+      "description": "理解中央处理器的基本作用。",
+      "category": "hardware",
+      "dependencies": [1, 2]
+    },
+    {
+      "id": 4,
+      "label": "内存",
+      "description": "理解数据在运行时的存储位置。",
+      "category": "hardware",
+      "dependencies": [1]
+    },
+    {
+      "id": 5,
+      "label": "操作系统",
+      "description": "理解 OS 如何管理硬件与进程。",
+      "category": "os",
+      "dependencies": [3, 4]
+    },
+    {
+      "id": 6,
+      "label": "文件系统",
+      "description": "理解文件与目录的组织方式。",
+      "category": "os",
+      "dependencies": [5]
+    },
+    {
+      "id": 7,
+      "label": "网络基础",
+      "description": "了解网络通信和协议分层。",
+      "category": "network",
+      "dependencies": [5]
+    },
+    {
+      "id": 8,
+      "label": "编程语言",
+      "description": "理解代码如何转化为可执行行为。",
+      "category": "programming",
+      "dependencies": [3, 4]
+    },
+    {
+      "id": 9,
+      "label": "数据库",
+      "description": "理解结构化数据存储与查询。",
+      "category": "data",
+      "dependencies": [6, 8]
+    },
+    {
+      "id": 10,
+      "label": "Web 应用",
+      "description": "把前后端与数据能力整合成完整应用。",
+      "category": "application",
+      "dependencies": [7, 8, 9]
+    }
+  ]
+}
