@@ -1,0 +1,34 @@
+# --- 依赖与产物 ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# --- 日志与缓存 ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+.stylelintcache
+
+# --- 系统与 IDE ---
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- 编译产物 ---
+tsconfig.tsbuildinfo
+
+
+
+#临时忽略
+package-lock.json
+package.json
+tsconfig*
+vite.config.ts
+*.js
