@@ -27,3 +27,17 @@ export interface CWFrameProgress {
     userId : number;
     unlockedNodes: Record<number, { unlockedAt: number }>; // 点亮记录
 }
+
+// 建议补充：统一响应格式
+export interface ApiResponse<T> {
+    success: boolean;   // 业务是否成功
+    data: T | null;      // 实际数据
+    message?: string;    // 错误消息
+}
+
+// 补充：统一响应格式
+export interface ApiResponse<T> {        //===>使用泛型占位 
+    success: boolean;   // 业务是否成功
+    data: T | null;      // 实际数据     定义逻辑，延迟定义数据
+    message?: string;    // 错误消息
+}
