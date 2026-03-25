@@ -269,7 +269,7 @@ function createNode(nodeId: number, x: number, y: number, z: number): THREE.Grou
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
     map: glowTexture,
     transparent: true,
-    opacity: 0.6,
+    opacity: 0.5,
     blending: THREE.AdditiveBlending
   }));
   sprite.scale.set(40, 40, 1);
@@ -286,7 +286,7 @@ function createGlowTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext('2d')!;
   const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
   gradient.addColorStop(0, 'rgba(79, 195, 247, 1)');
-  gradient.addColorStop(0.3, 'rgba(79, 195, 247, 0.5)');
+  gradient.addColorStop(0.3, 'rgba(79, 195, 247, 0.38)');
   gradient.addColorStop(1, 'rgba(79, 195, 247, 0)');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 64, 64);
@@ -332,9 +332,9 @@ function updateNodeVisibility() {
     sprite.visible = visible;
 
     if (status === 'Unlocked') {
-      (sphere.material as THREE.MeshBasicMaterial).opacity = 0.8;
-      (glow.material as THREE.MeshBasicMaterial).opacity = 0.5;
-      (sprite.material as THREE.SpriteMaterial).opacity = 0.8;
+      (sphere.material as THREE.MeshBasicMaterial).opacity = 0.7;
+      (glow.material as THREE.MeshBasicMaterial).opacity = 0.38;
+      (sprite.material as THREE.SpriteMaterial).opacity = 0.62;
     } else if (status === 'Discoverable') {
       (sphere.material as THREE.MeshBasicMaterial).opacity = 0.1;
       (glow.material as THREE.MeshBasicMaterial).opacity = 0.1;

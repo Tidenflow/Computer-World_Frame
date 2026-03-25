@@ -57,8 +57,8 @@ function handleClick() {
 /* Sphere + glow visual */
 .node-sphere {
   position: relative;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,34 +66,40 @@ function handleClick() {
 
 .node-glow {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(79, 195, 247, 0.6) 0%, rgba(79, 195, 247, 0.2) 40%, transparent 70%);
-  filter: blur(2px);
+  background: radial-gradient(circle, rgba(79, 195, 247, 0.4) 0%, rgba(79, 195, 247, 0.15) 45%, transparent 75%);
+  filter: blur(1px);
 }
 
 /* Label text */
 .node-text {
-  margin-top: 6px;
-  font-size: 11px;
+  margin-top: 7px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(166, 189, 214, 0.25);
+  background: rgba(6, 12, 24, 0.68);
+  color: #e8f1ff;
+  font-size: 12px;
   font-weight: 600;
+  line-height: 1.2;
   text-align: center;
   white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
   pointer-events: none;
 }
 
 /* Unlocked */
 .node-overlay.unlocked .node-sphere {
-  background: rgba(79, 195, 247, 0.2);
+  background: rgba(79, 195, 247, 0.16);
   border-radius: 50%;
-  border: 2px solid #4fc3f7;
-  box-shadow: 0 0 10px #4fc3f7, 0 0 20px #4fc3f7;
+  border: 2px solid #57caf8;
+  box-shadow: 0 0 8px rgba(79, 195, 247, 0.65), 0 0 14px rgba(79, 195, 247, 0.4);
 }
 
 .node-overlay.unlocked .node-text {
-  color: #4fc3f7;
-  text-shadow: 0 0 8px #4fc3f7;
+  color: #eaf4ff;
 }
 
 /* Discoverable - dim circle, no text */
@@ -119,6 +125,6 @@ function handleClick() {
 
 /* Selected */
 .node-overlay.selected .node-sphere {
-  box-shadow: 0 0 15px #4fc3f7, 0 0 30px #4fc3f7;
+  box-shadow: 0 0 12px rgba(79, 195, 247, 0.8), 0 0 20px rgba(79, 195, 247, 0.55);
 }
 </style>
