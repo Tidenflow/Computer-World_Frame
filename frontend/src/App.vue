@@ -110,10 +110,14 @@ function handleNodeClick(nodeId: number) {
     </template>
 
     <!-- Center knowledge card popup (click node to show) -->
-    <div v-if="selectedNode" class="center-popup" @click.self="selectedNodeId = null">
-      <CWFrameLabel :node="selectedNode" />
-      <button class="close-btn" @click="selectedNodeId = null">×</button>
-    </div>
+    <Teleport to="body">
+      <div v-if="selectedNode" class="center-popup-overlay" @click.self="selectedNodeId = null">
+        <div class="center-popup">
+          <CWFrameLabel :node="selectedNode" />
+          <button class="close-btn" @click="selectedNodeId = null">×</button>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Loading state -->
     <div v-if="!frameMap" class="loading">
@@ -293,12 +297,17 @@ function handleNodeClick(nodeId: number) {
 }
 
 /* Center knowledge card popup */
-.center-popup {
+.center-popup-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-popup {
+  position: relative;
   animation: fadeIn 0.25s ease;
 }
 
