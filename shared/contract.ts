@@ -11,7 +11,8 @@ export interface User {
 export interface CWFrameNode {
     id : number;                //节点id
     label : string;             //节点标签/标题
-    description : string;       //节点描述    
+    description : string;       //节点描述  
+    category : string;          //节点类别  “硬件”  “OS”
     dependencies : number[];    //依赖节点 ===> 理解为图中的边  
     // 比如A.dependencies = [B, C] 表示 A 依赖 B 和 C。就是B -> A、C -> A
 }
@@ -41,3 +42,4 @@ export interface ApiResponse<T> {        //===>使用泛型占位
     data: T | null;      // 实际数据     定义逻辑，延迟定义数据
     message?: string;    // 错误消息
 }
+
