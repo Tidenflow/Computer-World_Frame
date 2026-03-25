@@ -7,6 +7,7 @@ import { buildStatusMap } from '../core/cwframe.status';
 import type { CWFrameNodeStatus } from '../core/cwframe.status';
 
 const PRIMARY_COLOR = 0x4fc3f7;
+const POSITION_EMIT_INTERVAL_MS = 33;
 
 interface Props {
   frameMap: CWFrameMap;
@@ -30,6 +31,8 @@ let controls: OrbitControls;
 let raycaster: THREE.Raycaster;
 let animationId: number;
 let glowTexture: THREE.CanvasTexture;
+let shouldSyncScreenPositions = true;
+let lastPositionsEmitAt = 0;
 
 const nodeObjects: Map<number, THREE.Group> = new Map();
 const linkLines: THREE.Line[] = [];
@@ -62,6 +65,7 @@ function initThree() {
   controls.minDistance = 100;
   controls.maxDistance = 800;
   controls.autoRotate = false;
+  controls.addEventListener('change', markScreenPositionsDirty);
 
   raycaster = new THREE.Raycaster();
   glowTexture = createGlowTexture();
@@ -69,6 +73,90 @@ function initThree() {
   createGalaxyBackground();
   initLayout();
   animate();
+}
+
+function markScreenPositionsDirty() {
+  shouldSyncScreenPositions = true;
+}
+
+function stableNoise(seed: number): number {
+  const value = Math.sin(seed * 12.9898) * 43758.5453;
+  return (value - Math.floor(value)) * 2 - 1;
+}
+
+function buildDepthMap() {
+  const nodesById = new Map(props.frameMap.nodes.map(node => [node.id, node]));
+  const memo = new Map<number, number>();
+  const visiting = new Set<number>();
+
+  const resolveDepth = (nodeId: number): number => {
+    if (memo.has(nodeId)) return memo.get(nodeId)!;
+    if (visiting.has(nodeId)) return 0;
+
+    visiting.add(nodeId);
+    const node = nodesById.get(nodeId);
+    let depth = 0;
+
+    if (node && node.dependencies.length > 0) {
+      depth = 1 + Math.max(...node.dependencies.map(resolveDepth));
+    }
+
+    visiting.delete(nodeId);
+    memo.set(nodeId, depth);
+    return depth;
+  };
+
+  props.frameMap.nodes.forEach(node => resolveDepth(node.id));
+  return memo;
+}
+
+function buildStableNodePositions() {
+  const nodes = props.frameMap.nodes;
+  const depthMap = buildDepthMap();
+  const maxDepth = Math.max(...Array.from(depthMap.values()), 0);
+  const categories = Array.from(new Set(nodes.map(node => node.category))).sort();
+  const categoryIndex = new Map(categories.map((category, index) => [category, index]));
+  const sectorSize = (Math.PI * 2) / Math.max(categories.length, 1);
+
+  const bucketMap = new Map<string, number[]>();
+  nodes.forEach(node => {
+    const depth = depthMap.get(node.id) ?? 0;
+    const key = `${depth}:${node.category}`;
+    if (!bucketMap.has(key)) bucketMap.set(key, []);
+    bucketMap.get(key)!.push(node.id);
+  });
+  bucketMap.forEach(bucket => bucket.sort((a, b) => a - b));
+
+  const baseRadius = 130;
+  const layerGap = 70;
+  const radiusJitter = 10;
+  const verticalGap = 28;
+  const verticalJitter = 9;
+  const positions = new Map<number, THREE.Vector3>();
+
+  nodes.forEach(node => {
+    const depth = depthMap.get(node.id) ?? 0;
+    const categoryIdx = categoryIndex.get(node.category) ?? 0;
+    const bucketKey = `${depth}:${node.category}`;
+    const bucket = bucketMap.get(bucketKey) ?? [node.id];
+    const bucketIndex = Math.max(0, bucket.indexOf(node.id));
+    const ratio = bucket.length <= 1 ? 0.5 : bucketIndex / (bucket.length - 1);
+
+    const sectorStart = categoryIdx * sectorSize;
+    const sectorPadding = sectorSize * 0.15;
+    const usableSector = sectorSize - sectorPadding * 2;
+    const angle = sectorStart + sectorPadding + ratio * usableSector;
+
+    const radius = baseRadius + depth * layerGap + stableNoise(node.id * 1.17) * radiusJitter;
+    const centeredDepth = depth - maxDepth / 2;
+    const y = centeredDepth * verticalGap + stableNoise(node.id * 3.13) * verticalJitter;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+
+    positions.set(node.id, new THREE.Vector3(x, y, z));
+  });
+
+  return positions;
 }
 
 function createGalaxyBackground() {
@@ -127,14 +215,12 @@ function initLayout() {
     });
   });
 
-  const nodePositions = new Map<number, THREE.Vector3>();
-  nodes.forEach((node, index) => {
-    const angle = (index / nodes.length) * Math.PI * 2;
-    const radius = 100 + Math.random() * 50;
-    const x = Math.cos(angle) * radius;
-    const y = (Math.random() - 0.5) * 100;
-    const z = Math.sin(angle) * radius;
-    nodePositions.set(node.id, new THREE.Vector3(x, y, z));
+  const nodePositions = buildStableNodePositions();
+  nodes.forEach((node) => {
+    const position = nodePositions.get(node.id);
+    if (!position) return;
+
+    const { x, y, z } = position;
     const group = createNode(node.id, x, y, z);
     nodeObjects.set(node.id, group);
     scene.add(group);
@@ -153,6 +239,8 @@ function initLayout() {
 
   updateNodeVisibility();
   updateScreenPositions();
+  shouldSyncScreenPositions = false;
+  lastPositionsEmitAt = performance.now();
 }
 
 /**
@@ -275,8 +363,12 @@ function animate() {
   controls.update();
   renderer.render(scene, camera);
 
-  // Update and emit screen positions every frame (for real-time tracking during orbit)
-  updateScreenPositions();
+  const now = performance.now();
+  if (shouldSyncScreenPositions && now - lastPositionsEmitAt >= POSITION_EMIT_INTERVAL_MS) {
+    updateScreenPositions();
+    shouldSyncScreenPositions = false;
+    lastPositionsEmitAt = now;
+  }
 }
 
 function handleResize() {
@@ -286,6 +378,7 @@ function handleResize() {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
+  markScreenPositionsDirty();
 }
 
 function onMouseClick(event: MouseEvent) {
@@ -318,6 +411,7 @@ onUnmounted(() => {
   cancelAnimationFrame(animationId);
   window.removeEventListener('resize', handleResize);
   renderer?.domElement.removeEventListener('click', onMouseClick);
+  controls?.removeEventListener('change', markScreenPositionsDirty);
   controls?.dispose();
   glowTexture?.dispose();
   renderer?.dispose();
