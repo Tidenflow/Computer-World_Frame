@@ -6,6 +6,7 @@ import { unlockNode, resetProgress } from './core/cwframe.progress';
 import { buildStatusMap } from './core/cwframe.status';
 import CWFrameGraph from './components/CWFrameGraph.vue';
 import CWFrameNode from './components/CWFrameNode.vue';
+import CWFrameLabel from './components/CWFrameLabel.vue';
 
 const frameMap = ref<CWFrameMap | null>(null);
 const progress = reactive<CWFrameProgress>({ userId: 1, unlockedNodes: {} });
@@ -23,6 +24,12 @@ const matchResult = ref<{ success: boolean; message: string } | null>(null);
 const statusMap = computed(() => {
   if (!frameMap.value) return {};
   return buildStatusMap(frameMap.value, progress);
+});
+
+// Currently selected node object (for center popup)
+const selectedNode = computed(() => {
+  if (!frameMap.value || selectedNodeId.value === null) return null;
+  return frameMap.value.nodes.find(n => n.id === selectedNodeId.value) ?? null;
 });
 
 onMounted(async () => {
@@ -75,9 +82,6 @@ function handleNodeClick(nodeId: number) {
   selectedNodeId.value = selectedNodeId.value === nodeId ? null : nodeId;
 }
 
-function handleNodeOverlayClick(nodeId: number) {
-  handleNodeClick(nodeId);
-}
 </script>
 
 <template>
@@ -94,16 +98,22 @@ function handleNodeOverlayClick(nodeId: number) {
     <!-- Vue node overlays (labels rendered as DOM) -->
     <template v-if="frameMap">
       <CWFrameNode
-        v-for="node in frameMap.nodes"
+        v-for="node in frameMap.nodes.filter(n => statusMap[n.id] !== 'Locked')"
         :key="node.id"
         :node="node"
         :status="(statusMap[node.id] ?? 'Locked')"
         :screenX="nodePositions.get(node.id)?.screenX ?? 0"
         :screenY="nodePositions.get(node.id)?.screenY ?? 0"
         :selected="selectedNodeId === node.id"
-        @click="handleNodeOverlayClick"
+        @click="handleNodeClick"
       />
     </template>
+
+    <!-- Center knowledge card popup (click node to show) -->
+    <div v-if="selectedNode" class="center-popup" @click.self="selectedNodeId = null">
+      <CWFrameLabel :node="selectedNode" />
+      <button class="close-btn" @click="selectedNodeId = null">×</button>
+    </div>
 
     <!-- Loading state -->
     <div v-if="!frameMap" class="loading">
@@ -280,5 +290,39 @@ function handleNodeOverlayClick(nodeId: number) {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Center knowledge card popup */
+.center-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 200;
+  animation: fadeIn 0.25s ease;
+}
+
+.close-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #4fc3f7;
+  background: rgba(10, 15, 30, 0.95);
+  color: #4fc3f7;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #4fc3f7;
+  color: #0a0a0f;
 }
 </style>

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import type { CWFrameNode } from '@shared/contract';
-import CWFrameLabel from './CWFrameLabel.vue';
 
 interface Props {
   node: CWFrameNode;
@@ -20,23 +18,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const emit = defineEmits<Emits>();
 
-const showLabel = ref(false);
-
 function handleClick() {
   if (props.status === 'Unlocked') {
-    showLabel.value = !showLabel.value;
     emit('click', props.node.id);
   }
-}
-
-function handleMouseEnter() {
-  if (props.status === 'Unlocked') {
-    showLabel.value = true;
-  }
-}
-
-function handleMouseLeave() {
-  showLabel.value = false;
 }
 </script>
 
@@ -46,8 +31,6 @@ function handleMouseLeave() {
     :class="[status.toLowerCase(), { selected }]"
     :style="{ left: screenX + 'px', top: screenY + 'px' }"
     @click="handleClick"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
   >
     <!-- Glowing sphere visual -->
     <div class="node-sphere">
@@ -56,11 +39,6 @@ function handleMouseLeave() {
 
     <!-- Label text -->
     <span class="node-text">{{ node.label }}</span>
-
-    <!-- Detail popup -->
-    <div v-if="status === 'Unlocked' && showLabel" class="node-popup">
-      <CWFrameLabel :node="node" />
-    </div>
   </div>
 </template>
 
@@ -105,16 +83,6 @@ function handleMouseLeave() {
   pointer-events: none;
 }
 
-/* Popup */
-.node-popup {
-  position: absolute;
-  top: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  animation: fadeIn 0.2s ease;
-}
-
 /* Unlocked */
 .node-overlay.unlocked .node-sphere {
   background: rgba(79, 195, 247, 0.2);
@@ -152,10 +120,5 @@ function handleMouseLeave() {
 /* Selected */
 .node-overlay.selected .node-sphere {
   box-shadow: 0 0 15px #4fc3f7, 0 0 30px #4fc3f7;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(-5px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 </style>
