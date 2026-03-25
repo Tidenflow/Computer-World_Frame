@@ -128,18 +128,15 @@ function handleMouseLeave() {
   text-shadow: 0 0 8px #4fc3f7;
 }
 
-/* Discoverable */
+/* Discoverable - dim circle, no text */
 .node-overlay.discoverable .node-sphere {
-  background: rgba(84, 110, 122, 0.1);
+  background: rgba(84, 110, 122, 0.15);
   border-radius: 50%;
-  border: 1px solid #546e7a;
+  border: 1px solid #37474f;
 }
 
 .node-overlay.discoverable .node-text {
-  color: #546e7a;
-  font-size: 11px;
-  opacity: 0.5;
-  filter: blur(1px);
+  display: none;
 }
 
 .node-overlay.discoverable .node-glow {
