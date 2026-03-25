@@ -61,8 +61,7 @@ function initThree() {
   controls.enablePan = false;
   controls.minDistance = 100;
   controls.maxDistance = 800;
-  controls.autoRotate = true;
-  controls.autoRotateSpeed = 0.5;
+  controls.autoRotate = false;
 
   raycaster = new THREE.Raycaster();
   glowTexture = createGlowTexture();
