@@ -1,3 +1,4 @@
+// 后端定义的文字错误码，转换成前端 / HTTP 标准的数字状态码
 import type { ApiErrorCode } from '@shared/contract';
 
 export function statusByErrorCode(code: ApiErrorCode): number {

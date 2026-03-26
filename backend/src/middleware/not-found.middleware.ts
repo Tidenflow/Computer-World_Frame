@@ -1,3 +1,4 @@
+// 404 NotFound中间件
 import type { Request, Response } from 'express';
 
 export function notFoundMiddleware(_req: Request, res: Response): void {
