@@ -3,6 +3,17 @@ import path from 'node:path';
 import type { CWFrameProgress } from '@shared/contract';
 
 // 进度存储解构
+// "2": {
+//     "userId": 2,
+//     "unlockedNodes": {
+//       "1": {
+//         "unlockedAt": 1774458600000
+//       },
+//       "4": {
+//         "unlockedAt": 1774459200000
+//       }
+//     }
+//   }
 type ProgressStore = Record<string, CWFrameProgress>;
 
 // 核心类 ：ProgressRepo

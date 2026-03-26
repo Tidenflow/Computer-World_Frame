@@ -2,17 +2,21 @@ import type { ApiResponse, CWFrameProgress } from '@shared/contract';
 import { progressRepo } from '../repositories/progress.repo';
 import { userRepo } from '../repositories/user.repo';
 
+// 校验用户 ID 是否合法（必须是正整数）
 function isValidUserId(userId: number): boolean {
   return Number.isInteger(userId) && userId > 0;
 }
 
+// 校验解锁节点是否是合法对象
 function isValidUnlockedNodes(
   unlockedNodes: unknown
 ): unlockedNodes is CWFrameProgress['unlockedNodes'] {
   return typeof unlockedNodes === 'object' && unlockedNodes !== null && !Array.isArray(unlockedNodes);
 }
 
+// 核心类 ：ProgressService 
 export class ProgressService {
+  // 获取用户的解锁进度
   async getProgress(userId: number): Promise<ApiResponse<CWFrameProgress>> {
     if (!isValidUserId(userId)) {
       return {
@@ -36,6 +40,7 @@ export class ProgressService {
     return { success: true, data, message: 'ok' };
   }
 
+  // 更新用户的解锁节点进度
   async updateProgress(
     userId: number,
     unlockedNodes: unknown
