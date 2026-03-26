@@ -1,22 +1,21 @@
 import { Router } from 'express';
 import { progressController } from '../controllers/progress.controller';
+import { validateProgressBody, validateUserIdParam } from '../middleware/validate.middleware';
+import { asyncHandler } from '../utils/async-handler';
 
 const progressRouter = Router();
 
-progressRouter.get('/:userId/progress', async (req, res, next) => {
-  try {
-    await progressController.getProgress(req, res);
-  } catch (error) {
-    next(error);
-  }
-});
+progressRouter.get('/:userId/progress', validateUserIdParam, asyncHandler(async (req, res) => {
+  await progressController.getProgress(req, res);
+}));
 
-progressRouter.put('/:userId/progress', async (req, res, next) => {
-  try {
+progressRouter.put(
+  '/:userId/progress',
+  validateUserIdParam,
+  validateProgressBody,
+  asyncHandler(async (req, res) => {
     await progressController.updateProgress(req, res);
-  } catch (error) {
-    next(error);
-  }
-});
+  })
+);
 
 export default progressRouter;
