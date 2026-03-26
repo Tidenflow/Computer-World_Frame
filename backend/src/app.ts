@@ -1,5 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import authRouter from './routers/auth.router';
+import progressRouter from './routers/progress.router';
 
 const app = express();
 
@@ -7,6 +8,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/api/auth', authRouter);
+app.use('/api/users', progressRouter);
 
 // 终点中间件  1.匹配所有前面没命中的请求   2.直接返回响应并结束请求链
 app.use((_req: Request, res: Response) => {
