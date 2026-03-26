@@ -1,0 +1,24 @@
+{
+  "1": {
+    "userId": 1,
+    "unlockedNodes": {
+      "1": {
+        "unlockedAt": 1774455000000
+      },
+      "6": {
+        "unlockedAt": 1774600000000
+      }
+    }
+  },
+  "2": {
+    "userId": 2,
+    "unlockedNodes": {
+      "1": {
+        "unlockedAt": 1774458600000
+      },
+      "4": {
+        "unlockedAt": 1774459200000
+      }
+    }
+  }
+}
