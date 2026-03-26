@@ -32,3 +32,4 @@ package.json
 tsconfig*
 vite.config.ts
 *.js
+explainationAI
