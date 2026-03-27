@@ -1,46 +1,82 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-// 注意：如果 Vitest 运行在 frontend 目录下，路径需要根据实际运行环境调整
+/**
+ * 注意：测试代码运行在 test/ 目录下，通过相对路径引用 frontend 的源代码
+ * 这里的路径跳出了 test/ 目录，进入 root，再进入 frontend/src/core/
+ */
 import { login, fetchDefaultMap, getCurrentUserId, setCurrentUserId } from '../../frontend/src/core/cwframe.api';
 
-// 1. 全局 Mock fetch
+/**
+ * [Vitest API: vi.stubGlobal]
+ * 职责：由于测试是在 Node.js 环境下运行的，原本没有浏览器自带的 fetch。
+ * 这里我们“强行”在全局对象上挂载一个模拟的 fetch 函数，防止报错。
+ */
 vi.stubGlobal('fetch', vi.fn());
 
-describe('cwframe.api (Frontend API Wrapper)', () => {
-    
+/**
+ * [Vitest API: describe]
+ * 职责：定义一个测试套件（Suite），用于对测试用例进行分组，让逻辑更清晰。
+ */
+describe('cwframe.api (前端 API 封装层测试)', () => {
+
+    /**
+     * [Vitest API: beforeEach]
+     * 职责：生命周期钩子。在当前作用域下的每一个 it() 执行前，都会先运行这段逻辑。
+     * 作用：确保每个测试用例都在一个“干净”的环境下开始，避免互相干扰。
+     */
     beforeEach(() => {
-        // 每个测试前清理 Mock 调用记录和 localStorage
+        // [vi.mocked(fetch).mockClear]: 清除 fetch 被调用的次数、参数记录
         vi.mocked(fetch).mockClear();
+        // 清理浏览器模拟的本地存储
         localStorage.clear();
     });
 
-    describe('LocalStorage 存储工具', () => {
-        it('setCurrentUserId 应该正确存入 ID', () => {
+    describe('LocalStorage 存储工具函数测试', () => {
+        /**
+         * [Vitest API: it]
+         * 职责：定义一个具体的测试用例（Test Case）。描述一段特定的行为。
+         */
+        it('setCurrentUserId 应该正确地将用户 ID 存入 localStorage', () => {
+            // 执行业务函数
             setCurrentUserId(99);
+            // [Vitest API: expect(a).toBe(b)]
+            // 断言：期望从存储中拿到的值是字符串 '99'
             expect(localStorage.getItem('cwframe_user_id')).toBe('99');
         });
 
-        it('getCurrentUserId 应该在无存储时返回默认值 1', () => {
+        it('getCurrentUserId 应该在无任何存储时，默认返回 1', () => {
             expect(getCurrentUserId()).toBe(1);
         });
 
-        it('getCurrentUserId 应该返回存储的有效 ID', () => {
+        it('getCurrentUserId 应该能正确读取并转换存储中的字符串 ID 为数字', () => {
             localStorage.setItem('cwframe_user_id', '123');
             expect(getCurrentUserId()).toBe(123);
         });
     });
 
-    describe('API 核心逻辑 (Mock Fetch)', () => {
-        
-        it('login 应该发送 POST 请求并自动设置当前用户 ID', async () => {
-            // 模拟后端成功的响应
+    describe('核心 API 逻辑测试 (模拟网络请求)', () => {
+
+        it('login() 登录成功后，应发送 POST 请求并自动设置当前用户 ID', async () => {
+            // 准备模拟数据（Mock Data）
             const mockAuthData = { userId: 42, username: 'tester', token: 'fake-jwt' };
+
+            /**
+             * [Vitest API: mockResolvedValueOnce]
+             * 职责：控制 Mock 函数（fetch）的下一次异步返回结果。
+             * 这里模拟了后端返回的结构：{ success: true, data: ... }
+             */
             vi.mocked(fetch).mockResolvedValueOnce({
                 json: () => Promise.resolve({ success: true, data: mockAuthData })
             } as any);
 
+            // 调用实际的前端业务代码
             const result = await login({ username: 'tester', password: 'password123' });
 
-            // 断言：fetch 被调用过，且参数包含 POST 和正确的 body
+            /**
+             * [Vitest API: toHaveBeenCalledWith]
+             * 职责：验证某个函数是否被带参数调用过。
+             * [expect.stringContaining]: 部分匹配，只要 URL 里包含这段字符串即可。
+             * [expect.objectContaining]: 部分匹配，只要对象里有 method: 'POST' 即可。
+             */
             expect(fetch).toHaveBeenCalledWith(
                 expect.stringContaining('/api/auth/login'),
                 expect.objectContaining({
@@ -49,24 +85,28 @@ describe('cwframe.api (Frontend API Wrapper)', () => {
                 })
             );
 
-            // 断言：成功存入了 localStorage
+            // 验证业务副作用：登录成功后，用户 ID 应该被自动更新到本地存储
             expect(localStorage.getItem('cwframe_user_id')).toBe('42');
             expect(result.userId).toBe(42);
         });
 
-        it('当后端返回失败 (success: false) 时应该抛出错误', async () => {
-            // 模拟后端业务报错
+        it('当后端返回 success: false 时，前端应该敏锐地抛出异常', async () => {
+            // 模拟后端业务逻辑报错的情景
             vi.mocked(fetch).mockResolvedValueOnce({
-                json: () => Promise.resolve({ 
-                    success: false, 
-                    error: { message: '用户名已占用' } 
+                json: () => Promise.resolve({
+                    success: false,
+                    error: { message: '用户名已占用' }
                 })
             } as any);
 
+            /**
+             * [Vitest API: rejects.toThrow]
+             * 职责：专门用于测试异步函数是否会“翻车”（报错）。
+             */
             await expect(fetchDefaultMap()).rejects.toThrow('用户名已占用');
         });
 
-        it('fetchDefaultMap 应该发起 GET 请求到正确的路径', async () => {
+        it('fetchDefaultMap() 应该发起一个 GET 请求到正确的地图路径', async () => {
             vi.mocked(fetch).mockResolvedValueOnce({
                 json: () => Promise.resolve({ success: true, data: { nodes: [] } })
             } as any);
@@ -75,7 +115,7 @@ describe('cwframe.api (Frontend API Wrapper)', () => {
 
             expect(fetch).toHaveBeenCalledWith(
                 expect.stringContaining('/api/maps/default'),
-                undefined // GET 请求通常不需要额外的 init 参数
+                undefined // GET 请求通常不需要传 Body 参数
             );
         });
     });
