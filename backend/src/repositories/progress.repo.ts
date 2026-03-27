@@ -14,6 +14,8 @@ import type { CWFrameProgress } from '@shared/contract';
 //       }
 //     }
 //   }
+// 下面这个 string的含义是  用户id  --> 说明这个是哪个用户的进度
+// CWFrameProgress中也有一个userId  --> 说明这个进度是属于哪个用户的
 type ProgressStore = Record<string, CWFrameProgress>;
 
 // 核心类 ：ProgressRepo
@@ -45,9 +47,14 @@ export class ProgressRepo {
 
   // 更新或插入用户进度（没有就新建，有就覆盖）
   async upsertByUserId(progress: CWFrameProgress): Promise<CWFrameProgress> {
+    // 1. 先读取当前进度
     const store = await this.readStore();
+    // 2. 如果存在progress.userId说明有这个用户的进度，就覆盖，没有就新建
+    //   反正是不会插入更新，而是直接覆盖
     store[String(progress.userId)] = progress;
+    // 3. 保存进度
     await this.writeStore(store);
+    // 4. 返回进度
     return progress;
   }
 }

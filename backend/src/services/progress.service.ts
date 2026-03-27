@@ -70,6 +70,8 @@ export class ProgressService {
       };
     }
 
+    // 下面这个{ userId, unlockedNodes }   就是 CWFrameProgress 类型
+    // 下面这个 unlockedNodes 是一个对象，键是节点id，值是解锁时间戳
     const saved = await progressRepo.upsertByUserId({ userId, unlockedNodes });
     return { success: true, data: saved, message: 'updated' };
   }
