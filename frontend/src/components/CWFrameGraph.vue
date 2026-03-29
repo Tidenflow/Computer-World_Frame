@@ -2,24 +2,18 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import type { CWFrameMap, CWFrameProgress } from '@shared/contract';
+import type { CWFrameMap, CWFrameProgress, CWFrameNode } from '@shared/contract';
 import { buildStatusMap } from '../core/cwframe.status';
 import type { CWFrameNodeStatus } from '../core/cwframe.status';
 
 const PRIMARY_COLOR = 0x4fc3f7;
 const POSITION_EMIT_INTERVAL_MS = 33;
 
-interface Props {
-  frameMap: CWFrameMap;
-  progress: CWFrameProgress;
-}
-interface Emits {
-  (e: 'nodeClick', nodeId: number): void;
-  (e: 'positionsUpdate', positions: Map<number, { screenX: number; screenY: number }>): void;
-}
+import { useMapStore } from '../store/map.store';
+import { useProgressStore } from '../store/progress.store';
 
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+const mapStore = useMapStore();
+const progressStore = useProgressStore();
 
 const containerRef = ref<HTMLDivElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -39,7 +33,7 @@ const linkLines: THREE.Line[] = [];
 const linkEndpointMap = new Map<THREE.Line, { sourceId: number; targetId: number }>();
 const nodeScreenPositions = new Map<number, { screenX: number; screenY: number }>();
 
-const statusMap = computed(() => buildStatusMap(props.frameMap, props.progress));
+const statusMap = computed(() => mapStore.statusMap);
 
 function initThree() {
   if (!containerRef.value || !canvasRef.value) return;
@@ -85,7 +79,8 @@ function stableNoise(seed: number): number {
 }
 
 function buildDepthMap() {
-  const nodesById = new Map(props.frameMap.nodes.map(node => [node.id, node]));
+  if (!mapStore.frameMap) return new Map<number, number>();
+  const nodesById = new Map(mapStore.frameMap.nodes.map((node: CWFrameNode) => [node.id, node]));
   const memo = new Map<number, number>();
   const visiting = new Set<number>();
 
@@ -106,12 +101,13 @@ function buildDepthMap() {
     return depth;
   };
 
-  props.frameMap.nodes.forEach(node => resolveDepth(node.id));
+  mapStore.frameMap.nodes.forEach((node: CWFrameNode) => resolveDepth(node.id));
   return memo;
 }
 
 function buildStableNodePositions() {
-  const nodes = props.frameMap.nodes;
+  if (!mapStore.frameMap) return new Map<number, THREE.Vector3>();
+  const nodes = mapStore.frameMap.nodes;
   const depthMap = buildDepthMap();
   const maxDepth = Math.max(...Array.from(depthMap.values()), 0);
   const categories = Array.from(new Set(nodes.map(node => node.category))).sort();
@@ -125,7 +121,7 @@ function buildStableNodePositions() {
     if (!bucketMap.has(key)) bucketMap.set(key, []);
     bucketMap.get(key)!.push(node.id);
   });
-  bucketMap.forEach(bucket => bucket.sort((a, b) => a - b));
+  bucketMap.forEach((bucket: number[]) => bucket.sort((a, b) => a - b));
 
   const baseRadius = 130;
   const layerGap = 70;
@@ -207,10 +203,11 @@ function initLayout() {
   linkLines.length = 0;
   linkEndpointMap.clear();
 
-  const nodes = props.frameMap.nodes;
+  if (!mapStore.frameMap) return;
+  const nodes = mapStore.frameMap.nodes;
   const links: { source: number; target: number }[] = [];
-  nodes.forEach(node => {
-    node.dependencies.forEach(depId => {
+  nodes.forEach((node: CWFrameNode) => {
+    node.dependencies.forEach((depId: number) => {
       links.push({ source: depId, target: node.id });
     });
   });
@@ -317,7 +314,7 @@ function updateScreenPositions() {
     nodeScreenPositions.set(nodeId, { screenX, screenY });
   });
 
-  emit('positionsUpdate', new Map(nodeScreenPositions));
+  mapStore.updateScreenPositions(new Map(nodeScreenPositions));
 }
 
 function updateNodeVisibility() {
@@ -394,8 +391,8 @@ function onMouseClick(event: MouseEvent) {
   for (const intersect of intersects) {
     let obj = intersect.object;
     while (obj.parent && !obj.userData.nodeId) { obj = obj.parent; }
-    if (obj.userData.nodeId && statusMap.value[obj.userData.nodeId] === 'Unlocked') {
-      emit('nodeClick', obj.userData.nodeId);
+    if (obj.userData.nodeId && mapStore.statusMap[obj.userData.nodeId] === 'Unlocked') {
+      mapStore.selectNode(obj.userData.nodeId);
       break;
     }
   }
@@ -417,8 +414,8 @@ onUnmounted(() => {
   renderer?.dispose();
 });
 
-watch(() => props.progress, updateNodeVisibility, { deep: true });
-watch(() => props.frameMap, initLayout, { deep: true });
+watch(() => progressStore.progress, updateNodeVisibility, { deep: true });
+watch(() => mapStore.frameMap, initLayout, { deep: true });
 </script>
 
 <template>

@@ -1,26 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { CWFrameNode } from '@shared/contract';
+import { useMapStore } from '../store/map.store';
 
 interface Props {
   node: CWFrameNode;
-  status: 'Unlocked' | 'Discoverable' | 'Locked';
-  screenX: number;
-  screenY: number;
-  selected?: boolean;
 }
 
-interface Emits {
-  (e: 'click', nodeId: number): void;
-}
+const props = defineProps<Props>();
+const mapStore = useMapStore();
 
-const props = withDefaults(defineProps<Props>(), {
-  selected: false,
-});
-const emit = defineEmits<Emits>();
+const status = computed(() => mapStore.statusMap[props.node.id] ?? 'Locked');
+const selected = computed(() => mapStore.selectedNodeId === props.node.id);
+const pos = computed(() => mapStore.nodeScreenPositions.get(props.node.id) ?? { screenX: 0, screenY: 0 });
 
 function handleClick() {
-  if (props.status === 'Unlocked') {
-    emit('click', props.node.id);
+  if (status.value === 'Unlocked') {
+    mapStore.selectNode(props.node.id);
   }
 }
 </script>
@@ -29,7 +25,7 @@ function handleClick() {
   <div
     class="node-overlay"
     :class="[status.toLowerCase(), { selected }]"
-    :style="{ left: screenX + 'px', top: screenY + 'px' }"
+    :style="{ left: pos.screenX + 'px', top: pos.screenY + 'px' }"
     @click="handleClick"
   >
     <!-- Glowing sphere visual -->
