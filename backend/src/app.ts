@@ -1,4 +1,5 @@
-﻿import express from 'express';
+import express from 'express';
+import cors from 'cors';
 import authRouter from './routers/auth.router';
 import progressRouter from './routers/progress.router';
 import mapRouter from './routers/map.router';
@@ -7,6 +8,7 @@ import { errorMiddleware } from './middleware/error.middleware';
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
