@@ -1,199 +1,248 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { Search, Sparkles, CheckCircle2, XCircle } from 'lucide-vue-next';
 import { useMapStore } from '../store/map.store';
 import { useProgressStore } from '../store/progress.store';
+import { extractTerms, matchNodeByTerm } from '../core/matching';
 
 const mapStore = useMapStore();
 const progressStore = useProgressStore();
 
 const inputValue = ref('');
-const message = ref<{ text: string; type: 'success' | 'error' } | null>(null);
+const result = ref<{ term: string; matched: boolean; nodeName?: string } | null>(null);
+const showSuggestions = ref(false);
+
+const exampleTerms = [
+  'Python', 'CPU', '显卡', '操作系统', '算法', 
+  '神经网络', 'React', 'Linux', '数据库'
+];
 
 function handleUnlock() {
   if (!mapStore.frameMap || !inputValue.value.trim()) return;
 
-  const searchLabel = inputValue.value.trim().toLowerCase();
-  const matchedNode = mapStore.frameMap.nodes.find(
-    node => node.label.toLowerCase() === searchLabel
-  );
+  const terms = extractTerms(inputValue.value);
+  let hasAnyMatch = false;
 
-  if (matchedNode) {
-    progressStore.unlockNode(matchedNode).then(result => {
-      message.value = { 
-        text: result.message, 
-        type: result.success ? 'success' : 'error' 
-      };
-      if (result.success) inputValue.value = '';
-      clearMessage();
-    });
-  } else {
-    message.value = { text: `未找到匹配节点: ${inputValue.value}`, type: 'error' };
-    clearMessage();
+  terms.forEach(term => {
+    const matchedNode = matchNodeByTerm(term, mapStore.frameMap!.nodes);
+    if (matchedNode) {
+      hasAnyMatch = true;
+      // 修复调用处：传递 matchedTerm (term) 确保历史记录能正确显示用户输入
+      progressStore.unlockNode(matchedNode, term).then(res => {
+        result.value = { 
+          term, 
+          matched: true, 
+          nodeName: matchedNode.label 
+        };
+        inputValue.value = '';
+        showSuggestions.value = false;
+        clearResult();
+      });
+    }
+  });
+
+  if (!hasAnyMatch) {
+    result.value = { term: terms[0], matched: false };
+    clearResult();
   }
 }
 
-function clearMessage() {
+function selectSuggestion(s: string) {
+  inputValue.value = s;
+  handleUnlock();
+}
+
+function clearResult() {
   setTimeout(() => {
-    message.value = null;
-  }, 3000);
+    result.value = null;
+  }, 4000);
 }
 </script>
 
 <template>
-  <div class="search-hud">
-    <!-- Message popup -->
-    <Transition name="fade">
-      <div v-if="message" :class="['message-toast', message.type]">
-        {{ message.text }}
+  <div class="search-container">
+    <!-- 匹配反馈 Toast -->
+    <Transition name="feedback-slide">
+      <div v-if="result" class="feedback-toast glass-panel" :class="{ success: result.matched }">
+        <div class="icon-indicator">
+          <CheckCircle2 v-if="result.matched" class="icon-success" :size="24" />
+          <XCircle v-else class="icon-error" :size="24" />
+        </div>
+        <div class="feedback-info">
+          <div class="status-title">{{ result.matched ? '匹配成功！' : '未找到匹配' }}</div>
+          <div class="status-detail">{{ result.matched ? `"${result.term}" → ${result.nodeName}` : '试试其他术语吧' }}</div>
+        </div>
+        <Sparkles v-if="result.matched" class="spark-fx" :size="20" />
       </div>
     </Transition>
 
-    <!-- Search Input Panel -->
-    <div class="search-panel glass">
-      <div class="input-wrapper">
+    <!-- 搜索栏主体 -->
+    <div class="search-bar-wrapper">
+      <div class="search-bar glass-panel" :class="{ active: showSuggestions && !inputValue }">
+        <Search :size="20" class="search-icon" />
         <input
           v-model="inputValue"
-          placeholder="输入术语以点亮知识节点..."
+          placeholder="输入任何计算机相关的术语..."
           @keyup.enter="handleUnlock"
+          @focus="showSuggestions = true"
           class="search-input"
         />
-        <div class="input-glow"></div>
+        <button 
+          @click="handleUnlock" 
+          class="ignite-btn bg-gradient-brand"
+          :disabled="!inputValue.trim()"
+        >
+          <Sparkles :size="20" />
+        </button>
       </div>
-      <button @click="handleUnlock" class="ignite-btn">
-        <span class="btn-text">点亮</span>
-        <div class="btn-glow"></div>
-      </button>
-    </div>
 
-    <!-- Legend -->
-    <div class="legend-panel glass">
-      <div class="legend-item">
-        <div class="dot unlocked"></div>
-        <span>已解锁</span>
-      </div>
-      <div class="legend-item">
-        <div class="dot discoverable"></div>
-        <span>可探索</span>
-      </div>
-      <div class="legend-item">
-        <div class="dot locked"></div>
-        <span>未发现</span>
-      </div>
+      <!-- 搜索建议下拉 -->
+      <Transition name="dropdown">
+        <div v-if="showSuggestions && !inputValue" class="suggestions-dropdown glass-panel">
+          <div class="suggest-title">热门搜索关键词：</div>
+          <div class="suggest-grid">
+            <button 
+              v-for="term in exampleTerms" 
+              :key="term"
+              @click="selectSuggestion(term)"
+              class="suggest-tag"
+            >
+              {{ term }}
+            </button>
+          </div>
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
 
 <style scoped>
-.search-hud {
-  position: fixed;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
+.search-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  z-index: 100;
-  pointer-events: none;
+  width: 100%;
 }
 
-.search-panel, .legend-panel, .message-toast {
-  pointer-events: auto;
+.search-bar-wrapper {
+  width: 100%;
+  max-width: 640px;
+  position: relative;
+  z-index: 200;
 }
 
-.search-panel {
+.search-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 8px 8px 24px;
-  border-radius: 40px;
-  min-width: 480px;
+  padding: 8px 8px 8px 20px;
+  border-radius: 16px;
+  transition: var(--transition-smooth);
+  border: 1px solid var(--border-slate);
 }
 
-.input-wrapper {
-  flex: 1;
-  position: relative;
+.search-bar.active {
+  border-color: var(--blue-400);
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.2);
 }
+
+.search-icon { color: var(--text-weak); }
 
 .search-input {
-  width: 100%;
+  flex: 1;
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 10px 0;
-  color: var(--text-h);
   font-size: 16px;
+  color: var(--text-primary);
   outline: none;
-  font-family: var(--sans);
-  transition: border-color 0.3s;
-}
-
-.search-input:focus {
-  border-bottom-color: var(--accent);
+  padding: 12px 0;
 }
 
 .ignite-btn {
-  position: relative;
-  background: var(--accent);
-  color: var(--bg);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   border: none;
-  padding: 10px 28px;
-  border-radius: 30px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.ignite-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px var(--accent-glow);
-}
-
-.ignite-btn:active {
-  transform: scale(0.95);
-}
-
-.message-toast {
-  padding: 10px 24px;
-  border-radius: 20px;
-  background: rgba(10, 15, 26, 0.9);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.message-toast.success { color: var(--success); border-color: var(--success); }
-.message-toast.error { color: var(--error); border-color: var(--error); }
-
-.legend-panel {
-  display: flex;
-  gap: 24px;
-  padding: 8px 24px;
-  border-radius: 20px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.legend-item {
+  color: white;
   display: flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.ignite-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  right: 0;
+  padding: 20px;
+  border-radius: 16px;
+  z-index: 100;
+}
+
+.suggest-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-weak);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+
+.suggest-grid {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.suggest-tag {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-slate);
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
 }
 
-.dot.unlocked { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-.dot.discoverable { background: #546e7a; }
-.dot.locked { border: 1px solid #37474f; }
+.suggest-tag:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--blue-400);
+}
 
-/* Animations */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s, transform 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(10px); }
+.feedback-toast {
+  position: fixed;
+  bottom: 80px;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  z-index: 3000;
+}
+
+.feedback-toast.success { border-color: var(--success); }
+.feedback-info { display: flex; flex-direction: column; }
+.status-title { font-weight: 800; color: var(--text-primary); }
+.status-detail { font-size: 12px; color: var(--text-muted); }
+.icon-success { color: var(--success); }
+.icon-error { color: var(--error); }
+
+/* Transitions */
+.dropdown-enter-active, .dropdown-leave-active { transition: all 0.4s ease; }
+.dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-10px); }
+
+.feedback-slide-enter-active, .feedback-slide-leave-active { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+.feedback-slide-enter-from { transform: translateX(100px); opacity: 0; }
+.feedback-slide-leave-to { transform: translateY(-50px); opacity: 0; }
 </style>

@@ -5,9 +5,10 @@ import { useProgressStore } from '../store/progress.store';
 import { useUserStore } from '../store/user.store';
 
 import CWFrameGraph from '../components/CWFrameGraph.vue';
-import CWFrameNode from '../components/CWFrameNode.vue';
 import CWFSearchHUD from '../components/CWFSearchHUD.vue';
 import CWFNodeSidebar from '../components/CWFNodeSidebar.vue';
+import CWFHeader from '../components/CWFHeader.vue';
+import CWFHistoryPanel from '../components/CWFHistoryPanel.vue';
 
 const mapStore = useMapStore();
 const progressStore = useProgressStore();
@@ -17,7 +18,6 @@ const errorMessage = ref<string | null>(null);
 
 onMounted(async () => {
   try {
-    // Load data via stores instead of local refs
     if (!mapStore.frameMap) {
       await mapStore.loadMap();
     }
@@ -25,48 +25,74 @@ onMounted(async () => {
       await progressStore.loadProgress();
     }
   } catch (err: any) {
-    console.error('Initialization failed:', err);
+    console.error('初始化失败:', err);
     errorMessage.value = `同步失败: ${err.message || '网络连接异常，请检查后端服务'}`;
   }
 });
-
-function handleRetry() {
-  window.location.reload();
-}
 </script>
 
 <template>
   <div class="home-view">
-    <!-- 3D Graph -->
-    <CWFrameGraph />
+    <CWFHeader />
 
-    <!-- 2D Overlays (Only unlocked nodes or discoverable) -->
-    <template v-if="mapStore.frameMap">
-      <CWFrameNode
-        v-for="node in mapStore.frameMap.nodes"
-        :key="node.id"
-        :node="node"
-      />
-    </template>
+    <main class="main-content">
+      <!-- 搜索栏区域 -->
+      <header class="search-section">
+        <CWFSearchHUD />
+      </header>
 
-    <!-- UI Overlay HUD -->
-    <CWFSearchHUD />
+      <div class="app-grid">
+        <!-- 侧边栏列 (历史记录与图例) -->
+        <aside class="sidebar-col custom-scroll">
+          <CWFHistoryPanel />
+          
+          <!-- 分类图例面板 -->
+          <div class="legend-box glass-panel">
+            <h4 class="legend-title">分类图例 / Categories</h4>
+            <div class="legend-items">
+              <div class="legend-item"><span class="dot hw"></span> 硬件层 / Hardware</div>
+              <div class="legend-item"><span class="dot sw"></span> 软件层 / Software</div>
+              <div class="legend-item"><span class="dot th"></span> 理论层 / Theory</div>
+              <div class="legend-item"><span class="dot net"></span> 网络层 / Networking</div>
+            </div>
+          </div>
 
-    <!-- Right Sidebar Detail -->
+          <!-- 使用提示面板 -->
+          <div class="tips-box glass-panel">
+            <h4 class="legend-title">💡 使用提示</h4>
+            <ul class="tips-list">
+              <li>输入相关计算机、工程术语点亮图表</li>
+              <li>点击已点亮节点（或可探索节点）查看深度解析</li>
+              <li>使用鼠标滚轮缩放图表内容</li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- 2D SVG 图谱可视化区域 -->
+        <section class="visualization-area">
+          <div class="graph-wrapper glass-panel">
+            <CWFrameGraph />
+            
+            <!-- 进度统计浮层 -->
+            <div class="progress-stats glass-panel">
+              <span class="stats-label">已点亮: </span>
+              <span class="stats-value">{{ progressStore.unlockedNodesCount }}</span>
+              <span class="stats-total"> / {{ mapStore.frameMap?.nodes.length || 0 }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 节点详情 Modal -->
     <CWFNodeSidebar />
 
-    <!-- Initial Loading / Error State -->
+    <!-- 全屏加载/错误状态 -->
     <Transition name="fade">
-      <div v-if="!mapStore.frameMap" class="loading-overlay">
-        <template v-if="!errorMessage">
-          <div class="loader"></div>
-          <p>正在同步宇宙知识框架...</p>
-        </template>
-        <template v-else>
-          <div class="error-icon">⚠️</div>
-          <p class="error-text">{{ errorMessage }}</p>
-          <button @click="handleRetry" class="retry-btn">重试</button>
-        </template>
+      <div v-if="!mapStore.frameMap" class="loading-screen">
+        <div class="loader-ripple"><div></div><div></div></div>
+        <p v-if="!errorMessage">正在构造宇宙级知识图谱...</p>
+        <p v-else class="error-msg">{{ errorMessage }}</p>
       </div>
     </Transition>
   </div>
@@ -76,71 +102,126 @@ function handleRetry() {
 .home-view {
   width: 100vw;
   height: 100vh;
-  position: relative;
-  overflow: hidden;
-  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-dark);
 }
 
-.loading-overlay {
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 40px 40px 40px;
+}
+
+.search-section {
+  padding: 32px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.app-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  min-height: 0;
+}
+
+.sidebar-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.legend-box, .tips-box {
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.legend-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-weak);
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-item {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot { width: 8px; height: 8px; border-radius: 50%; opacity: 0.8; }
+.dot.hw { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+.dot.sw { background: #a855f7; box-shadow: 0 0 10px #a855f7; }
+.dot.th { background: #60a5fa; box-shadow: 0 0 10px #60a5fa; }
+.dot.net { background: #0ea5e9; box-shadow: 0 0 10px #0ea5e9; }
+
+.tips-list {
+  padding-left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tips-list li {
+  font-size: 11px;
+  color: var(--text-weak);
+  line-height: 1.5;
+}
+
+.visualization-area { position: relative; border-radius: 24px; overflow: hidden; }
+
+.graph-wrapper {
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-slate);
+}
+
+.progress-stats {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stats-label { font-size: 12px; color: var(--text-weak); }
+.stats-value { font-size: 18px; color: var(--blue-400); }
+.stats-total { font-size: 12px; color: var(--text-weak); }
+
+.loading-screen {
   position: fixed;
   inset: 0;
+  background: var(--bg-dark);
+  z-index: 10000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
-  z-index: 1000;
-  color: var(--accent);
-  gap: 20px;
-}
-
-.loader {
-  width: 50px;
-  height: 50px;
-  border: 3px solid rgba(79, 195, 247, 0.1);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.error-icon {
-  font-size: 48px;
-  margin-bottom: 10px;
-}
-
-.error-text {
-  color: var(--error);
-  font-weight: 500;
-  max-width: 300px;
-  text-align: center;
-}
-
-.retry-btn {
-  margin-top: 20px;
-  padding: 10px 32px;
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
-}
-
-.retry-btn:hover {
-  background: var(--accent);
-  color: var(--bg);
-  box-shadow: 0 0 20px var(--accent-glow);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+  gap: 24px;
+  color: var(--text-muted);
 }
 </style>

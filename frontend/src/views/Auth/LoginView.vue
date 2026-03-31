@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../../store/user.store';
+import { LogIn, User, Lock, Loader2, Lightbulb } from 'lucide-vue-next';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -30,32 +31,50 @@ async function handleLogin() {
 
 <template>
   <div class="auth-page">
-    <div class="auth-card glass">
-      <header>
-        <h1 class="text-accent">登 录</h1>
-        <p>欢迎回到计算机世界框架</p>
+    <div class="auth-box glass-panel shadow-glow">
+      <header class="auth-header">
+        <div class="logo-box bg-gradient-brand">
+          <Lightbulb class="icon-white" :size="32" />
+        </div>
+        <h1 class="text-gradient">欢迎回来</h1>
+        <p>登录以继续点亮您的计算机世界观</p>
       </header>
-      
-      <form @submit.prevent="handleLogin">
-        <div class="input-group">
-          <label>用户名</label>
-          <input v-model="username" type="text" placeholder="输入您的用户名" required />
+
+      <form @submit.prevent="handleLogin" class="auth-form">
+        <div class="field-group">
+          <label>用户名 / Username</label>
+          <div class="input-wrapper">
+            <User :size="18" class="field-icon" />
+            <input v-model="username" type="text" placeholder="输入用户名" required />
+          </div>
         </div>
-        
-        <div class="input-group">
-          <label>密码</label>
-          <input v-model="password" type="password" placeholder="••••••••" required />
+
+        <div class="field-group">
+          <label>密码 / Password</label>
+          <div class="input-wrapper">
+            <Lock :size="18" class="field-icon" />
+            <input v-model="password" type="password" placeholder="••••••••" required />
+          </div>
         </div>
-        
-        <div v-if="error" class="error-msg">{{ error }}</div>
-        
-        <button type="submit" :disabled="loading" class="auth-btn">
-          {{ loading ? '同步中...' : '进入宇宙' }}
+
+        <div v-if="error" class="error-banner">
+          {{ error }}
+        </div>
+
+        <button type="submit" :disabled="loading" class="submit-btn bg-gradient-brand">
+          <template v-if="loading">
+            <Loader2 class="animate-spin" :size="20" />
+            <span>同步状态中...</span>
+          </template>
+          <template v-else>
+            <LogIn :size="20" />
+            <span>进入世界</span>
+          </template>
         </button>
       </form>
-      
-      <footer>
-        还没有账号？ <router-link to="/auth/register">立即注册</router-link>
+
+      <footer class="auth-footer">
+        还没有账号？ <router-link to="/auth/register" class="link-text">立即注册</router-link>
       </footer>
     </div>
   </div>
@@ -68,106 +87,101 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #1a1b26 0%, #0a0a0f 100%);
+  background-color: var(--bg-dark);
 }
 
-.auth-card {
-  width: 400px;
-  padding: 40px;
-  border-radius: 24px;
+.auth-box {
+  width: 100%;
+  max-width: 440px;
+  padding: 48px;
+  border-radius: 32px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  animation: fadeIn 0.6s ease-out;
+  gap: 40px;
+  animation: modal-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-header {
-  text-align: center;
-}
+.auth-header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 
-header h1 {
-  font-size: 32px;
+.logo-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 8px;
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.3);
 }
 
-header p {
-  font-size: 14px;
-  opacity: 0.6;
-}
+.icon-white { color: white; }
 
-form {
+.auth-header h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+.auth-header p { font-size: 14px; color: var(--text-weak); }
+
+.auth-form { display: flex; flex-direction: column; gap: 24px; }
+
+.field-group { display: flex; flex-direction: column; gap: 10px; }
+.field-group label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-weak); letter-spacing: 0.1em; }
+
+.input-wrapper {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  align-items: center;
 }
 
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-label {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.8;
-}
+.field-icon { position: absolute; left: 16px; color: var(--text-weak); }
 
 input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  padding: 12px 16px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-slate);
+  padding: 14px 14px 14px 48px;
   border-radius: 12px;
-  color: #fff;
-  outline: none;
-  transition: all 0.3s;
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-size: 15px;
+  transition: var(--transition-smooth);
 }
 
-input:focus {
-  border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 15px rgba(79, 195, 247, 0.2);
-}
+input:focus { border-color: var(--blue-400); background: rgba(255, 255, 255, 0.06); outline: none; }
 
-.auth-btn {
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
-  padding: 14px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 10px;
-}
-
-.auth-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px var(--accent-glow);
-}
-
-.auth-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.error-msg {
+.error-banner {
+  background: rgba(239, 68, 68, 0.1);
   color: var(--error);
+  padding: 12px;
+  border-radius: 10px;
   font-size: 13px;
   text-align: center;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-footer {
-  text-align: center;
-  font-size: 14px;
-  opacity: 0.7;
+.submit-btn {
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  color: white;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
 }
 
-footer a {
-  color: var(--accent);
-  text-decoration: none;
-  font-weight: 600;
+.submit-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-footer { text-align: center; font-size: 14px; color: var(--text-muted); }
+.link-text { color: var(--blue-400); text-decoration: none; font-weight: 700; }
+.link-text:hover { text-decoration: underline; }
+
+@keyframes modal-enter {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
+
+.animate-spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
