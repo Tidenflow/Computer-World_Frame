@@ -11,7 +11,8 @@ export interface User {
 export interface CWFrameNode {
     id : number;                //节点id
     label : string;             //节点标签/标题
-    description : string;       //节点描述    
+    description : string;       //节点描述  
+    category : string;          //节点类别  “硬件”  “OS”
     dependencies : number[];    //依赖节点 ===> 理解为图中的边  
     // 比如A.dependencies = [B, C] 表示 A 依赖 B 和 C。就是B -> A、C -> A
 }
@@ -28,16 +29,45 @@ export interface CWFrameProgress {
     unlockedNodes: Record<number, { unlockedAt: number }>; // 点亮记录
 }
 
-// 建议补充：统一响应格式
-export interface ApiResponse<T> {
-    success: boolean;   // 业务是否成功
-    data: T | null;      // 实际数据
-    message?: string;    // 错误消息
+
+//枚举ApiError.code，防止后端随意返回
+export type ApiErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'USER_EXISTS'
+  | 'INVALID_CREDENTIALS'
+  | 'USER_NOT_FOUND'
+  | 'PROGRESS_NOT_FOUND'
+  | 'NOT_FOUND'
+  | 'SERVER_ERROR';
+
+// 规定error格式
+export interface ApiError {
+  code: ApiErrorCode;
+  message: string;
 }
 
-// 补充：统一响应格式
-export interface ApiResponse<T> {        //===>使用泛型占位 
-    success: boolean;   // 业务是否成功
-    data: T | null;      // 实际数据     定义逻辑，延迟定义数据
-    message?: string;    // 错误消息
+// 规定api返回格式
+export type ApiResponse<T> =
+  | { success: true; data: T; message?: string }
+  | { success: false; data: null; error: ApiError };
+
+// 规定注册请求格式
+export interface RegisterRequest {
+    username : string;
+    password : string;
 }
+// 规定登录请求格式
+export interface LoginRequest {
+    username : string;
+    password : string;
+}
+//凭证载体
+export interface AuthData { 
+    userId: number; 
+    username: string; 
+}
+
+// ===== Map API =====
+export type GetMapResponse = ApiResponse<CWFrameMap>;
+// ===== Progress API =====
+export type GetProgressResponse = ApiResponse<CWFrameProgress>;
