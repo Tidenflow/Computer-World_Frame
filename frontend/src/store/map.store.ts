@@ -11,9 +11,6 @@ export const useMapStore = defineStore('map', () => {
   const frameMap = ref<CWFrameMap | null>(null);
   const selectedNodeId = ref<number | null>(null);
 
-  // Map of nodeId -> { screenX, screenY } for 2D overlays
-  const nodeScreenPositions = reactive<Map<number, { screenX: number; screenY: number }>>(new Map());
-
   // Compute status map based on current map and user progress
   const statusMap = computed(() => {
     if (!frameMap.value) return {};
@@ -43,22 +40,12 @@ export const useMapStore = defineStore('map', () => {
     selectedNodeId.value = selectedNodeId.value === id ? null : id;
   }
 
-  // Update 2D screen positions emitted by the Three.js graph
-  function updateScreenPositions(positions: Map<number, { screenX: number; screenY: number }>) {
-    nodeScreenPositions.clear();
-    positions.forEach((val, key) => {
-      nodeScreenPositions.set(key, val);
-    });
-  }
-
   return {
     frameMap,
     selectedNodeId,
-    nodeScreenPositions,
     statusMap,
     selectedNode,
     loadMap,
-    selectNode,
-    updateScreenPositions
+    selectNode
   };
 });

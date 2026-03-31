@@ -34,24 +34,40 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
-  async function unlockNode(node: CWFrameNode) {
-    // 1. Local update
+  async function unlockNode(node: CWFrameNode, matchedTerm?: string) {
+    // 1. 本地更新
     localUnlockNode(progress, node);
+    
+    // 显式记录匹配词，用于历史记录展示
+    if (matchedTerm && progress.unlockedNodes[node.id]) {
+        (progress.unlockedNodes[node.id] as any).matchedTerm = matchedTerm;
+    }
 
-    // 2. Sync with server
+    // 2. 同步到服务端，确保下次刷新不会“复活”
     try {
       if (userStore.userId) {
         await api.updateProgress(userStore.userId, progress);
       }
-      return { success: true, message: `已解锁: ${node.label}` };
+      return { success: true, message: `已点亮: ${node.label}` };
     } catch (error) {
-      console.error('Failed to sync progress with server:', error);
-      return { success: false, message: '同步进度失败' };
+      console.error('同步进度至服务端失败:', error);
+      return { success: false, message: '进度同步失败' };
     }
   }
 
-  function resetLocalProgress() {
+  async function resetLocalProgress() {
     progress.unlockedNodes = {};
+    // 同步清空服务端进度
+    if (userStore.userId) {
+      try {
+        await api.updateProgress(userStore.userId, { 
+          userId: userStore.userId, 
+          unlockedNodes: {} 
+        });
+      } catch (error) {
+        console.error('重置服务端进度失败:', error);
+      }
+    }
   }
 
   return {
