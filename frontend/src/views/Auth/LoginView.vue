@@ -4,13 +4,24 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '../../store/user.store';
 import { LogIn, User, Lock, Loader2, Lightbulb } from 'lucide-vue-next';
 
+//获取 store 里面的数据
 const userStore = useUserStore();
-const router = useRouter();
-
+//获取路由管理器
+const router = useRouter();  //useRouter()会自动去拿到你注册到 app 的那个 router 实例
+// username和password是用来存储用户输入的用户名和密码的
 const username = ref('');
 const password = ref('');
+// error是页面级的错误提示字符串状态。  比如  用户名或密码错误（登录失败）/ 两次密码不一致（注册页本地校验）
 const error = ref('');
-const loading = ref(false);
+
+// loading是页面级的加载状态。  比如  登录中 / 注册中
+const loading = ref(false);  //一旦你改了 loading.value，Vue 会自动通知页面重新渲染（刷新相关的 DOM）
+// 开始请求前：loading.value = true
+// (1)按钮变禁用（防止重复点）
+// (2)按钮里显示“转圈/同步中”
+// 请求结束后（成功/失败都算结束）：loading.value = false
+// (1)按钮恢复可点
+// (2)转圈消失
 
 async function handleLogin() {
   if (!username.value || !password.value) return;
@@ -20,12 +31,12 @@ async function handleLogin() {
   
   try {
     await userStore.login({ username: username.value, password: password.value });
-    router.push('/');
+    router.push('/');   // 跳转到首页
   } catch (err: any) {
     error.value = err.message || '登录失败，请检查账号密码';
   } finally {
-    loading.value = false;
-  }
+    loading.value = false; //把这个页面的 “加载中状态”关掉。
+  }   // finally是无论成功还是失败，都会执行的代码块就算 try 里成功 return、或 catch 捕获到错误）
 }
 </script>
 

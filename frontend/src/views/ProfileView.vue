@@ -4,13 +4,15 @@ import { useProgressStore } from '../store/progress.store';
 import { useRouter } from 'vue-router';
 import { User, LogOut, ShieldCheck, Calendar, Trophy } from 'lucide-vue-next';
 
+// 这里就是获取 store 里面的数据
 const userStore = useUserStore();
 const progressStore = useProgressStore();
 const router = useRouter();
 
+// 这里就是处理退出登录的逻辑
 function handleLogout() {
-  userStore.logout();
-  router.push('/auth/login');
+  userStore.logout();   // 退出登录
+  router.push('/auth/login');   // 跳转到登录页
 }
 </script>
 
@@ -64,6 +66,7 @@ function handleLogout() {
   align-items: center;
   justify-content: center;
   background-color: var(--bg-dark);
+  /* border: 3px solid red; */
 }
 
 .profile-container {

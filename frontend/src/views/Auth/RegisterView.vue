@@ -25,7 +25,7 @@ async function handleRegister() {
   
   try {
     await userStore.register({ username: username.value, password: password.value });
-    router.push('/');
+    router.push('/');   //当前注册之后状态是登录状态，所以会跳转到首页,这里改成跳转到登录页也没用
   } catch (err: any) {
     error.value = err.message || '注册失败，用户名可能已存在';
   } finally {
