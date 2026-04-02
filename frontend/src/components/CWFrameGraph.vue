@@ -16,11 +16,26 @@ const categoryColors: Record<string, string> = {
   'default': '#94a3b8'
 };
 
-const getCategoryColor = (cat: string) => categoryColors[cat] || categoryColors.default;
+/**
+ * 根据节点分类返回对应的主题色。
+ *
+ * @param cat - 节点分类（来自 `CWFrameNode.category`）
+ * @returns 十六进制颜色字符串（若未知分类则返回 default）
+ */
+const getCategoryColor = (cat: string): string => categoryColors[cat] || categoryColors.default;
 
 const statusMap = computed(() => mapStore.statusMap);
 
-// 彻底对齐 React 版图谱坐标 (1200x840 Viewbox)
+/**
+ * 把地图节点扩展为带坐标的节点（用于 SVG 渲染）。
+ *
+ * 坐标体系：
+ * - 使用固定 `viewBox="0 0 1200 840"`
+ * - 横向按“依赖深度”分层
+ * - 纵向按同层节点数量进行居中分布
+ *
+ * @returns 节点数组；若地图未加载返回空数组
+ */
 const nodesWithPositions = computed(() => {
   if (!mapStore.frameMap) return [];
   
@@ -31,6 +46,16 @@ const nodesWithPositions = computed(() => {
   
   // 层级计算
   const depthMap: Record<number, number> = {};
+  /**
+   * 递归计算节点“依赖深度”（用于决定横向分层）。
+   *
+   * - 若存在循环依赖：使用 `path` 集合阻断，循环链返回深度 0
+   * - 若节点无依赖：返回深度 0
+   *
+   * @param id - 要计算深度的节点 id
+   * @param path - 当前递归路径，用于检测循环
+   * @returns 依赖深度（非负整数）
+   */
   const resolveDepth = (id: number, path = new Set()): number => {
     if (depthMap[id] !== undefined) return depthMap[id];
     if (path.has(id)) return 0;
@@ -69,6 +94,14 @@ const nodesWithPositions = computed(() => {
   });
 });
 
+/**
+ * 根据带坐标的节点生成连线列表（用于 SVG `<line>` 渲染）。
+ *
+ * 高亮逻辑：
+ * - 当起点与终点都处于 `Unlocked` 时，`isUnlocked=true`，从而让线条样式更亮
+ *
+ * @returns 连线数组，元素包含：x1/y1/x2/y2/isUnlocked
+ */
 const links = computed(() => {
   const nodes = nodesWithPositions.value;
   return nodes.flatMap(node => 
@@ -84,7 +117,15 @@ const links = computed(() => {
   );
 });
 
-function handleNodeClick(nodeId: number) {
+/**
+ * 处理节点点击：
+ * - 允许打开 `Unlocked` 与 `Discoverable` 节点的详情
+ * - `Locked` 节点点击无效果（避免“不可探索”误导）
+ *
+ * @param nodeId - 被点击的节点 id
+ * @returns void
+ */
+function handleNodeClick(nodeId: number): void {
   // 逻辑调整：允许查看 Unlocked 和 Discoverable 节点的详情
   const status = statusMap.value[nodeId];
   if (status === 'Unlocked' || status === 'Discoverable') {

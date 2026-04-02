@@ -22,7 +22,18 @@ const userStore = useUserStore();
 // 这里的errorMessage就是用来显示错误信息的
 const errorMessage = ref<string | null>(null);  // ref = 创建一个响应式变量
 
-onMounted(async () => {
+/**
+ * 页面挂载后初始化数据：
+ * - 地图未加载则先加载地图
+ * - 进度未加载则拉取当前用户进度
+ *
+ * @returns Promise<void>
+ *
+ * @sideEffects
+ * - 会触发 `mapStore.loadMap()`、`progressStore.loadProgress()` 的网络请求
+ * - 初始化失败时会写入 `errorMessage`，以便渲染错误提示
+ */
+onMounted(async (): Promise<void> => {
   try {
     if (!mapStore.frameMap) {   // 如果mapStore.frameMap为空，则调用mapStore.loadMap()
       await mapStore.loadMap();   // 加载地图数据 一般初次加载的时候会为空，所以会调用loadMap()

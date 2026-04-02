@@ -47,6 +47,16 @@ const router = createRouter({
 // from：当前路由对象
 // next：一个函数，用来决定是否继续导航
 // 这个函数的作用是：在每次路由切换时，检查用户是否登录，如果未登录，则跳转到登录页，如果已登录，则继续导航
+/**
+ * 全局前置守卫（MVP 版“会话”访问控制）。
+ *
+ * @param to - 即将进入的路由对象（目标路由）
+ * @param from - 当前正要离开的路由对象（来源路由）
+ * @param next - 导航控制函数：调用 `next()` 继续；或 `next({ name: ... })` 重定向
+ * @returns void（通过 next 控制流程）
+ *
+ * @sideEffects 可能触发重定向到 `login` / `home`
+ */
 router.beforeEach((to, from, next) => {
   // 获取用户状态管理器
   const userStore = useUserStore();

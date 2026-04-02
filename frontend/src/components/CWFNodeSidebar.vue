@@ -6,10 +6,23 @@ import { X, BookOpen, ArrowRight, Lightbulb, Sparkles, Target, Zap } from 'lucid
 const mapStore = useMapStore();
 const node = computed(() => mapStore.selectedNode);
 
-function handleClose() {
+/**
+ * 关闭节点详情弹窗。
+ *
+ * @returns void
+ * @sideEffects 会调用 `mapStore.selectNode(null)` 清空选中节点，导致弹窗消失
+ */
+function handleClose(): void {
   mapStore.selectNode(null);
 }
 
+/**
+ * 前置知识（依赖节点）列表。
+ *
+ * 当当前节点存在且地图已加载时，把 `node.dependencies` 映射为具体节点对象。
+ *
+ * @returns 前置节点数组（不包含 null）
+ */
 const getPrerequisites = computed(() => {
   if (!node.value || !mapStore.frameMap) return [];
   return node.value.dependencies
@@ -28,7 +41,13 @@ const deepDive = {
   learningPath: ['基础概念', '核心架构', '性能调优', '工程实践']
 };
 
-function handleSparkAI() {
+/**
+ * 点击“Spark AI 深度解读”按钮（当前为 mock 行为）。
+ *
+ * @returns void
+ * @sideEffects 会弹出浏览器 alert
+ */
+function handleSparkAI(): void {
   alert(`Spark AI: 正在生成关于 "${node.value?.label}" 的深度工业应用分析...`);
 }
 </script>

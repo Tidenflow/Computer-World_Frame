@@ -10,7 +10,15 @@ const progressStore = useProgressStore();
 const router = useRouter();
 
 // 这里就是处理退出登录的逻辑
-function handleLogout() {
+/**
+ * 退出登录。
+ *
+ * @returns void
+ * @sideEffects
+ * - 调用 `userStore.logout()`（清空 localStorage 中会话信息）
+ * - 导航跳转到 `/auth/login`
+ */
+function handleLogout(): void {
   userStore.logout();   // 退出登录
   router.push('/auth/login');   // 跳转到登录页
 }
