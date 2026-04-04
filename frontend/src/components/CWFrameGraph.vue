@@ -152,10 +152,7 @@ const links = computed(() => {
 
       return {
         key: link.key,
-        x1: source.x,
-        y1: source.y,
-        x2: target.x,
-        y2: target.y,
+        path: buildLinkPath(source.x, source.y, target.x, target.y),
         variant
       };
     })
@@ -212,6 +209,15 @@ function handleWheel(event: WheelEvent): void {
   viewport.scale = nextScale;
   viewport.translateX = pointer.x - worldX * nextScale;
   viewport.translateY = pointer.y - worldY * nextScale;
+}
+
+function buildLinkPath(x1: number, y1: number, x2: number, y2: number): string {
+  const deltaX = x2 - x1;
+  const controlOffsetX = Math.max(Math.abs(deltaX) * 0.45, 40);
+  const controlX1 = x1 + controlOffsetX;
+  const controlX2 = x2 - controlOffsetX;
+
+  return `M ${x1} ${y1} C ${controlX1} ${y1}, ${controlX2} ${y2}, ${x2} ${y2}`;
 }
 
 function getDensityAdjustment(densityScore: number): number {
@@ -319,14 +325,12 @@ watch(
 
       <g class="graph-transform-layer" :transform="graphTransform">
         <g class="layer-links">
-          <line
+          <path
             v-for="link in links"
             :key="link.key"
-            :x1="link.x1"
-            :y1="link.y1"
-            :x2="link.x2"
-            :y2="link.y2"
+            :d="link.path"
             :class="['link-line', link.variant]"
+            fill="none"
           />
         </g>
 

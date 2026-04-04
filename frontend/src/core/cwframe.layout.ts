@@ -25,6 +25,7 @@ interface LayoutOptions {
   paddingX?: number;
   paddingY?: number;
   siblingGap?: number;
+  treeOffsetXStep?: number;
 }
 
 interface TreeProjectionNode {
@@ -46,6 +47,7 @@ const DEFAULT_HEIGHT = 840;
 const DEFAULT_PADDING_X = 150;
 const DEFAULT_PADDING_Y = 96;
 const DEFAULT_SIBLING_GAP = 152;
+const DEFAULT_TREE_OFFSET_X_STEP = 42;
 
 export function layoutGraphTree(
   nodes: CWFrameNode[],
@@ -67,6 +69,7 @@ export function layoutGraphTree(
   const paddingX = options.paddingX ?? DEFAULT_PADDING_X;
   const paddingY = options.paddingY ?? DEFAULT_PADDING_Y;
   const siblingGap = options.siblingGap ?? DEFAULT_SIBLING_GAP;
+  const treeOffsetXStep = options.treeOffsetXStep ?? DEFAULT_TREE_OFFSET_X_STEP;
 
   const nodeMap = new Map(visibleNodes.map(node => [node.id, node]));
   const childrenMap = buildVisibleChildrenMap(visibleNodes, nodeMap);
@@ -158,8 +161,52 @@ export function layoutGraphTree(
     });
   };
 
-  rootBands.forEach(({ root, topY, bottomY }) => {
-    assignCoordinates(root, topY, bottomY);
+  rootBands.forEach(({ root, topY, bottomY }, rootIndex) => {
+    const direction = rootIndex % 2 === 0 ? -1 : 1;
+    const magnitude = Math.ceil(rootIndex / 2);
+    const treeOffsetX = direction * magnitude * treeOffsetXStep;
+
+    const assignCoordinatesWithOffset = (
+      treeNode: TreeProjectionNode,
+      branchTopY: number,
+      branchBottomY: number
+    ): void => {
+      const centerY = (branchTopY + branchBottomY) / 2;
+      const { node } = treeNode;
+
+      instances.push({
+        ...node,
+        instanceKey: treeNode.instanceKey,
+        sourceNodeId: node.id,
+        parentInstanceKey: treeNode.parentInstanceKey,
+        branchPath: treeNode.branchPath,
+        depth: treeNode.depth,
+        x: paddingX + xStep * treeNode.depth + treeOffsetX,
+        y: centerY
+      });
+
+      if (treeNode.parentInstanceKey) {
+        links.push({
+          key: `${treeNode.parentInstanceKey}->${treeNode.instanceKey}`,
+          sourceInstanceKey: treeNode.parentInstanceKey,
+          targetInstanceKey: treeNode.instanceKey,
+          sourceNodeId: treeNode.branchPath[treeNode.branchPath.length - 2] ?? node.id,
+          targetNodeId: node.id
+        });
+      }
+
+      if (treeNode.children.length === 0) return;
+
+      let cursor = branchTopY;
+      treeNode.children.forEach(child => {
+        const childWeight = leafWeights.get(child.instanceKey) ?? 1;
+        const childHeight = childWeight * siblingGap;
+        assignCoordinatesWithOffset(child, cursor, cursor + childHeight);
+        cursor += childHeight;
+      });
+    };
+
+    assignCoordinatesWithOffset(root, topY, bottomY);
   });
 
   return { instances, links };
