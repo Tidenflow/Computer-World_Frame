@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表
+model User {
+  id           Int            @id @default(autoincrement())
+  username     String         @unique @db.VarChar(50)
+  passwordHash String         @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  progress     UserProgress[]
+
+  @@map("users")
+  @@index([username])
+}
+
+// 知识节点表
+model Node {
+  id           Int                @id @default(autoincrement())
+  label        String             @db.VarChar(100)
+  description  String?            @db.Text
+  category     String?            @db.VarChar(50)
+  weight       Int                @default(5)
+  tier         Int                @default(1)
+  createdAt    DateTime           @default(now()) @map("created_at")
+  dependencies NodeDependency[]   @relation("NodeDependencies")
+  dependents   NodeDependency[]   @relation("DependentNodes")
+  progress     UserProgress[]
+
+  @@map("nodes")
+  @@index([category])
+  @@index([weight])
+}
+
+// 节点依赖关系表
+model NodeDependency {
+  nodeId          Int  @map("node_id")
+  dependsOnNodeId Int  @map("depends_on_node_id")
+  node            Node @relation("NodeDependencies", fields: [nodeId], references: [id], onDelete: Cascade)
+  dependsOnNode   Node @relation("DependentNodes", fields: [dependsOnNodeId], references: [id], onDelete: Cascade)
+
+  @@id([nodeId, dependsOnNodeId])
+  @@map("node_dependencies")
+}
+
+// 用户进度表
+model UserProgress {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  nodeId      Int      @map("node_id")
+  unlockedAt  DateTime @default(now()) @map("unlocked_at")
+  matchedTerm String?  @map("matched_term") @db.VarChar(100)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  node        Node     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nodeId], name: "uk_user_node")
+  @@map("user_progress")
+  @@index([userId])
+  @@index([unlockedAt])
+}

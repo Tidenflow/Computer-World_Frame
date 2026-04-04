@@ -7,6 +7,13 @@ import { computed } from 'vue';
 const progressStore = useProgressStore();
 const mapStore = useMapStore();
 
+/**
+ * 点亮历史条目列表（按时间倒序）。
+ *
+ * 从 `progress.unlockedNodes` 读取节点解锁记录，并通过 `mapStore.frameMap` 反查节点名称/分类。
+ *
+ * @returns 历史条目数组，每一项包含：id、name、time、category、matchedTerm
+ */
 const historyEntries = computed(() => {
   if (!mapStore.frameMap) return [];
   
@@ -24,17 +31,40 @@ const historyEntries = computed(() => {
     .sort((a, b) => b.time - a.time);
 });
 
+/**
+ * 清空本地进度与历史记录。
+ *
+ * 行为：
+ * - 弹出确认框
+ * - 若确认则调用 `progressStore.resetLocalProgress()`（该函数会同步到服务端）
+ *
+ * @returns Promise<void>
+ * @sideEffects 会清空本地/服务端的 `unlockedNodes` 并导致 UI 状态变化
+ */
 async function handleClear() {
   if (confirm('确定要重置本地进度并清空历史记录吗？此操作将同步至云端。')) {
     await progressStore.resetLocalProgress();
   }
 }
 
-function selectNode(id: string) {
+/**
+ * 点击某条历史记录后，选中对应节点并打开详情。
+ *
+ * @param id - 历史条目中的节点 id（当前以字符串传入，来自 v-for 的 entry.id）
+ * @returns void
+ * @sideEffects 会调用 `mapStore.selectNode()` 修改选中节点状态
+ */
+function selectNode(id: string): void {
   mapStore.selectNode(parseInt(id));
 }
 
-function getTimeText(timestamp: number) {
+/**
+ * 把时间戳转换为人类可读的相对时间文本。
+ *
+ * @param timestamp - 毫秒级时间戳（与 `progress.unlockedAt=Date.now()` 对齐）
+ * @returns 相对时间字符串，如：`刚刚` / `xx分钟前` / `xx小时前` / 日期字符串
+ */
+function getTimeText(timestamp: number): string {
   const diff = Date.now() - timestamp;
   if (diff < 60000) return '刚刚';
   if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;

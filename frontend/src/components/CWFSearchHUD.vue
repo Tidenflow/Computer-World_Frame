@@ -17,7 +17,21 @@ const exampleTerms = [
   '神经网络', 'React', 'Linux', '数据库'
 ];
 
-function handleUnlock() {
+/**
+ * 尝试将输入框内容匹配到节点并解锁。
+ *
+ * 流程：
+ * - 将输入拆分为多个术语（支持逗号/空格）
+ * - 对每个术语尝试匹配节点并调用 `progressStore.unlockNode`
+ * - 将匹配结果写入 `result` 作为 toast 展示
+ *
+ * @returns void
+ *
+ * @sideEffects
+ * - 可能触发进度更新（包含网络同步）
+ * - 会清空 inputValue、关闭建议面板，并设置/清理 result
+ */
+function handleUnlock(): void {
   if (!mapStore.frameMap || !inputValue.value.trim()) return;
 
   const terms = extractTerms(inputValue.value);
@@ -47,12 +61,25 @@ function handleUnlock() {
   }
 }
 
-function selectSuggestion(s: string) {
+/**
+ * 选择一个推荐术语：写入输入框并立即触发解锁逻辑。
+ *
+ * @param s - 推荐术语文本
+ * @returns void
+ */
+function selectSuggestion(s: string): void {
   inputValue.value = s;
   handleUnlock();
 }
 
-function clearResult() {
+/**
+ * 延迟清除匹配结果 toast。
+ *
+ * @returns void
+ *
+ * @sideEffects 4 秒后会将 `result.value` 置为 null
+ */
+function clearResult(): void {
   setTimeout(() => {
     result.value = null;
   }, 4000);

@@ -1,28 +1,23 @@
 import type { ApiResponse, CWFrameProgress } from '@shared/contract';
 import { progressRepo } from '../repositories/progress.repo';
 import { userRepo } from '../repositories/user.repo';
+import { prisma } from '../lib/prisma';
 
-// 校验用户 ID 是否合法（必须是正整数）
 function isValidUserId(userId: number): boolean {
   return Number.isInteger(userId) && userId > 0;
 }
 
-// 校验解锁节点是否是合法对象
-function isValidUnlockedNodes(
-  unlockedNodes: unknown
-): unlockedNodes is CWFrameProgress['unlockedNodes'] {
+function isValidUnlockedNodes(unlockedNodes: unknown): unlockedNodes is CWFrameProgress['unlockedNodes'] {
   return typeof unlockedNodes === 'object' && unlockedNodes !== null && !Array.isArray(unlockedNodes);
 }
 
-// 核心类 ：ProgressService 
 export class ProgressService {
-  // 获取用户的解锁进度
   async getProgress(userId: number): Promise<ApiResponse<CWFrameProgress>> {
     if (!isValidUserId(userId)) {
       return {
         success: false,
         data: null,
-        error: { code: 'VALIDATION_ERROR', message: 'invalid userId' },
+        error: { code: 'VALIDATION_ERROR', message: 'invalid userId' }
       };
     }
 
@@ -31,7 +26,7 @@ export class ProgressService {
       return {
         success: false,
         data: null,
-        error: { code: 'USER_NOT_FOUND', message: 'user not found' },
+        error: { code: 'USER_NOT_FOUND', message: 'user not found' }
       };
     }
 
@@ -40,16 +35,53 @@ export class ProgressService {
     return { success: true, data, message: 'ok' };
   }
 
-  // 更新用户的解锁节点进度
-  async updateProgress(
-    userId: number,
-    unlockedNodes: unknown
-  ): Promise<ApiResponse<CWFrameProgress>> {
+  async unlockNode(userId: number, nodeId: number, matchedTerm?: string): Promise<ApiResponse<{ nodeId: number; unlockedAt: number }>> {
+    if (!Number.isInteger(nodeId) || nodeId <= 0) {
+      return {
+        success: false,
+        data: null,
+        error: { code: 'VALIDATION_ERROR', message: 'Invalid node ID' }
+      };
+    }
+
+    const node = await prisma.node.findUnique({ where: { id: nodeId } });
+    if (!node) {
+      return {
+        success: false,
+        data: null,
+        error: { code: 'NOT_FOUND', message: 'Node not found' }
+      };
+    }
+
+    const existing = await prisma.userProgress.findUnique({
+      where: { uk_user_node: { userId, nodeId } }
+    });
+
+    if (existing) {
+      return {
+        success: true,
+        data: { nodeId, unlockedAt: existing.unlockedAt.getTime() },
+        message: 'Node already unlocked'
+      };
+    }
+
+    const record = await prisma.userProgress.create({
+      data: { userId, nodeId, matchedTerm }
+    });
+
+    return {
+      success: true,
+      data: { nodeId, unlockedAt: record.unlockedAt.getTime() },
+      message: 'Node unlocked'
+    };
+  }
+
+  async updateProgress(userId: number, unlockedNodes: unknown): Promise<ApiResponse<CWFrameProgress>> {
     if (!isValidUserId(userId)) {
       return {
         success: false,
         data: null,
-        error: { code: 'VALIDATION_ERROR', message: 'invalid userId' },
+        error: { code: 'VALIDATION_ERROR', message: 'invalid userId' }
       };
     }
 
@@ -58,7 +90,7 @@ export class ProgressService {
       return {
         success: false,
         data: null,
-        error: { code: 'USER_NOT_FOUND', message: 'user not found' },
+        error: { code: 'USER_NOT_FOUND', message: 'user not found' }
       };
     }
 
@@ -66,12 +98,10 @@ export class ProgressService {
       return {
         success: false,
         data: null,
-        error: { code: 'VALIDATION_ERROR', message: 'invalid unlockedNodes' },
+        error: { code: 'VALIDATION_ERROR', message: 'invalid unlockedNodes' }
       };
     }
 
-    // 下面这个{ userId, unlockedNodes }   就是 CWFrameProgress 类型
-    // 下面这个 unlockedNodes 是一个对象，键是节点id，值是解锁时间戳
     const saved = await progressRepo.upsertByUserId({ userId, unlockedNodes });
     return { success: true, data: saved, message: 'updated' };
   }

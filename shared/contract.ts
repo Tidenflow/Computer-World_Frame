@@ -38,7 +38,9 @@ export type ApiErrorCode =
   | 'USER_NOT_FOUND'
   | 'PROGRESS_NOT_FOUND'
   | 'NOT_FOUND'
-  | 'SERVER_ERROR';
+  | 'SERVER_ERROR'
+  | 'UNAUTHORIZED'
+  | 'INVALID_TOKEN';
 
 // 规定error格式
 export interface ApiError {
@@ -62,9 +64,10 @@ export interface LoginRequest {
     password : string;
 }
 //凭证载体
-export interface AuthData { 
-    userId: number; 
-    username: string; 
+export interface AuthData {
+    userId: number;
+    username: string;
+    token?: string;
 }
 
 // ===== Map API =====

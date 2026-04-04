@@ -18,4 +18,8 @@ progressRouter.put(
   })
 );
 
+progressRouter.post('/unlock', asyncHandler(async (req, res) => {
+  await progressController.unlockNode(req, res);
+}));
+
 export default progressRouter;

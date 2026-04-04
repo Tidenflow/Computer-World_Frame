@@ -13,7 +13,16 @@ const confirmPassword = ref('');
 const error = ref('');
 const loading = ref(false);
 
-async function handleRegister() {
+/**
+ * 注册表单提交处理函数。
+ *
+ * @returns Promise<void>
+ * @sideEffects
+ * - 调用 `userStore.register`（会发起后端请求并写入 localStorage）
+ * - 注册成功后通过 `router.push('/')` 跳转（当前实现与 store 行为对齐：注册会直接视为登录）
+ * - 失败后写入 `error` 以供 UI 展示
+ */
+async function handleRegister(): Promise<void> {
   if (!username.value || !password.value) return;
   if (password.value !== confirmPassword.value) {
     error.value = '两次输入的密码不一致';
@@ -25,7 +34,7 @@ async function handleRegister() {
   
   try {
     await userStore.register({ username: username.value, password: password.value });
-    router.push('/');
+    router.push('/');   //当前注册之后状态是登录状态，所以会跳转到首页,这里改成跳转到登录页也没用
   } catch (err: any) {
     error.value = err.message || '注册失败，用户名可能已存在';
   } finally {
