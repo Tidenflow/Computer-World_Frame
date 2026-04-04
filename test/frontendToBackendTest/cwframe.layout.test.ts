@@ -49,6 +49,22 @@ describe('cwframe.layout tree projection', () => {
     expect(new Set(sharedInstances.map(instance => instance.parentInstanceKey)).size).toBe(2);
   });
 
+  it('does not duplicate an entire descendant subtree for every shared parent branch', () => {
+    const nodes = [
+      makeNode(1, 'root-a', []),
+      makeNode(2, 'root-b', []),
+      makeNode(3, 'shared-node', [1, 2]),
+      makeNode(4, 'deep-child', [3]),
+      makeNode(5, 'deep-leaf', [4])
+    ];
+
+    const { instances } = layoutGraphTree(nodes);
+
+    expect(instances.filter(instance => instance.sourceNodeId === 3)).toHaveLength(2);
+    expect(instances.filter(instance => instance.sourceNodeId === 4)).toHaveLength(1);
+    expect(instances.filter(instance => instance.sourceNodeId === 5)).toHaveLength(1);
+  });
+
   it('treats visible nodes with hidden dependencies as local roots', () => {
     const nodes = [
       makeNode(1, 'hidden-root', []),

@@ -74,6 +74,7 @@ export function layoutGraphTree(
   const roots = sortedRoots.length > 0 ? sortedRoots : [...visibleNodes].sort(compareNodes);
 
   let instanceCounter = 0;
+  const expandedSourceNodeIds = new Set<number>();
   const createTreeNode = (
     node: CWFrameNode,
     depth: number,
@@ -86,10 +87,17 @@ export function layoutGraphTree(
     const nextPathSet = new Set(pathSet);
     nextPathSet.add(node.id);
 
-    const children = (childrenMap.get(node.id) ?? [])
-      .filter(child => !nextPathSet.has(child.id))
-      .sort(compareNodes)
-      .map(child => createTreeNode(child, depth + 1, instanceKey, nextBranchPath, nextPathSet));
+    const shouldExpandChildren = !expandedSourceNodeIds.has(node.id);
+    if (shouldExpandChildren) {
+      expandedSourceNodeIds.add(node.id);
+    }
+
+    const children = shouldExpandChildren
+      ? (childrenMap.get(node.id) ?? [])
+          .filter(child => !nextPathSet.has(child.id))
+          .sort(compareNodes)
+          .map(child => createTreeNode(child, depth + 1, instanceKey, nextBranchPath, nextPathSet))
+      : [];
 
     return {
       node,
