@@ -2,6 +2,7 @@
 node_modules/
 dist/
 dist-ssr/
+.vite/
 *.local
 
 # --- 日志与缓存 ---
