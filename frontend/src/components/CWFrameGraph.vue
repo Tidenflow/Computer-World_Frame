@@ -8,7 +8,7 @@ const VIEWBOX_WIDTH = 1200;
 const VIEWBOX_HEIGHT = 840;
 const VIEWBOX_CENTER_X = VIEWBOX_WIDTH / 2;
 const VIEWBOX_CENTER_Y = VIEWBOX_HEIGHT / 2;
-const MIN_ZOOM = 0.55;
+const MIN_ZOOM = 0.42;
 const MAX_ZOOM = 2.1;
 
 const mapStore = useMapStore();
@@ -55,7 +55,7 @@ const renderableNodeIds = computed(
 );
 
 function getNodeRadius(weight: number): number {
-  return 16 + (weight - 1) * 1.6;
+  return 11 + (weight - 1) * 1.15;
 }
 
 function clampZoom(value: number): number {
@@ -96,7 +96,7 @@ const visibleNodes = computed(() => {
     if (node.visibility === 'Hidden') return false;
 
     if (node.visibility === 'Outlined') {
-      return viewport.scale >= 0.82;
+      return true;
     }
 
     return node.weight >= minWeight || viewport.scale >= 1.02 || recentNodeIds.value.has(node.id);
@@ -353,13 +353,13 @@ watch(
             />
 
             <circle
-              v-else
+              v-if="node.visibility === 'Outlined'"
               :cx="node.x"
               :cy="node.y"
-              :r="node.radius - 3"
-              fill="transparent"
-              stroke="rgba(148, 163, 184, 0.42)"
-              stroke-width="1.6"
+              :r="Math.max(node.radius - 4, 8)"
+              fill="rgba(255,255,255,0.02)"
+              stroke="rgba(226, 232, 240, 0.42)"
+              stroke-width="1.5"
               class="outline-circle"
             />
 
@@ -379,6 +379,17 @@ watch(
               text-anchor="middle"
               class="node-label"
               fill="#f8fafc"
+            >
+              {{ node.label }}
+            </text>
+
+            <text
+              v-if="node.visibility === 'Outlined' && viewport.scale >= 0.92"
+              :x="node.x"
+              :y="node.y + node.radius + 22"
+              text-anchor="middle"
+              class="node-label node-label-outlined"
+              fill="rgba(226, 232, 240, 0.76)"
             >
               {{ node.label }}
             </text>
@@ -459,6 +470,10 @@ watch(
   letter-spacing: 0.05em;
 }
 
+.node-label-outlined {
+  font-weight: 700;
+}
+
 .breathe-halo {
   animation: svg-breathe 2.5s infinite ease-in-out;
   transform-box: fill-box;
@@ -502,7 +517,7 @@ watch(
 }
 
 .outline-circle {
-  opacity: 0.88;
+  opacity: 0.9;
 }
 
 .cat-dot {
