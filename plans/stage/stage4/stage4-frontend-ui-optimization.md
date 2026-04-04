@@ -1,551 +1,536 @@
-# Stage 4: 前端 UI 优化
+# 第四阶段：前端 Graph UI 优化方案
 
-## 目标
-实现迷雾探索机制、节点权重可视化、缩放交互、大规模节点性能优化。
+## 1. 文档定位
 
----
+这不是一份开放式讨论文档，而是一份可直接对照执行的 Stage 4 优化方案。
 
-## 一、核心功能设计
+使用方式如下：
 
-### 1.1 迷雾探索机制
+- 开发前先看“范围”和“执行顺序”
+- 编码时只做文档内明确包含的内容
+- 遇到想扩展的点，先回看“不在范围内”
+- 开发完成后按“成功标准”验收
 
-**视觉效果：**
-- **初始状态**：Graph 区域全黑，所有节点隐藏
-- **点亮节点后**：
-  - 节点完全显示（高亮、可交互）
-  - 连线半亮（50% 透明度，渐变效果）
-  - 相邻未点亮节点保持隐藏（仅显示模糊轮廓）
+本阶段只聚焦一件事：
 
-**实现原理：**
-```typescript
-// 节点状态
-enum NodeState {
-  HIDDEN = 'hidden',       // 完全隐藏
-  OUTLINED = 'outlined',   // 轮廓可见（相邻已点亮节点）
-  UNLOCKED = 'unlocked'    // 已点亮
-}
-
-// 连线状态
-enum EdgeState {
-  HIDDEN = 'hidden',       // 完全隐藏
-  HALF_LIT = 'half-lit',   // 半亮（一端点亮）
-  FULL_LIT = 'full-lit'    // 全亮（两端都点亮）
-}
-```
-
-### 1.2 节点权重可视化
-
-**节点大小映射：**
-```typescript
-// weight: 1-10
-// size: 20px - 80px
-function getNodeSize(weight: number): number {
-  return 20 + (weight - 1) * 6.67; // 线性映射
-}
-```
-
-**LOD（Level of Detail）：**
-```typescript
-// 根据缩放级别显示不同权重的节点
-function shouldShowNode(weight: number, zoomLevel: number): boolean {
-  if (zoomLevel < 0.5) return weight >= 8;      // 缩小：只显示核心节点
-  if (zoomLevel < 1.0) return weight >= 5;      // 中等：显示重要节点
-  return true;                                   // 放大：显示所有节点
-}
-```
+> 将 Graph 区域从“静态全图预览”改造成“逐步揭示的认知地图”。
 
 ---
 
-## 二、技术方案选择
+## 2. 本阶段目标
 
-### 2.1 方案对比
+当前前端整体 UI 基本可用，但 Graph 区域仍然更接近测试态可视化。
 
-| 方案 | 优点 | 缺点 | 适用场景 |
-|------|------|------|----------|
-| @vue-flow | Vue 3 原生、易上手 | 性能一般（<500节点） | 快速原型 |
-| Cytoscape.js | 性能强、功能丰富 | 学习曲线陡 | 大规模图谱 |
-| D3.js + Canvas | 完全自定义、性能好 | 开发成本高 | 特殊需求 |
+本阶段优化后，Graph 应该具备以下体验：
 
-**推荐方案：**
-- **阶段 1**：先用 @vue-flow 实现核心功能
-- **阶段 2**：如果性能不足，迁移到 Cytoscape.js
+- 进入时是黑场，而不是直接暴露全图
+- 只展示已解锁节点，以及它们的一阶相邻轮廓
+- 节点重要性可以通过 `weight` 被感知
+- 图谱支持缩放和平移，但缩放不能泄露隐藏知识
+- 用户能快速定位“最近一次输入点亮了什么”
+- 图谱整体更像认知地图，而不是数据看板
+
+一句话概括：
+
+> 图谱不是先教学，而是先映射。
 
 ---
 
-## 三、实现步骤
+## 3. 范围控制
 
-### 3.1 数据准备
+### 3.1 包含内容
 
-#### 更新节点数据
+- Graph 黑场起始状态
+- 节点逐步揭示规则
+- 一阶相邻轮廓节点
+- 节点 `weight` 支持
+- 基于缩放的显示密度控制
+- 最近点亮节点强调
+- 最近一次输入结果面板
+- 点击结果项后的聚焦与自动缩放
 
-更新 `backend/src/data/map.default.json`，添加 weight 和 tier：
+### 3.2 不包含内容
 
-```json
-{
-  "version": "0.2",
-  "nodes": [
-    {
-      "id": 1,
-      "label": "计算机系统",
-      "description": "计算机系统概述",
-      "category": "基础",
-      "dependencies": [],
-      "weight": 10,
-      "tier": 1
-    },
-    {
-      "id": 2,
-      "label": "CPU",
-      "description": "中央处理器",
-      "category": "硬件",
-      "dependencies": [1],
-      "weight": 9,
-      "tier": 2
-    }
-  ]
-}
-```
+- Profile UI 重设计
+- 登录 / 注册 UI 重设计
+- Graph 之外的大布局重做
+- 从一开始直接展示全图
+- 自动揭示二阶及更深层邻接节点
+- 轮廓节点显示文字标签
+- 图谱教学模式
+- 节点聚类
+- viewport culling 优化
+- 1000+ 节点极限性能工程
+- 移动端专项交互重设计
 
-#### 更新类型定义
+原则：
 
-确保 `shared/contract.ts` 包含：
+> 只做直接服务于本阶段 Graph 体验升级的改动，不做大幅度重构。
 
-```typescript
+---
+
+## 4. 核心设计原则
+
+### 4.1 黑场优先
+
+- 用户第一次进入 Graph 时应看到黑场
+- 在没有有效解锁之前，不主动暴露结构
+
+### 4.2 映射优先
+
+- 图谱响应用户已经输入和点亮的认知内容
+- 图谱不是课程大纲，不承担“先把全知识倒出来”的职责
+
+### 4.3 局部可读性优先
+
+- 优先保证局部结构清晰
+- 不追求一次性展示完整全图
+
+### 4.4 缩放控制细节，不控制知识泄露
+
+- 缩放只能增加已允许可见区域的细节
+- 缩放不能让 `HIDDEN` 节点出现
+
+### 4.5 最近变化必须可快速定位
+
+- 用户必须能知道“刚刚点亮了什么”
+- 用户必须能知道“它在图上的哪里”
+
+---
+
+## 5. 数据与契约基线
+
+本阶段只收紧最必要的数据基线，不做额外模型扩张。
+
+`CWFrameNode` 以如下结构为基准：
+
+```ts
 export interface CWFrameNode {
   id: number;
   label: string;
   description: string;
   category: string;
   dependencies: number[];
-  weight: number;    // 1-10
-  tier?: number;     // 层级
+  weight: number;
+  tier?: number;
 }
 ```
+
+约束如下：
+
+- `weight` 是必须字段，用于视觉层级、缩放密度和聚焦算法
+- `tier` 可保留可选，不作为本阶段核心
+- `contract` 只承载稳定领域数据
+- 不把前端临时渲染状态放入共享契约
+
+以下字段不应加入共享 contract：
+
+- `visibility`
+- `recentlyUnlocked`
+- `focused`
+- `outlined`
+- `x`
+- `y`
+- `zoomLevel`
 
 ---
 
-## 四、前端实现
+## 6. 最终交互结论
 
-### 4.1 创建节点状态管理
+### 6.1 Graph 初始状态
 
-创建 `frontend/src/core/cwframe.visibility.ts`：
+- Graph 背景保持黑场
+- 不显示普通节点
+- 不显示完整图谱骨架
+- 可以有极弱环境背景效果，但不能出现有意义的节点信息
 
-```typescript
-import type { CWFrameNode, CWFrameProgress } from '@shared/contract';
+### 6.2 节点揭示规则
 
-export enum NodeVisibility {
-  HIDDEN = 'hidden',
-  OUTLINED = 'outlined',
-  UNLOCKED = 'unlocked'
-}
+当用户点亮节点后，Graph 只显示：
 
-export enum EdgeVisibility {
-  HIDDEN = 'hidden',
-  HALF_LIT = 'half-lit',
-  FULL_LIT = 'full-lit'
-}
+- 所有已解锁节点
+- 已解锁节点的一阶相邻轮廓节点
 
-/**
- * 计算节点可见性
- */
-export function getNodeVisibility(
-  node: CWFrameNode,
-  progress: CWFrameProgress,
-  allNodes: CWFrameNode[]
-): NodeVisibility {
-  // 已解锁
-  if (progress.unlockedNodes[node.id]) {
-    return NodeVisibility.UNLOCKED;
-  }
-  
-  // 检查是否有相邻节点已解锁
-  const hasUnlockedNeighbor = allNodes.some(n => {
-    const isNeighbor = 
-      n.dependencies.includes(node.id) || 
-      node.dependencies.includes(n.id);
-    return isNeighbor && progress.unlockedNodes[n.id];
-  });
-  
-  if (hasUnlockedNeighbor) {
-    return NodeVisibility.OUTLINED;
-  }
-  
-  return NodeVisibility.HIDDEN;
-}
+Graph 不显示：
 
-/**
- * 计算连线可见性
- */
-export function getEdgeVisibility(
-  fromNodeId: number,
-  toNodeId: number,
-  progress: CWFrameProgress
-): EdgeVisibility {
-  const fromUnlocked = !!progress.unlockedNodes[fromNodeId];
-  const toUnlocked = !!progress.unlockedNodes[toNodeId];
-  
-  if (fromUnlocked && toUnlocked) {
-    return EdgeVisibility.FULL_LIT;
-  }
-  
-  if (fromUnlocked || toUnlocked) {
-    return EdgeVisibility.HALF_LIT;
-  }
-  
-  return EdgeVisibility.HIDDEN;
-}
+- 二阶相邻节点
+- 无关未解锁节点
+- 完整图谱结构
 
-/**
- * 根据权重计算节点大小
- */
-export function getNodeSize(weight: number): number {
-  return 20 + (weight - 1) * 6.67;
-}
+### 6.3 轮廓节点规则
 
-/**
- * 根据缩放级别判断是否显示节点
- */
-export function shouldShowNode(weight: number, zoomLevel: number): boolean {
-  if (zoomLevel < 0.5) return weight >= 8;
-  if (zoomLevel < 1.0) return weight >= 5;
-  return true;
-}
-```
+轮廓节点必须保持极简：
 
-### 4.2 更新 CWFrameGraph 组件
+- 只显示轮廓或极弱 glow
+- 不显示文字标签
+- 不显示描述信息
+- 不显示完整填充色
 
-更新 `frontend/src/components/CWFrameGraph.vue`：
+目标：
 
-```vue
-<script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { VueFlow, useVueFlow } from '@vue-flow/core';
-import { Background } from '@vue-flow/background';
-import { Controls } from '@vue-flow/controls';
-import type { CWFrameNode } from '@shared/contract';
-import { useProgressStore } from '../store/progress.store';
-import { useMapStore } from '../store/map.store';
-import {
-  getNodeVisibility,
-  getEdgeVisibility,
-  getNodeSize,
-  shouldShowNode,
-  NodeVisibility,
-  EdgeVisibility
-} from '../core/cwframe.visibility';
+- 保持黑场感
+- 保持神秘感
+- 控制信息量
 
-const progressStore = useProgressStore();
-const mapStore = useMapStore();
-const { zoomLevel } = useVueFlow();
+### 6.4 节点视觉规则
 
-// 计算可见节点
-const visibleNodes = computed(() => {
-  return mapStore.nodes
-    .map(node => {
-      const visibility = getNodeVisibility(
-        node,
-        progressStore.progress,
-        mapStore.nodes
-      );
-      
-      // LOD 过滤
-      if (!shouldShowNode(node.weight, zoomLevel.value)) {
-        return null;
-      }
-      
-      return {
-        id: String(node.id),
-        type: 'custom',
-        position: { x: 0, y: 0 }, // 使用布局算法计算
-        data: {
-          node,
-          visibility,
-          size: getNodeSize(node.weight)
-        }
-      };
-    })
-    .filter(Boolean);
-});
+- 已解锁节点保留类别颜色
+- 节点大小受 `weight` 影响
+- 最近点亮节点不替换类别颜色
+- 最近点亮节点使用 halo / pulse / glow 等临时强调层
 
-// 计算可见连线
-const visibleEdges = computed(() => {
-  const edges = [];
-  
-  for (const node of mapStore.nodes) {
-    for (const depId of node.dependencies) {
-      const visibility = getEdgeVisibility(
-        depId,
-        node.id,
-        progressStore.progress
-      );
-      
-      if (visibility === EdgeVisibility.HIDDEN) continue;
-      
-      edges.push({
-        id: `${depId}-${node.id}`,
-        source: String(depId),
-        target: String(node.id),
-        type: 'custom',
-        data: { visibility }
-      });
-    }
-  }
-  
-  return edges;
-});
-</script>
+### 6.5 边的视觉规则
 
-<template>
-  <div class="cwframe-graph">
-    <VueFlow
-      :nodes="visibleNodes"
-      :edges="visibleEdges"
-      :default-zoom="1"
-      :min-zoom="0.1"
-      :max-zoom="4"
-    >
-      <Background pattern-color="#1a1a1a" :gap="16" />
-      <Controls />
-    </VueFlow>
-  </div>
-</template>
-
-<style scoped>
-.cwframe-graph {
-  width: 100%;
-  height: 100%;
-  background: #000;
-}
-</style>
-```
+- 已解锁节点之间的边可完整显示
+- 指向轮廓节点的边只做弱提示
+- 边始终服务于节点理解，不主导视觉注意力
 
 ---
 
-## 五、自定义节点组件
+## 7. 缩放与密度规则
 
-创建 `frontend/src/components/CustomNode.vue`：
+### 7.1 基本要求
 
-```vue
-<script setup lang="ts">
-import { computed } from 'vue';
-import { Handle, Position } from '@vue-flow/core';
-import { NodeVisibility } from '../core/cwframe.visibility';
+- Graph 必须支持缩放与平移
+- 缩放用于应对未来大规模节点场景
 
-const props = defineProps<{
-  data: {
-    node: any;
-    visibility: NodeVisibility;
-    size: number;
-  };
-}>();
+### 7.2 缩放的正确职责
 
-const nodeStyle = computed(() => {
-  const { visibility, size } = props.data;
-  
-  const baseStyle = {
-    width: `${size}px`,
-    height: `${size}px`,
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: `${size / 4}px`,
-    transition: 'all 0.3s ease'
-  };
-  
-  switch (visibility) {
-    case NodeVisibility.UNLOCKED:
-      return {
-        ...baseStyle,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        boxShadow: '0 0 20px rgba(102, 126, 234, 0.6)',
-        opacity: 1,
-        cursor: 'pointer'
-      };
-    
-    case NodeVisibility.OUTLINED:
-      return {
-        ...baseStyle,
-        background: 'transparent',
-        border: '2px dashed rgba(255, 255, 255, 0.3)',
-        opacity: 0.5,
-        cursor: 'not-allowed'
-      };
-    
-    case NodeVisibility.HIDDEN:
-    default:
-      return {
-        ...baseStyle,
-        opacity: 0,
-        pointerEvents: 'none'
-      };
-  }
-});
-</script>
+缩放应改变“已经揭示区域内部”的显示密度：
 
-<template>
-  <div :style="nodeStyle">
-    <Handle type="target" :position="Position.Top" />
-    <span v-if="data.visibility === NodeVisibility.UNLOCKED">
-      {{ data.node.label }}
-    </span>
-    <Handle type="source" :position="Position.Bottom" />
-  </div>
-</template>
-```
+- 远景只保留更重要的内容
+- 中景显示更多局部结构
+- 近景显示当前允许可见区域的完整细节
+
+### 7.3 硬边界
+
+- 缩放不能让 `HIDDEN` 节点可见
+- 缩放不能突破“黑场映射”原则
+- 缩放不能因为放得足够大，就泄露未知区域
+
+### 7.4 `weight` 的作用
+
+`weight` 影响：
+
+- 节点大小
+- 缩小时的保留优先级
+- 密集区域中的重要性感知
+- 聚焦时的轻微缩放修正
+
+示例理解：
+
+- `weight 8-10`：更核心的概念
+- `weight 5-7`：重要但非主导概念
+- `weight 1-4`：更局部、上下文型概念
 
 ---
 
-## 六、自定义连线组件
+## 8. 最近一次输入结果面板
 
-创建 `frontend/src/components/CustomEdge.vue`：
+左侧面板不再承担“多轮历史记录”职责。
 
-```vue
-<script setup lang="ts">
-import { computed } from 'vue';
-import { EdgeVisibility } from '../core/cwframe.visibility';
+它只服务于：
 
-const props = defineProps<{
-  data: {
-    visibility: EdgeVisibility;
-  };
-}>();
+> 最近一次输入到底点亮了什么，以及我如何快速定位它们。
 
-const edgeStyle = computed(() => {
-  switch (props.data.visibility) {
-    case EdgeVisibility.FULL_LIT:
-      return {
-        stroke: '#667eea',
-        strokeWidth: 2,
-        opacity: 1
-      };
-    
-    case EdgeVisibility.HALF_LIT:
-      return {
-        stroke: '#667eea',
-        strokeWidth: 2,
-        opacity: 0.5,
-        strokeDasharray: '5,5'
-      };
-    
-    case EdgeVisibility.HIDDEN:
-    default:
-      return {
-        opacity: 0
-      };
-  }
-});
-</script>
+### 8.1 面板规则
 
-<template>
-  <g>
-    <path
-      :d="path"
-      :style="edgeStyle"
-      fill="none"
-    />
-  </g>
-</template>
-```
+- 只显示最近一次输入所点亮的全部节点
+- 如果只点亮 1 个节点，就显示 1 个结果项
+- 如果一次点亮多个节点，就显示这一轮输入对应的结果集合
+- 每个结果项都可点击
+- 对应节点应与图中高亮状态同步
+
+### 8.2 严格空结果模式
+
+当最近一次输入没有点亮任何新节点时：
+
+- 不回退显示旧历史结果
+- 不展示推测性候选节点
+- 不复用上一次输入结果
+
+而是明确提示：
+
+- 本次输入没有点亮新的节点
+- 图谱未发生新的变化
 
 ---
 
-## 七、点亮动画
+## 9. 聚焦与自动缩放规则
 
-创建 `frontend/src/core/cwframe.animation.ts`：
+### 9.1 点击结果项后的聚焦方式
 
-```typescript
-/**
- * 节点点亮动画
- */
-export function animateNodeUnlock(nodeElement: HTMLElement): void {
-  // 添加动画类
-  nodeElement.classList.add('unlock-animation');
-  
-  // 动画结束后移除类
-  setTimeout(() => {
-    nodeElement.classList.remove('unlock-animation');
-  }, 600);
+当用户点击左侧某个结果项时：
+
+- Graph 直接居中到目标节点
+- 同时自动调整到合适的中近景缩放级别
+
+这不是模糊靠近，也不是全局 fit，而是地图定位式聚焦。
+
+### 9.2 单节点与多节点规则
+
+当最近一次输入只点亮 1 个新节点时：
+
+- 本轮输入完成后，可以自动居中到该节点
+- 自动切到默认中近景观察级别
+- 该节点进入 `RECENTLY_UNLOCKED` 强调状态
+
+当最近一次输入同时点亮多个新节点时：
+
+- 不自动逐个跳转
+- 不自动把多个节点强行 fit 到同一屏幕
+- 左侧结果面板承担定位入口
+- 用户点击哪个结果项，就居中并聚焦哪个节点
+
+### 9.3 自动缩放边界
+
+- 自动缩放只帮助用户看清已允许可见的内容
+- 自动缩放不能暴露 `HIDDEN` 节点
+- 自动缩放不能把不该出现的远处区域一起拉进视野
+
+### 9.4 推荐聚焦算法
+
+推荐方案：
+
+> 固定基准缩放 + 轻微自适应修正
+
+不建议：
+
+- 纯固定缩放
+- 强自适应整体 fit
+
+推荐公式：
+
+```ts
+targetZoom = clamp(
+  baseZoom + densityAdjustment + weightAdjustment,
+  minFocusZoom,
+  maxFocusZoom
+)
+```
+
+推荐初始参数：
+
+```ts
+const baseZoom = 1.0;
+const minFocusZoom = 0.85;
+const maxFocusZoom = 1.25;
+```
+
+### 9.5 局部密度计算
+
+局部密度只允许参考目标节点一阶范围内已经允许显示的内容。
+
+可纳入计算：
+
+- 已解锁邻居数
+- 轮廓邻居数
+- 当前可见边数
+- 目标节点自身 `weight`
+
+不允许纳入计算：
+
+- `HIDDEN` 节点
+- 二阶及更远隐藏结构
+- 全图范围或全图包围盒
+
+推荐分数：
+
+```ts
+densityScore =
+  unlockedNeighbors * 1.0 +
+  outlinedNeighbors * 0.45 +
+  visibleEdges * 0.25;
+```
+
+### 9.6 密度修正示例
+
+```ts
+function getDensityAdjustment(densityScore: number): number {
+  if (densityScore <= 2) return 0.12;
+  if (densityScore <= 5) return 0.04;
+  if (densityScore <= 8) return 0;
+  if (densityScore <= 12) return -0.08;
+  return -0.14;
 }
 ```
 
-添加 CSS 动画：
+语义：
 
-```css
-/* frontend/src/style.css */
-@keyframes unlock-pulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
-  }
-  50% {
-    transform: scale(1.2);
-    box-shadow: 0 0 20px 10px rgba(102, 126, 234, 0);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
-  }
-}
+- 周围很空，略微拉近
+- 周围适中，保持基准
+- 周围很密，略微拉远
 
-.unlock-animation {
-  animation: unlock-pulse 0.6s ease-out;
+### 9.7 `weight` 修正示例
+
+```ts
+function getWeightAdjustment(weight: number): number {
+  if (weight >= 8) return -0.05;
+  if (weight <= 3) return 0.03;
+  return 0;
 }
 ```
+
+语义：
+
+- 高权重节点略微拉远
+- 低权重节点略微拉近
+
+要求：
+
+- 修正必须克制
+- 不能压过基准缩放
+- 不能把视图拉成远景总览
 
 ---
 
-## 八、性能优化
+## 10. 推荐执行顺序
 
-### 8.1 虚拟化渲染
+本阶段按以下顺序推进，避免一上来改 UI 组件导致逻辑混乱。
 
-```typescript
-// 只渲染视口内的节点
-function getVisibleNodesInViewport(
-  nodes: CWFrameNode[],
-  viewport: { x: number; y: number; width: number; height: number }
-): CWFrameNode[] {
-  return nodes.filter(node => {
-    // 检查节点是否在视口内
-    return isInViewport(node.position, viewport);
-  });
-}
-```
+### 第一步：先收紧基础数据与状态边界
 
-### 8.2 节点聚类
+目标：
 
-```typescript
-// 缩小时将相近节点聚类显示
-function clusterNodes(
-  nodes: CWFrameNode[],
-  zoomLevel: number
-): CWFrameNode[] {
-  if (zoomLevel > 0.5) return nodes;
-  
-  // 实现聚类算法
-  // ...
-}
-```
+- 明确 `CWFrameNode.weight` 是稳定字段
+- 明确共享 contract 不承载 UI 状态
+- 准备好前端的可见性和聚焦状态模型
+
+产出：
+
+- 节点基础数据可稳定用于 Graph 渲染
+- UI 状态与领域数据边界清晰
+
+### 第二步：实现 Graph 的揭示规则
+
+目标：
+
+- 让 Graph 从黑场开始
+- 只显示已解锁节点
+- 只显示一阶轮廓邻居
+
+产出：
+
+- Graph 从“全图暴露”切换为“局部揭示”
+
+### 第三步：实现节点与边的视觉层级
+
+目标：
+
+- 保留类别色
+- 接入 `weight`
+- 区分已解锁节点、轮廓节点、最近点亮节点
+- 调整边的显示强弱
+
+产出：
+
+- 图谱形成清晰的视觉层次
+
+### 第四步：加入缩放与密度控制
+
+目标：
+
+- 接入 zoom / pan
+- 让缩放只影响已揭示区域内部细节
+- 在远中近景中形成合理密度变化
+
+产出：
+
+- 大图具备基础可读性
+
+### 第五步：替换左侧结果面板
+
+目标：
+
+- 从多轮历史面板切换为最近一次输入结果面板
+- 接入严格空结果模式
+
+产出：
+
+- 用户能立即知道“这次输入改了什么”
+
+### 第六步：实现点击结果项后的聚焦体验
+
+目标：
+
+- 点击条目后直接居中到对应节点
+- 自动切换到合适的中近景缩放级别
+- 多节点时不自动整体 fit
+
+产出：
+
+- 用户能在大图中快速定位刚刚点亮的节点
+
+### 第七步：整体验证与收口
+
+目标：
+
+- 验证黑场原则是否被破坏
+- 验证缩放是否泄露隐藏知识
+- 验证多节点点亮时交互是否稳定
+
+产出：
+
+- 一个不超范围、可继续演进的 Stage 4 Graph 版本
 
 ---
 
-## 九、任务清单
+## 11. 开发对照清单
 
-- [ ] 更新节点数据（添加 weight 和 tier）
-- [ ] 创建可见性管理模块
-- [ ] 更新 CWFrameGraph 组件
-- [ ] 创建自定义节点组件
-- [ ] 创建自定义连线组件
-- [ ] 实现点亮动画
-- [ ] 实现 LOD 系统
-- [ ] 性能优化（虚拟化渲染）
-- [ ] 测试大规模节点（1000+）
+### 11.1 必做项
+
+- [ ] 明确节点可见性状态模型
+- [ ] 确保 `weight` 作为稳定字段参与 Graph 逻辑
+- [ ] 重构 Graph 初始渲染为黑场状态
+- [ ] 实现“已解锁节点 + 一阶轮廓邻居”规则
+- [ ] 为已解锁节点保留类别色
+- [ ] 实现最近点亮节点的强调效果
+- [ ] 调整边渲染以匹配新的揭示规则
+- [ ] 接入 Graph 缩放与平移
+- [ ] 实现已揭示区域内部的缩放密度控制
+- [ ] 将当前历史面板替换为最近一次输入结果面板
+- [ ] 实现严格空结果状态
+- [ ] 实现结果项点击后的直接居中
+- [ ] 实现结果项点击后的中近景自动缩放
+- [ ] 使用“固定基准缩放 + 轻微自适应修正”作为聚焦策略
+
+### 11.2 开发中必须反复检查的边界
+
+- [ ] 没有任何路径会让 `HIDDEN` 节点因为缩放而出现
+- [ ] 多节点点亮时不会自动整体 fit
+- [ ] 轮廓节点不显示文字
+- [ ] 左侧面板只显示最近一次输入结果
+- [ ] 没有把 UI 临时状态塞进共享 contract
 
 ---
 
-## 十、下一步优化
+## 12. 成功标准
 
-- 添加节点搜索高亮
-- 实现学习路径推荐
-- 添加进度可视化图表
-- 移动端适配
+如果本阶段完成后满足以下条件，则视为成功：
+
+- 图谱以黑场开始，而不是一上来暴露完整地图
+- 用户输入后，图谱只显示已解锁节点及一阶轮廓邻居
+- 最近一次点亮的节点能被快速定位
+- 左侧面板能准确描述最近一次输入结果
+- 多节点点亮时，用户能通过面板逐个定位，而不是被系统强行全览
+- 缩放能提升局部可读性，但不会泄露隐藏知识
+- `weight` 建立了稳定的视觉层级
+- 最终效果更像认知地图，而不是测试数据看板
+
+---
+
+## 13. 一句话执行提醒
+
+编码时如果出现下面这种念头：
+
+- “顺手把整个 Sidebar 也重做了吧”
+- “顺手把全图 fit 和聚类也做了吧”
+- “顺手把更多 UI 状态塞进 contract 吧”
+
+就说明已经开始超出本阶段范围了。
+
+本阶段只需要持续回答一个问题：
+
+> 这个改动是不是直接服务于 Graph 的黑场映射、局部揭示、可定位、可缩放这四个目标？
+
+如果不是，就先不做。
