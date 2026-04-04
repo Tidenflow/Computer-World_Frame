@@ -4,13 +4,16 @@ import authRouter from './routers/auth.router';
 import progressRouter from './routers/progress.router';
 import mapRouter from './routers/map.router';
 import nodeRouter from './routers/node.router';
+import { config } from './config';
 import { notFoundMiddleware } from './middleware/not-found.middleware';
 import { errorMiddleware } from './middleware/error.middleware';
 import { authMiddleware } from './middleware/auth.middleware';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: config.app.corsOrigin === '*' ? true : config.app.corsOrigin,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
