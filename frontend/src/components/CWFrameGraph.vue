@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
-import { layoutGraphNodes } from '../core/cwframe.layout';
+import { layoutGraphTree } from '../core/cwframe.layout';
 import { useMapStore } from '../store/map.store';
 import { useProgressStore } from '../store/progress.store';
 
@@ -45,6 +45,14 @@ const getCategoryColor = (cat: string): string => categoryColors[cat] || categor
 
 const visibilityMap = computed(() => mapStore.visibilityMap);
 const recentNodeIds = computed(() => new Set(progressStore.recentlyUnlockedIds));
+const renderableNodeIds = computed(
+  () =>
+    new Set(
+      Object.entries(visibilityMap.value)
+        .filter(([, visibility]) => visibility !== 'Hidden')
+        .map(([nodeId]) => Number(nodeId))
+    )
+);
 
 function getNodeRadius(weight: number): number {
   return 16 + (weight - 1) * 1.6;
@@ -61,18 +69,25 @@ function getDensityThreshold(scale: number): number {
   return 1;
 }
 
-const nodesWithPositions = computed(() => {
-  if (!mapStore.frameMap) return [];
+const treeLayout = computed(() => {
+  if (!mapStore.frameMap) {
+    return { instances: [], links: [] };
+  }
 
-  return layoutGraphNodes(mapStore.frameMap.nodes, {
+  return layoutGraphTree(mapStore.frameMap.nodes, {
+    activeNodeIds: renderableNodeIds.value,
     width: VIEWBOX_WIDTH,
     height: VIEWBOX_HEIGHT
-  }).map(node => ({
+  });
+});
+
+const nodesWithPositions = computed(() =>
+  treeLayout.value.instances.map(node => ({
     ...node,
     radius: getNodeRadius(node.weight),
     visibility: visibilityMap.value[node.id] ?? 'Hidden'
-  }));
-});
+  }))
+);
 
 const visibleNodes = computed(() => {
   const minWeight = getDensityThreshold(viewport.scale);
@@ -88,32 +103,40 @@ const visibleNodes = computed(() => {
   });
 });
 
-const visibleNodeIds = computed(() => new Set(visibleNodes.value.map(node => node.id)));
+const visibleInstanceKeys = computed(
+  () => new Set(visibleNodes.value.map(node => node.instanceKey))
+);
 
 const links = computed(() => {
-  const nodeMap = new Map(nodesWithPositions.value.map(node => [node.id, node]));
+  const instanceMap = new Map(nodesWithPositions.value.map(node => [node.instanceKey, node]));
 
-  return nodesWithPositions.value.flatMap(node =>
-    node.dependencies.map(depId => {
-      const source = nodeMap.get(depId);
-      if (!source) return null;
-      if (!visibleNodeIds.value.has(node.id) || !visibleNodeIds.value.has(source.id)) return null;
+  return treeLayout.value.links
+    .map(link => {
+      const source = instanceMap.get(link.sourceInstanceKey);
+      const target = instanceMap.get(link.targetInstanceKey);
+      if (!source || !target) return null;
+      if (
+        !visibleInstanceKeys.value.has(source.instanceKey) ||
+        !visibleInstanceKeys.value.has(target.instanceKey)
+      ) {
+        return null;
+      }
 
       const variant =
-        source.visibility === 'Unlocked' && node.visibility === 'Unlocked'
+        source.visibility === 'Unlocked' && target.visibility === 'Unlocked'
           ? 'full'
           : 'partial';
 
       return {
-        key: `${depId}-${node.id}`,
+        key: link.key,
         x1: source.x,
         y1: source.y,
-        x2: node.x,
-        y2: node.y,
+        x2: target.x,
+        y2: target.y,
         variant
       };
-    }).filter((value): value is NonNullable<typeof value> => value !== null)
-  );
+    })
+    .filter((value): value is NonNullable<typeof value> => value !== null);
 });
 
 const graphTransform = computed(
@@ -215,7 +238,18 @@ function computeFocusZoom(nodeId: number): number {
 }
 
 function focusNodeInGraph(nodeId: number): void {
-  const targetNode = nodesWithPositions.value.find(node => node.id === nodeId);
+  const targetNode = [...nodesWithPositions.value]
+    .filter(node => node.id === nodeId)
+    .sort((left, right) => {
+      if (left.depth !== right.depth) return left.depth - right.depth;
+
+      const leftDistance =
+        Math.abs(left.x - VIEWBOX_CENTER_X) + Math.abs(left.y - VIEWBOX_CENTER_Y);
+      const rightDistance =
+        Math.abs(right.x - VIEWBOX_CENTER_X) + Math.abs(right.y - VIEWBOX_CENTER_Y);
+
+      return leftDistance - rightDistance;
+    })[0];
   if (!targetNode || targetNode.visibility === 'Hidden') return;
 
   const nextScale = computeFocusZoom(nodeId);
@@ -276,7 +310,7 @@ watch(
         <g class="layer-nodes">
           <g
             v-for="node in visibleNodes"
-            :key="node.id"
+            :key="node.instanceKey"
             class="node-unit"
             :class="[
               node.visibility.toLowerCase(),

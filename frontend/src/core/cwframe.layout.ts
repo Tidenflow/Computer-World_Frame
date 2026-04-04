@@ -1,41 +1,167 @@
 import type { CWFrameNode } from '@shared/contract';
 
-export interface GraphLayoutNode extends CWFrameNode {
+export interface GraphTreeInstance extends CWFrameNode {
+  instanceKey: string;
+  sourceNodeId: number;
+  parentInstanceKey: string | null;
+  branchPath: number[];
   depth: number;
   x: number;
   y: number;
 }
 
+export interface GraphTreeLink {
+  key: string;
+  sourceInstanceKey: string;
+  targetInstanceKey: string;
+  sourceNodeId: number;
+  targetNodeId: number;
+}
+
 interface LayoutOptions {
+  activeNodeIds?: Iterable<number>;
   width?: number;
   height?: number;
   paddingX?: number;
   paddingY?: number;
-  minVerticalGap?: number;
+  siblingGap?: number;
+}
+
+interface TreeProjectionNode {
+  node: CWFrameNode;
+  instanceKey: string;
+  parentInstanceKey: string | null;
+  branchPath: number[];
+  depth: number;
+  children: TreeProjectionNode[];
+}
+
+interface TreeLayoutResult {
+  instances: GraphTreeInstance[];
+  links: GraphTreeLink[];
 }
 
 const DEFAULT_WIDTH = 1200;
 const DEFAULT_HEIGHT = 840;
 const DEFAULT_PADDING_X = 150;
 const DEFAULT_PADDING_Y = 96;
-const DEFAULT_MIN_VERTICAL_GAP = 120;
+const DEFAULT_SIBLING_GAP = 114;
 
-export function layoutGraphNodes(
+export function layoutGraphTree(
   nodes: CWFrameNode[],
   options: LayoutOptions = {}
-): GraphLayoutNode[] {
-  if (nodes.length === 0) return [];
+): TreeLayoutResult {
+  const activeNodeIdSet = options.activeNodeIds
+    ? new Set(Array.from(options.activeNodeIds))
+    : null;
+  const visibleNodes = activeNodeIdSet
+    ? nodes.filter(node => activeNodeIdSet.has(node.id))
+    : nodes;
+
+  if (visibleNodes.length === 0) {
+    return { instances: [], links: [] };
+  }
 
   const width = options.width ?? DEFAULT_WIDTH;
   const height = options.height ?? DEFAULT_HEIGHT;
   const paddingX = options.paddingX ?? DEFAULT_PADDING_X;
   const paddingY = options.paddingY ?? DEFAULT_PADDING_Y;
-  const minVerticalGap = options.minVerticalGap ?? DEFAULT_MIN_VERTICAL_GAP;
+  const siblingGap = options.siblingGap ?? DEFAULT_SIBLING_GAP;
 
-  const nodeMap = new Map(nodes.map(node => [node.id, node]));
-  const inputOrder = new Map(nodes.map((node, index) => [node.id, index]));
-  const childrenMap = new Map<number, number[]>();
-  const depthCache = new Map<number, number>();
+  const nodeMap = new Map(visibleNodes.map(node => [node.id, node]));
+  const childrenMap = buildVisibleChildrenMap(visibleNodes, nodeMap);
+  const sortedRoots = getVisibleRoots(visibleNodes, nodeMap);
+  const roots = sortedRoots.length > 0 ? sortedRoots : [...visibleNodes].sort(compareNodes);
+
+  let instanceCounter = 0;
+  const createTreeNode = (
+    node: CWFrameNode,
+    depth: number,
+    parentInstanceKey: string | null,
+    branchPath: number[],
+    pathSet: Set<number>
+  ): TreeProjectionNode => {
+    const instanceKey = `${node.id}:${instanceCounter++}`;
+    const nextBranchPath = [...branchPath, node.id];
+    const nextPathSet = new Set(pathSet);
+    nextPathSet.add(node.id);
+
+    const children = (childrenMap.get(node.id) ?? [])
+      .filter(child => !nextPathSet.has(child.id))
+      .sort(compareNodes)
+      .map(child => createTreeNode(child, depth + 1, instanceKey, nextBranchPath, nextPathSet));
+
+    return {
+      node,
+      instanceKey,
+      parentInstanceKey,
+      branchPath: nextBranchPath,
+      depth,
+      children
+    };
+  };
+
+  const treeRoots = roots.map(root => createTreeNode(root, 0, null, [], new Set<number>()));
+  const leafWeights = new Map<string, number>();
+  const rootBands = allocateRootBands(treeRoots, leafWeights, height, paddingY, siblingGap);
+  const globalMaxDepth = Math.max(...treeRoots.map(root => getMaxDepth(root)), 0);
+  const xStep = globalMaxDepth > 0 ? (width - paddingX * 2) / globalMaxDepth : 0;
+
+  const instances: GraphTreeInstance[] = [];
+  const links: GraphTreeLink[] = [];
+
+  const assignCoordinates = (
+    treeNode: TreeProjectionNode,
+    topY: number,
+    bottomY: number
+  ): void => {
+    const centerY = (topY + bottomY) / 2;
+    const { node } = treeNode;
+
+    instances.push({
+      ...node,
+      instanceKey: treeNode.instanceKey,
+      sourceNodeId: node.id,
+      parentInstanceKey: treeNode.parentInstanceKey,
+      branchPath: treeNode.branchPath,
+      depth: treeNode.depth,
+      x: paddingX + xStep * treeNode.depth,
+      y: centerY
+    });
+
+    if (treeNode.parentInstanceKey) {
+      links.push({
+        key: `${treeNode.parentInstanceKey}->${treeNode.instanceKey}`,
+        sourceInstanceKey: treeNode.parentInstanceKey,
+        targetInstanceKey: treeNode.instanceKey,
+        sourceNodeId: treeNode.branchPath[treeNode.branchPath.length - 2] ?? node.id,
+        targetNodeId: node.id
+      });
+    }
+
+    if (treeNode.children.length === 0) return;
+
+    let cursor = topY;
+    treeNode.children.forEach(child => {
+      const childWeight = leafWeights.get(child.instanceKey) ?? 1;
+      const childHeight = childWeight * siblingGap;
+      assignCoordinates(child, cursor, cursor + childHeight);
+      cursor += childHeight;
+    });
+  };
+
+  rootBands.forEach(({ root, topY, bottomY }) => {
+    assignCoordinates(root, topY, bottomY);
+  });
+
+  return { instances, links };
+}
+
+function buildVisibleChildrenMap(
+  nodes: CWFrameNode[],
+  nodeMap: Map<number, CWFrameNode>
+): Map<number, CWFrameNode[]> {
+  const childrenMap = new Map<number, CWFrameNode[]>();
 
   for (const node of nodes) {
     childrenMap.set(node.id, []);
@@ -43,123 +169,91 @@ export function layoutGraphNodes(
 
   for (const node of nodes) {
     for (const dependencyId of node.dependencies) {
-      const children = childrenMap.get(dependencyId);
-      if (children) children.push(node.id);
+      if (!nodeMap.has(dependencyId)) continue;
+      childrenMap.get(dependencyId)?.push(node);
     }
   }
 
-  const resolveDepth = (nodeId: number, path = new Set<number>()): number => {
-    const cachedDepth = depthCache.get(nodeId);
-    if (cachedDepth !== undefined) return cachedDepth;
-    if (path.has(nodeId)) return 0;
+  return childrenMap;
+}
 
-    const node = nodeMap.get(nodeId);
-    if (!node || node.dependencies.length === 0) {
-      depthCache.set(nodeId, 0);
-      return 0;
-    }
+function getVisibleRoots(
+  nodes: CWFrameNode[],
+  nodeMap: Map<number, CWFrameNode>
+): CWFrameNode[] {
+  return nodes
+    .filter(node => node.dependencies.filter(dependencyId => nodeMap.has(dependencyId)).length === 0)
+    .sort(compareNodes);
+}
 
-    path.add(nodeId);
-
-    const depth =
-      1 +
-      Math.max(
-        ...node.dependencies.map(dependencyId => resolveDepth(dependencyId, new Set(path)))
-      );
-
-    depthCache.set(nodeId, depth);
-    return depth;
-  };
-
-  for (const node of nodes) {
-    resolveDepth(node.id);
+function compareNodes(left: CWFrameNode, right: CWFrameNode): number {
+  if ((left.tier ?? 0) !== (right.tier ?? 0)) {
+    return (left.tier ?? 0) - (right.tier ?? 0);
   }
 
-  const maxDepth = Math.max(...Array.from(depthCache.values()), 0);
-  const layers = Array.from({ length: maxDepth + 1 }, () => [] as CWFrameNode[]);
-
-  for (const node of nodes) {
-    layers[depthCache.get(node.id) ?? 0].push(node);
+  if (left.weight !== right.weight) {
+    return right.weight - left.weight;
   }
 
-  const orderIndex = new Map<number, number>();
+  const labelCompare = left.label.localeCompare(right.label);
+  if (labelCompare !== 0) return labelCompare;
 
-  const getAverageOrder = (relatedIds: number[]): number | null => {
-    const relatedOrders = relatedIds
-      .map(relatedId => orderIndex.get(relatedId))
-      .filter((value): value is number => value !== undefined);
+  return left.id - right.id;
+}
 
-    if (relatedOrders.length === 0) return null;
+function computeLeafWeight(
+  node: TreeProjectionNode,
+  leafWeights: Map<string, number>
+): number {
+  if (node.children.length === 0) {
+    leafWeights.set(node.instanceKey, 1);
+    return 1;
+  }
 
-    return relatedOrders.reduce((sum, value) => sum + value, 0) / relatedOrders.length;
-  };
-
-  const getStableNodeRank = (node: CWFrameNode): [number, number, number] => [
-    node.tier ?? 0,
-    inputOrder.get(node.id) ?? Number.MAX_SAFE_INTEGER,
-    node.id
-  ];
-
-  const sortByTuple = (left: [number, number, number], right: [number, number, number]): number => {
-    if (left[0] !== right[0]) return left[0] - right[0];
-    if (left[1] !== right[1]) return left[1] - right[1];
-    return left[2] - right[2];
-  };
-
-  const sortLayer = (layer: CWFrameNode[], getReferenceIds: (node: CWFrameNode) => number[]): CWFrameNode[] =>
-    [...layer].sort((left, right) => {
-      const leftBarycenter = getAverageOrder(getReferenceIds(left));
-      const rightBarycenter = getAverageOrder(getReferenceIds(right));
-
-      if (leftBarycenter !== null && rightBarycenter !== null && leftBarycenter !== rightBarycenter) {
-        return leftBarycenter - rightBarycenter;
-      }
-
-      if (leftBarycenter !== null && rightBarycenter === null) return -1;
-      if (leftBarycenter === null && rightBarycenter !== null) return 1;
-
-      return sortByTuple(getStableNodeRank(left), getStableNodeRank(right));
-    });
-
-  layers[0] = [...layers[0]].sort((left, right) =>
-    sortByTuple(getStableNodeRank(left), getStableNodeRank(right))
+  const weight = node.children.reduce(
+    (sum, child) => sum + computeLeafWeight(child, leafWeights),
+    0
   );
-  layers[0].forEach((node, index) => orderIndex.set(node.id, index));
 
-  for (let depth = 1; depth <= maxDepth; depth += 1) {
-    layers[depth] = sortLayer(layers[depth], node => node.dependencies);
-    layers[depth].forEach((node, index) => orderIndex.set(node.id, index));
-  }
+  leafWeights.set(node.instanceKey, weight);
+  return weight;
+}
 
-  for (let depth = maxDepth - 1; depth >= 0; depth -= 1) {
-    layers[depth] = sortLayer(layers[depth], node => childrenMap.get(node.id) ?? []);
-    layers[depth].forEach((node, index) => orderIndex.set(node.id, index));
-  }
+function allocateRootBands(
+  roots: TreeProjectionNode[],
+  leafWeights: Map<string, number>,
+  height: number,
+  paddingY: number,
+  siblingGap: number
+): Array<{ root: TreeProjectionNode; topY: number; bottomY: number }> {
+  roots.forEach(root => computeLeafWeight(root, leafWeights));
 
-  for (let depth = 1; depth <= maxDepth; depth += 1) {
-    layers[depth] = sortLayer(layers[depth], node => node.dependencies);
-    layers[depth].forEach((node, index) => orderIndex.set(node.id, index));
-  }
+  const totalLeafWeight = roots.reduce(
+    (sum, root) => sum + (leafWeights.get(root.instanceKey) ?? 1),
+    0
+  );
+  const availableHeight = Math.max(height - paddingY * 2, siblingGap);
+  const totalGap = Math.max(roots.length - 1, 0) * Math.min(56, siblingGap * 0.45);
+  const usableHeight = Math.max(availableHeight - totalGap, siblingGap);
+  const unitHeight = usableHeight / Math.max(totalLeafWeight, 1);
+  const gap = roots.length > 1 ? totalGap / (roots.length - 1) : 0;
 
-  const xStep = maxDepth > 0 ? (width - paddingX * 2) / maxDepth : 0;
-  const positionedNodes = new Map<number, GraphLayoutNode>();
+  let cursor = paddingY;
 
-  for (let depth = 0; depth <= maxDepth; depth += 1) {
-    const layer = layers[depth];
-    const count = layer.length;
-    const availableHeight = Math.max(height - paddingY * 2, minVerticalGap * Math.max(count - 1, 1));
-    const yStep = count > 1 ? availableHeight / (count - 1) : 0;
-    const topY = height / 2 - (yStep * (count - 1)) / 2;
+  return roots.map(root => {
+    const rootWeight = leafWeights.get(root.instanceKey) ?? 1;
+    const bandHeight = Math.max(rootWeight * unitHeight, siblingGap);
+    const band = {
+      root,
+      topY: cursor,
+      bottomY: cursor + bandHeight
+    };
+    cursor += bandHeight + gap;
+    return band;
+  });
+}
 
-    layer.forEach((node, index) => {
-      positionedNodes.set(node.id, {
-        ...node,
-        depth,
-        x: paddingX + xStep * depth,
-        y: count === 1 ? height / 2 : topY + yStep * index
-      });
-    });
-  }
-
-  return nodes.map(node => positionedNodes.get(node.id)!).filter(Boolean);
+function getMaxDepth(node: TreeProjectionNode): number {
+  if (node.children.length === 0) return node.depth;
+  return Math.max(...node.children.map(child => getMaxDepth(child)));
 }

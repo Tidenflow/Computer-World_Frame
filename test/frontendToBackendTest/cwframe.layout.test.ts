@@ -1,6 +1,6 @@
 import type { CWFrameNode } from '@shared/contract';
 import { describe, expect, it } from 'vitest';
-import { layoutGraphNodes } from '@frontend/core/cwframe.layout';
+import { layoutGraphTree } from '@frontend/core/cwframe.layout';
 
 function makeNode(
   id: number,
@@ -18,50 +18,82 @@ function makeNode(
   };
 }
 
-describe('cwframe.layout', () => {
-  it('places dependency layers from left to right', () => {
+describe('cwframe.layout tree projection', () => {
+  it('places child instances to the right of parent instances', () => {
     const nodes = [
       makeNode(1, 'root', []),
-      makeNode(2, 'middle', [1]),
+      makeNode(2, 'child', [1]),
       makeNode(3, 'leaf', [2])
     ];
 
-    const positioned = layoutGraphNodes(nodes);
-    const byId = new Map(positioned.map(node => [node.id, node]));
+    const { instances } = layoutGraphTree(nodes);
+    const root = instances.find(instance => instance.sourceNodeId === 1)!;
+    const child = instances.find(instance => instance.sourceNodeId === 2)!;
+    const leaf = instances.find(instance => instance.sourceNodeId === 3)!;
 
-    expect(byId.get(1)?.x).toBeLessThan(byId.get(2)?.x ?? 0);
-    expect(byId.get(2)?.x).toBeLessThan(byId.get(3)?.x ?? 0);
+    expect(root.x).toBeLessThan(child.x);
+    expect(child.x).toBeLessThan(leaf.x);
   });
 
-  it('orders same-layer nodes by parent barycenter to reduce crossings', () => {
+  it('duplicates a node when it belongs to multiple visible parent branches', () => {
     const nodes = [
-      makeNode(1, 'top-root', []),
-      makeNode(2, 'bottom-root', []),
-      makeNode(3, 'top-child', [1]),
-      makeNode(4, 'bottom-child', [2]),
-      makeNode(5, 'merge-a', [3]),
-      makeNode(6, 'merge-b', [4])
+      makeNode(1, 'root-a', []),
+      makeNode(2, 'root-b', []),
+      makeNode(3, 'shared-node', [1, 2])
     ];
 
-    const positioned = layoutGraphNodes(nodes);
-    const byId = new Map(positioned.map(node => [node.id, node]));
+    const { instances } = layoutGraphTree(nodes);
+    const sharedInstances = instances.filter(instance => instance.sourceNodeId === 3);
 
-    expect(byId.get(1)?.y).toBeLessThan(byId.get(2)?.y ?? 0);
-    expect(byId.get(3)?.y).toBeLessThan(byId.get(4)?.y ?? 0);
-    expect(byId.get(5)?.y).toBeLessThan(byId.get(6)?.y ?? 0);
+    expect(sharedInstances).toHaveLength(2);
+    expect(new Set(sharedInstances.map(instance => instance.parentInstanceKey)).size).toBe(2);
   });
 
-  it('keeps independent roots vertically separated', () => {
+  it('treats visible nodes with hidden dependencies as local roots', () => {
     const nodes = [
-      makeNode(1, 'alpha', []),
-      makeNode(2, 'beta', []),
-      makeNode(3, 'gamma', [])
+      makeNode(1, 'hidden-root', []),
+      makeNode(2, 'visible-node', [1]),
+      makeNode(3, 'visible-child', [2])
     ];
 
-    const positioned = layoutGraphNodes(nodes);
-    const yPositions = positioned.map(node => node.y);
-    const uniqueYPositions = new Set(yPositions);
+    const { instances } = layoutGraphTree(nodes, {
+      activeNodeIds: [2, 3]
+    });
 
-    expect(uniqueYPositions.size).toBe(positioned.length);
+    expect(instances.map(instance => instance.sourceNodeId)).toEqual([2, 3]);
+    expect(instances[0]?.parentInstanceKey).toBeNull();
+    expect(instances[0]?.x).toBeLessThan(instances[1]?.x ?? 0);
+  });
+
+  it('creates links between tree instances instead of raw nodes', () => {
+    const nodes = [
+      makeNode(1, 'root', []),
+      makeNode(2, 'child', [1]),
+      makeNode(3, 'shared', [1, 2])
+    ];
+
+    const { instances, links } = layoutGraphTree(nodes);
+    const childInstances = instances.filter(instance => instance.sourceNodeId === 3);
+
+    expect(childInstances.length).toBeGreaterThan(1);
+    expect(links.length).toBeGreaterThanOrEqual(3);
+    expect(links.every(link => link.sourceInstanceKey !== link.targetInstanceKey)).toBe(true);
+  });
+
+  it('keeps separate root trees in different vertical bands', () => {
+    const nodes = [
+      makeNode(1, 'root-a', []),
+      makeNode(2, 'leaf-a', [1]),
+      makeNode(3, 'root-b', []),
+      makeNode(4, 'leaf-b', [3])
+    ];
+
+    const { instances } = layoutGraphTree(nodes);
+    const aNodes = instances.filter(instance => instance.branchPath[0] === 1);
+    const bNodes = instances.filter(instance => instance.branchPath[0] === 3);
+    const aCenter = aNodes.reduce((sum, node) => sum + node.y, 0) / aNodes.length;
+    const bCenter = bNodes.reduce((sum, node) => sum + node.y, 0) / bNodes.length;
+
+    expect(Math.abs(aCenter - bCenter)).toBeGreaterThan(80);
   });
 });
