@@ -37,6 +37,23 @@
       "5": {
         "unlockedAt": 1774944665802,
         "matchedTerm": "操作系统"
+      },
+      "9": {
+        "unlockedAt": 1775032832258,
+        "matchedTerm": "数据库"
+      }
+    }
+  },
+  "6": {
+    "userId": 6,
+    "unlockedNodes": {
+      "3": {
+        "unlockedAt": 1775035578046,
+        "matchedTerm": "CPU"
+      },
+      "5": {
+        "unlockedAt": 1775035576880,
+        "matchedTerm": "操作系统"
       }
     }
   }
