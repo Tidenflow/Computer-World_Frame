@@ -27,7 +27,7 @@ const getPrerequisites = computed(() => {
   if (!node.value || !mapStore.frameMap) return [];
   return node.value.dependencies
     .map(id => mapStore.frameMap?.nodes.find(n => n.id === id))
-    .filter(Boolean);
+    .filter((candidate): candidate is NonNullable<typeof candidate> => Boolean(candidate));
 });
 
 // Mock deep dive until contract supports it
@@ -94,7 +94,7 @@ function handleSparkAI(): void {
                 v-for="pre in getPrerequisites" 
                 :key="pre.id"
                 class="nav-item"
-                @click="mapStore.selectNode(pre.id)"
+                @click="() => { mapStore.openNode(pre.id); mapStore.focusNode(pre.id); }"
               >
                 <span>{{ pre.label }}</span>
                 <ArrowRight :size="14" class="icon-weak" />

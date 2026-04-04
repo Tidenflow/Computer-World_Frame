@@ -54,13 +54,14 @@ function buildUrl(path: string): string {
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(init?.headers || {}),
-  };
+  const headers = new Headers(init?.headers);
+
+  if (!headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   const response = await fetch(buildUrl(path), {
