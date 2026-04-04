@@ -9,7 +9,8 @@ export const nodeController = {
   }),
 
   getById: asyncHandler(async (req: Request, res: Response) => {
-    const nodeId = parseInt(req.params.id);
+    const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const nodeId = Number.parseInt(rawId ?? '', 10);
     const result = await nodeService.getNodeById(nodeId);
     res.json(result);
   })
