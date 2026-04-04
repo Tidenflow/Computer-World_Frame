@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import { layoutGraphNodes } from '../core/cwframe.layout';
 import { useMapStore } from '../store/map.store';
 import { useProgressStore } from '../store/progress.store';
 
@@ -63,50 +64,14 @@ function getDensityThreshold(scale: number): number {
 const nodesWithPositions = computed(() => {
   if (!mapStore.frameMap) return [];
 
-  const nodes = mapStore.frameMap.nodes;
-  const paddingX = 150;
-  const depthMap: Record<number, number> = {};
-
-  const resolveDepth = (id: number, path = new Set<number>()): number => {
-    if (depthMap[id] !== undefined) return depthMap[id];
-    if (path.has(id)) return 0;
-
-    path.add(id);
-    const node = nodes.find(n => n.id === id);
-    if (!node || !node.dependencies.length) return 0;
-
-    const depth = 1 + Math.max(...node.dependencies.map(depId => resolveDepth(depId, path)));
-    depthMap[id] = depth;
-    return depth;
-  };
-
-  nodes.forEach(node => resolveDepth(node.id));
-
-  const maxDepth = Math.max(...Object.values(depthMap), 0) || 1;
-  const buckets: Record<number, number[]> = {};
-
-  nodes.forEach(node => {
-    const depth = depthMap[node.id] || 0;
-    if (!buckets[depth]) buckets[depth] = [];
-    buckets[depth].push(node.id);
-  });
-
-  return nodes.map(node => {
-    const depth = depthMap[node.id] || 0;
-    const bucket = buckets[depth];
-    const index = bucket.indexOf(node.id);
-    const count = bucket.length;
-    const x = paddingX + (depth / maxDepth) * (VIEWBOX_WIDTH - 2 * paddingX);
-    const y = (VIEWBOX_HEIGHT / 2) + (index - (count - 1) / 2) * 160 + (depth % 2 === 0 ? 0 : 40);
-
-    return {
-      ...node,
-      x,
-      y,
-      radius: getNodeRadius(node.weight),
-      visibility: visibilityMap.value[node.id] ?? 'Hidden'
-    };
-  });
+  return layoutGraphNodes(mapStore.frameMap.nodes, {
+    width: VIEWBOX_WIDTH,
+    height: VIEWBOX_HEIGHT
+  }).map(node => ({
+    ...node,
+    radius: getNodeRadius(node.weight),
+    visibility: visibilityMap.value[node.id] ?? 'Hidden'
+  }));
 });
 
 const visibleNodes = computed(() => {
