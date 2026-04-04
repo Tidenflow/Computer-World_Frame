@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import { useUserStore } from '../store/user.store';
-import { useProgressStore } from '../store/progress.store';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { User, LogOut, ShieldCheck, Calendar, Trophy } from 'lucide-vue-next';
+import { Calendar, LogOut, ShieldCheck, Trophy, User } from 'lucide-vue-next';
+import { useProgressStore } from '../store/progress.store';
+import { useUserStore } from '../store/user.store';
 
-// 这里就是获取 store 里面的数据
 const userStore = useUserStore();
 const progressStore = useProgressStore();
 const router = useRouter();
 
-// 这里就是处理退出登录的逻辑
-/**
- * 退出登录。
- *
- * @returns void
- * @sideEffects
- * - 调用 `userStore.logout()`（清空 localStorage 中会话信息）
- * - 导航跳转到 `/auth/login`
- */
+const explorerName = computed(() => userStore.username || 'Explorer');
+const explorerLevel = computed(() => Math.max(1, Math.floor(progressStore.unlockedNodesCount / 5) + 1));
+const accountStatus = computed(() => (userStore.isAuthenticated ? 'Active' : 'Guest'));
+const completionText = computed(() => `${progressStore.unlockedNodesCount} unlocked`);
+
 function handleLogout(): void {
-  userStore.logout();   // 退出登录
-  router.push('/auth/login');   // 跳转到登录页
+  userStore.logout();
+  router.push('/auth/login');
 }
 </script>
 
@@ -32,7 +28,7 @@ function handleLogout(): void {
           <User :size="48" class="avatar-icon" />
         </div>
         <div class="user-meta">
-          <h2>{{ userStore.username || '探险者' }}</h2>
+          <h2>{{ explorerName }}</h2>
           <p class="user-id">ID: #{{ userStore.userId }}</p>
         </div>
       </header>
@@ -41,26 +37,37 @@ function handleLogout(): void {
         <div class="stat-card">
           <Trophy :size="20" class="stat-icon" />
           <div class="stat-value">{{ progressStore.unlockedNodesCount }}</div>
-          <div class="stat-label">点亮节点数</div>
+          <div class="stat-label">Unlocked Nodes</div>
         </div>
         <div class="stat-card">
           <Calendar :size="20" class="stat-icon" />
-          <div class="stat-value">LV 1</div>
-          <div class="stat-label">知识等级</div>
+          <div class="stat-value">LV {{ explorerLevel }}</div>
+          <div class="stat-label">Explorer Level</div>
         </div>
         <div class="stat-card">
           <ShieldCheck :size="20" class="stat-icon" />
-          <div class="stat-value">已实名</div>
-          <div class="stat-label">账户状态</div>
+          <div class="stat-value">{{ accountStatus }}</div>
+          <div class="stat-label">Account Status</div>
+        </div>
+      </div>
+
+      <div class="profile-summary glass-panel">
+        <div class="summary-item">
+          <span class="summary-label">Current User</span>
+          <span class="summary-value">{{ explorerName }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Progress</span>
+          <span class="summary-value">{{ completionText }}</span>
         </div>
       </div>
 
       <div class="action-list">
         <button @click="handleLogout" class="logout-btn">
           <LogOut :size="20" />
-          <span>退出登录</span>
+          <span>Logout</span>
         </button>
-        <router-link to="/" class="back-link">返回探索图谱</router-link>
+        <router-link to="/" class="back-link">Back To Home</router-link>
       </div>
     </div>
   </div>
@@ -74,7 +81,6 @@ function handleLogout(): void {
   align-items: center;
   justify-content: center;
   background-color: var(--bg-dark);
-  /* border: 3px solid red; */
 }
 
 .profile-container {
@@ -126,6 +132,33 @@ function handleLogout(): void {
 .stat-icon { color: var(--text-weak); opacity: 0.6; }
 .stat-value { font-size: 20px; font-weight: 800; color: var(--text-primary); }
 .stat-label { font-size: 11px; color: var(--text-weak); text-transform: uppercase; }
+
+.profile-summary {
+  border-radius: 20px;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-label {
+  font-size: 11px;
+  color: var(--text-weak);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
 
 .action-list { display: flex; flex-direction: column; gap: 16px; align-items: center; }
 

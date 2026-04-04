@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import CWFrameGraph from '../components/CWFrameGraph.vue';
+import CWFHeader from '../components/CWFHeader.vue';
+import CWFHistoryPanel from '../components/CWFHistoryPanel.vue';
+import CWFNodeSidebar from '../components/CWFNodeSidebar.vue';
+import CWFSearchHUD from '../components/CWFSearchHUD.vue';
 import { useMapStore } from '../store/map.store';
 import { useProgressStore } from '../store/progress.store';
 import { useUserStore } from '../store/user.store';
-import CWFrameGraph from '../components/CWFrameGraph.vue';
-import CWFSearchHUD from '../components/CWFSearchHUD.vue';
-import CWFNodeSidebar from '../components/CWFNodeSidebar.vue';
-import CWFHeader from '../components/CWFHeader.vue';
-import CWFHistoryPanel from '../components/CWFHistoryPanel.vue';
 
 const mapStore = useMapStore();
 const progressStore = useProgressStore();
 const userStore = useUserStore();
 const errorMessage = ref<string | null>(null);
+
+const profileTitle = computed(() => userStore.username || 'Explorer');
+const unlockedRatio = computed(() => {
+  const total = mapStore.frameMap?.nodes.length ?? 0;
+  return `${progressStore.unlockedNodesCount}/${total}`;
+});
 
 onMounted(async (): Promise<void> => {
   try {
@@ -24,8 +30,8 @@ onMounted(async (): Promise<void> => {
       await progressStore.loadProgress();
     }
   } catch (err: any) {
-    console.error('初始化失败:', err);
-    errorMessage.value = `同步失败: ${err.message || '网络连接异常，请检查后端服务'}`;
+    console.error('Failed to initialize home view:', err);
+    errorMessage.value = `Load failed: ${err.message || 'Unknown error'}`;
   }
 });
 </script>
@@ -41,24 +47,38 @@ onMounted(async (): Promise<void> => {
 
       <div class="app-grid">
         <aside class="sidebar-col custom-scroll">
+          <div class="profile-brief glass-panel">
+            <div class="profile-brief-header">
+              <div>
+                <div class="profile-label">Current Explorer</div>
+                <div class="profile-name">{{ profileTitle }}</div>
+              </div>
+              <router-link to="/profile" class="profile-link">Profile</router-link>
+            </div>
+            <div class="profile-meta">
+              <span>ID #{{ userStore.userId }}</span>
+              <span>{{ unlockedRatio }} unlocked</span>
+            </div>
+          </div>
+
           <CWFHistoryPanel />
 
           <div class="legend-box glass-panel">
-            <h4 class="legend-title">分类图例 / Categories</h4>
+            <h4 class="legend-title">Node Categories</h4>
             <div class="legend-items">
-              <div class="legend-item"><span class="dot hw"></span> 硬件层 / Hardware</div>
-              <div class="legend-item"><span class="dot sw"></span> 软件层 / Software</div>
-              <div class="legend-item"><span class="dot th"></span> 理论层 / Theory</div>
-              <div class="legend-item"><span class="dot net"></span> 网络层 / Networking</div>
+              <div class="legend-item"><span class="dot hw"></span> Hardware</div>
+              <div class="legend-item"><span class="dot sw"></span> Software</div>
+              <div class="legend-item"><span class="dot th"></span> Theory</div>
+              <div class="legend-item"><span class="dot net"></span> Networking</div>
             </div>
           </div>
 
           <div class="tips-box glass-panel">
-            <h4 class="legend-title">使用提示</h4>
+            <h4 class="legend-title">Tips</h4>
             <ul class="tips-list">
-              <li>输入相关计算机、工程术语，点亮新的节点</li>
-              <li>左侧面板只显示最近一次输入的结果，点击可快速定位</li>
-              <li>使用滚轮缩放、拖动平移，观察已揭示的局部结构</li>
+              <li>Use the search panel to light up concepts you just mentioned.</li>
+              <li>Click an unlocked node when you want to read its detail instead of interrupting the graph flow.</li>
+              <li>Use the latest result list to relocate the nodes unlocked by your most recent input.</li>
             </ul>
           </div>
         </aside>
@@ -68,7 +88,7 @@ onMounted(async (): Promise<void> => {
             <CWFrameGraph />
 
             <div class="progress-stats glass-panel">
-              <span class="stats-label">已点亮: </span>
+              <span class="stats-label">Unlocked</span>
               <span class="stats-value">{{ progressStore.unlockedNodesCount }}</span>
               <span class="stats-total"> / {{ mapStore.frameMap?.nodes.length || 0 }}</span>
             </div>
@@ -82,7 +102,7 @@ onMounted(async (): Promise<void> => {
     <Transition name="fade">
       <div v-if="!mapStore.frameMap" class="loading-screen">
         <div class="loader-ripple"><div></div><div></div></div>
-        <p v-if="!errorMessage">正在构造宇宙级知识图谱...</p>
+        <p v-if="!errorMessage">Loading map...</p>
         <p v-else class="error-msg">{{ errorMessage }}</p>
       </div>
     </Transition>
@@ -129,9 +149,57 @@ onMounted(async (): Promise<void> => {
 }
 
 .legend-box,
-.tips-box {
+.tips-box,
+.profile-brief {
   padding: 20px;
   border-radius: 16px;
+}
+
+.profile-brief {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-brief-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.profile-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-weak);
+  letter-spacing: 1px;
+}
+
+.profile-name {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.profile-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.profile-link {
+  color: var(--blue-400);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-link:hover {
+  text-decoration: underline;
 }
 
 .legend-title {
