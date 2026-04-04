@@ -35,7 +35,7 @@ const showAbout = ref(false);
   position: sticky;
   top: 0;
   z-index: 100;
-  height: 72px;
+  height: 60px;
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border-slate);
@@ -45,7 +45,7 @@ const showAbout = ref(false);
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -54,13 +54,13 @@ const showAbout = ref(false);
 .header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .logo-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,23 +72,25 @@ const showAbout = ref(false);
 }
 
 .title-group h1 {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .subtitle {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-weak);
-  margin-top: -2px;
+  margin-top: 1px;
   font-weight: 500;
+  line-height: 1.1;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .nav-btn, .nav-link {
@@ -96,7 +98,7 @@ const showAbout = ref(false);
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
   border-radius: 8px;
   transition: var(--transition-smooth);
   display: flex;

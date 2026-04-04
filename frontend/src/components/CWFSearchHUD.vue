@@ -194,7 +194,7 @@ function clearResult(): void {
 
 .search-bar-wrapper {
   width: 100%;
-  max-width: 640px;
+  max-width: 560px;
   position: relative;
   z-index: 200;
 }
@@ -202,8 +202,8 @@ function clearResult(): void {
 .search-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 8px 8px 20px;
+  gap: 10px;
+  padding: 6px 6px 6px 16px;
   border-radius: 16px;
   transition: var(--transition-smooth);
   border: 1px solid var(--border-slate);
@@ -220,15 +220,15 @@ function clearResult(): void {
   flex: 1;
   background: transparent;
   border: none;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-primary);
   outline: none;
-  padding: 12px 0;
+  padding: 10px 0;
 }
 
 .ignite-btn {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   border: none;
   color: white;
@@ -249,7 +249,7 @@ function clearResult(): void {
   top: calc(100% + 12px);
   left: 0;
   right: 0;
-  padding: 20px;
+  padding: 18px;
   border-radius: 16px;
   z-index: 100;
 }

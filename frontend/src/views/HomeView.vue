@@ -123,11 +123,11 @@ onMounted(async (): Promise<void> => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 0 40px 40px 40px;
+  padding: 0 32px 28px 32px;
 }
 
 .search-section {
-  padding: 32px 0;
+  padding: 12px 0 16px 0;
   display: flex;
   justify-content: center;
 }
@@ -136,7 +136,7 @@ onMounted(async (): Promise<void> => {
   flex: 1;
   display: grid;
   grid-template-columns: 320px 1fr;
-  gap: 24px;
+  gap: 20px;
   min-height: 0;
 }
 
