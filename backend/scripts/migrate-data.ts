@@ -32,9 +32,12 @@ async function migrateNodes() {
   for (const node of mapData.nodes) {
     await prisma.node.upsert({
       where: { id: node.id },
-      update: {},
+      update: {
+        mapSlug: mapData.slug || 'default'
+      },
       create: {
         id: node.id,
+        mapSlug: mapData.slug || 'default',
         label: node.label,
         description: node.description,
         category: node.category,
