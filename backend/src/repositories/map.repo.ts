@@ -1,9 +1,14 @@
 import { prisma } from '../lib/prisma';
 import type { CWFrameMap, CWFrameNode } from '@shared/contract';
+import { readDefaultMapMeta } from '../data/default-map-meta';
 
 export class MapRepo {
   async getDefaultMap(): Promise<CWFrameMap | null> {
+    const defaultMapMeta = readDefaultMapMeta();
     const nodes = await prisma.node.findMany({
+      where: {
+        mapSlug: defaultMapMeta.slug,
+      },
       include: {
         dependencies: true
       }
@@ -22,7 +27,9 @@ export class MapRepo {
     }));
 
     return {
-      version: '0.2',
+      name: defaultMapMeta.name,
+      slug: defaultMapMeta.slug,
+      version: defaultMapMeta.version,
       nodes: cwfNodes
     };
   }

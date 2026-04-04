@@ -12,6 +12,7 @@
       "@/*": ["src/*"],
       "@shared/*": ["../shared/*"]
     },
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

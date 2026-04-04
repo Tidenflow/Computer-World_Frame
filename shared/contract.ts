@@ -26,6 +26,8 @@ export interface CWFrameNode {
 }
 
 export interface CWFrameMap {
+  name: string;
+  slug: string;
   version: string | number;
   nodes: CWFrameNode[];
 }

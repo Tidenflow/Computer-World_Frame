@@ -1,9 +1,14 @@
 import type { ApiResponse, CWFrameNode } from '@shared/contract';
 import { prisma } from '../lib/prisma';
+import { readDefaultMapMeta } from '../data/default-map-meta';
 
 export class NodeService {
   async getAllNodes(): Promise<ApiResponse<CWFrameNode[]>> {
+    const defaultMapMeta = readDefaultMapMeta();
     const nodes = await prisma.node.findMany({
+      where: {
+        mapSlug: defaultMapMeta.slug,
+      },
       include: { dependencies: true }
     });
 
@@ -21,6 +26,7 @@ export class NodeService {
   }
 
   async getNodeById(nodeId: number): Promise<ApiResponse<CWFrameNode>> {
+    const defaultMapMeta = readDefaultMapMeta();
     if (!Number.isInteger(nodeId) || nodeId <= 0) {
       return {
         success: false,
@@ -34,7 +40,7 @@ export class NodeService {
       include: { dependencies: true }
     });
 
-    if (!node) {
+    if (!node || node.mapSlug !== defaultMapMeta.slug) {
       return {
         success: false,
         data: null,
