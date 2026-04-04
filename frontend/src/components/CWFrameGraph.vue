@@ -26,6 +26,7 @@ const categoryColors: Record<string, string> = {
   application: '#f43f5e',
   default: '#94a3b8'
 };
+const RECENT_HIGHLIGHT_COLOR = '#facc15';
 
 const viewport = reactive({
   scale: 1,
@@ -42,6 +43,8 @@ const dragState = reactive({
 });
 
 const getCategoryColor = (cat: string): string => categoryColors[cat] || categoryColors.default;
+const getDisplayColor = (nodeId: number, category: string): string =>
+  recentNodeIds.value.has(nodeId) ? RECENT_HIGHLIGHT_COLOR : getCategoryColor(category);
 
 const visibilityMap = computed(() => mapStore.visibilityMap);
 const recentNodeIds = computed(() => new Set(progressStore.recentlyUnlockedIds));
@@ -326,19 +329,8 @@ watch(
               :cx="node.x"
               :cy="node.y"
               :r="node.radius + 11"
-              :fill="getCategoryColor(node.category)"
+              :fill="getDisplayColor(node.id, node.category)"
               class="breathe-halo"
-            />
-
-            <circle
-              v-if="node.visibility === 'Unlocked' && recentNodeIds.has(node.id)"
-              :cx="node.x"
-              :cy="node.y"
-              :r="node.radius + 18"
-              fill="transparent"
-              stroke="rgba(248, 250, 252, 0.85)"
-              stroke-width="1.8"
-              class="recent-ring"
             />
 
             <circle
@@ -346,8 +338,8 @@ watch(
               :cx="node.x"
               :cy="node.y"
               :r="node.radius"
-              :fill="getCategoryColor(node.category)"
-              :stroke="getCategoryColor(node.category)"
+              :fill="getDisplayColor(node.id, node.category)"
+              :stroke="getDisplayColor(node.id, node.category)"
               stroke-width="2"
               class="main-circle"
             />
@@ -368,7 +360,7 @@ watch(
               :cx="node.x + node.radius * 0.6"
               :cy="node.y - node.radius * 0.6"
               r="4.5"
-              :fill="getCategoryColor(node.category)"
+              :fill="getDisplayColor(node.id, node.category)"
               class="cat-dot"
             />
 
@@ -481,11 +473,6 @@ watch(
   opacity: 0.2;
 }
 
-.recent-ring {
-  animation: recent-pulse 1.8s infinite ease-in-out;
-  opacity: 0.85;
-}
-
 @keyframes svg-breathe {
   0%,
   100% {
@@ -496,19 +483,6 @@ watch(
   50% {
     transform: scale(1.15);
     opacity: 0.3;
-  }
-}
-
-@keyframes recent-pulse {
-  0%,
-  100% {
-    opacity: 0.32;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.9;
-    transform: scale(1.06);
   }
 }
 
