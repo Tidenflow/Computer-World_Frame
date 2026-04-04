@@ -91,6 +91,26 @@ const nodesWithPositions = computed(() =>
     visibility: visibilityMap.value[node.id] ?? 'Hidden'
   }))
 );
+const outlinedLabelInstanceKeys = computed(() => {
+  const instanceMap = new Map(nodesWithPositions.value.map(node => [node.instanceKey, node]));
+  const directOutlinedKeys = new Set<string>();
+
+  for (const link of treeLayout.value.links) {
+    const source = instanceMap.get(link.sourceInstanceKey);
+    const target = instanceMap.get(link.targetInstanceKey);
+    if (!source || !target) continue;
+
+    if (source.visibility === 'Unlocked' && target.visibility === 'Outlined') {
+      directOutlinedKeys.add(target.instanceKey);
+    }
+
+    if (target.visibility === 'Unlocked' && source.visibility === 'Outlined') {
+      directOutlinedKeys.add(source.instanceKey);
+    }
+  }
+
+  return directOutlinedKeys;
+});
 
 const visibleNodes = computed(() => {
   const minWeight = getDensityThreshold(viewport.scale);
@@ -376,7 +396,11 @@ watch(
             </text>
 
             <text
-              v-if="node.visibility === 'Outlined' && viewport.scale >= 0.92"
+              v-if="
+                node.visibility === 'Outlined' &&
+                viewport.scale >= 0.92 &&
+                outlinedLabelInstanceKeys.has(node.instanceKey)
+              "
               :x="node.x"
               :y="node.y + node.radius + 22"
               text-anchor="middle"

@@ -45,7 +45,7 @@ const DEFAULT_WIDTH = 1200;
 const DEFAULT_HEIGHT = 840;
 const DEFAULT_PADDING_X = 150;
 const DEFAULT_PADDING_Y = 96;
-const DEFAULT_SIBLING_GAP = 114;
+const DEFAULT_SIBLING_GAP = 152;
 
 export function layoutGraphTree(
   nodes: CWFrameNode[],
