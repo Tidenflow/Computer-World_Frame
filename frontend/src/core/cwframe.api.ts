@@ -20,19 +20,22 @@ import type {
  * - 未配置时默认 `http://localhost:3000`
  */
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:3000';
-/**
- * localStorage 中保存当前用户 id 的 key（MVP 版会话）。
- */
 const USER_ID_STORAGE_KEY = 'cwframe_user_id';
+const TOKEN_STORAGE_KEY = 'cwframe_token';
 
-/**
- * 拼接后端请求 URL。
- *
- * @param path - API 路径（以 `/` 开头），例如：`/api/maps/default`
- * @returns 完整 URL，例如：`http://localhost:3000/api/maps/default`
- */
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_STORAGE_KEY);
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
+}
+
+export function removeToken(): void {
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
+
 function buildUrl(path: string): string {
-  // 拼接URL
   return `${API_BASE_URL}${path}`;
 }
 
@@ -49,12 +52,29 @@ function buildUrl(path: string): string {
  * const map = await requestJson<CWFrameMap>('/api/maps/default')
  */
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  // 核心 ： fetch 是浏览器提供的异步函数，用于发送网络请求
-  const response = await fetch(buildUrl(path), init);
-  // 核心 ： response.json() 是将响应体解析为json
+  const token = getToken();
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(init?.headers || {}),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(buildUrl(path), {
+    ...init,
+    headers,
+  });
+
   const data = (await response.json()) as ApiResponse<T>;
 
   if (!data.success) {
+    if (data.error.code === 'INVALID_TOKEN' || data.error.code === 'UNAUTHORIZED') {
+      removeToken();
+      localStorage.removeItem(USER_ID_STORAGE_KEY);
+    }
     throw new Error(data.error.message);
   }
 
@@ -96,11 +116,16 @@ export function setCurrentUserId(userId: number): void {
  * @throws 后端返回失败时抛出 Error
  */
 export async function register(payload: RegisterRequest): Promise<AuthData> {
-  return requestJson<AuthData>('/api/auth/register', {
+  const data = await requestJson<AuthData & { token: string }>('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+
+  setToken(data.token);
+  setCurrentUserId(data.userId);
+
+  return data;
 }
 
 /**
@@ -113,12 +138,15 @@ export async function register(payload: RegisterRequest): Promise<AuthData> {
  * @throws 后端返回失败时抛出 Error
  */
 export async function login(payload: LoginRequest): Promise<AuthData> {
-  const data = await requestJson<AuthData>('/api/auth/login', {
+  const data = await requestJson<AuthData & { token: string }>('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+
+  setToken(data.token);
   setCurrentUserId(data.userId);
+
   return data;
 }
 

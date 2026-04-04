@@ -67,10 +67,11 @@ export const useUserStore = defineStore('user', () => {
    * - 移除 localStorage 的 `cwframe_user_id`
    */
   function logout(): void {
-    userId.value = 1; // Reset to default or null
+    userId.value = 1;
     username.value = '';
     isAuthenticated.value = false;
     localStorage.removeItem('cwframe_user_id');
+    api.removeToken();
   }
 
   return {
