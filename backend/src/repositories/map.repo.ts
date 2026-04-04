@@ -17,7 +17,7 @@ export class MapRepo {
       description: node.description || '',
       category: node.category || '',
       dependencies: node.dependencies.map(dep => dep.dependsOnNodeId),
-      weight: node.weight,
+      weight: node.weight ?? 5,
       tier: node.tier
     }));
 

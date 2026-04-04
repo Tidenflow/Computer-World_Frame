@@ -4,13 +4,24 @@ export interface User {
   timeStamp: number;
 }
 
+/**
+ * Shared node contract for backend/frontend data exchange.
+ * This contract only describes stable domain data and should not carry
+ * frontend-only rendering state such as visibility, focus, highlight, layout,
+ * viewport, or zoom.
+ */
 export interface CWFrameNode {
   id: number;
   label: string;
   description: string;
   category: string;
   dependencies: number[];
-  weight?: number;
+  /**
+   * Stable domain weight used as the base input for graph visual priority.
+   * It should always exist in shared data, with a backend-side default applied
+   * when the source data does not provide one.
+   */
+  weight: number;
   tier?: number;
 }
 
