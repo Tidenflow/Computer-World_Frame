@@ -13,7 +13,7 @@ import * as api from '../core/cwframe.api';
 export const useUserStore = defineStore('user', () => {
   // 仓库里的数据 userId username isAuthenticated
   const userId = ref<number>(api.getCurrentUserId());
-  const username = ref<string>('');
+  const username = ref<string>(api.getCurrentUsername());
   // localStorage 就是浏览器端 Web Storage，属于网页环境提供的本地存储。
   // 用 localStorage 中是否存在 userId 来恢复登录态（避免刷新/直达路由被守卫踢回登录页）
   const isAuthenticated = ref<boolean>(localStorage.getItem('cwframe_user_id') !== null);
@@ -71,6 +71,7 @@ export const useUserStore = defineStore('user', () => {
     username.value = '';
     isAuthenticated.value = false;
     localStorage.removeItem('cwframe_user_id');
+    api.removeCurrentUsername();
     api.removeToken();
   }
 
