@@ -60,52 +60,58 @@ async function syncDefaultMap(): Promise<void> {
   const map = readDefaultMap();
   const nodeIds = map.nodes.map((node) => node.id);
 
-  await prisma.$transaction(async (tx) => {
-    for (const node of map.nodes) {
-      await tx.node.upsert({
-        where: { id: node.id },
-        update: {
-          mapSlug: map.slug,
-          label: node.label,
-          description: node.description ?? null,
-          category: node.category ?? null,
-          weight: node.weight ?? 5,
-          tier: node.tier ?? 1,
-        },
-        create: {
-          id: node.id,
-          mapSlug: map.slug,
-          label: node.label,
-          description: node.description ?? null,
-          category: node.category ?? null,
-          weight: node.weight ?? 5,
-          tier: node.tier ?? 1,
+  await prisma.$transaction(
+    async (tx) => {
+      for (const node of map.nodes) {
+        await tx.node.upsert({
+          where: { id: node.id },
+          update: {
+            mapSlug: map.slug,
+            label: node.label,
+            description: node.description ?? null,
+            category: node.category ?? null,
+            weight: node.weight ?? 5,
+            tier: node.tier ?? 1,
+          },
+          create: {
+            id: node.id,
+            mapSlug: map.slug,
+            label: node.label,
+            description: node.description ?? null,
+            category: node.category ?? null,
+            weight: node.weight ?? 5,
+            tier: node.tier ?? 1,
+          },
+        });
+      }
+
+      await tx.nodeDependency.deleteMany({
+        where: {
+          OR: [
+            { nodeId: { in: nodeIds } },
+            { dependsOnNodeId: { in: nodeIds } },
+          ],
         },
       });
+
+      const dependencies = map.nodes.flatMap((node) =>
+        node.dependencies.map((dependencyId) => ({
+          nodeId: node.id,
+          dependsOnNodeId: dependencyId,
+        }))
+      );
+
+      if (dependencies.length > 0) {
+        await tx.nodeDependency.createMany({
+          data: dependencies,
+        });
+      }
+    },
+    {
+      maxWait: 20_000,
+      timeout: 60_000,
     }
-
-    await tx.nodeDependency.deleteMany({
-      where: {
-        OR: [
-          { nodeId: { in: nodeIds } },
-          { dependsOnNodeId: { in: nodeIds } },
-        ],
-      },
-    });
-
-    const dependencies = map.nodes.flatMap((node) =>
-      node.dependencies.map((dependencyId) => ({
-        nodeId: node.id,
-        dependsOnNodeId: dependencyId,
-      }))
-    );
-
-    if (dependencies.length > 0) {
-      await tx.nodeDependency.createMany({
-        data: dependencies,
-      });
-    }
-  });
+  );
 
   console.log(
     `Default map synced successfully. slug=${map.slug}, version=${map.version}, nodes=${map.nodes.length}`
