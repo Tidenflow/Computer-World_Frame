@@ -16,5 +16,16 @@ export const env = {
   DATABASE_URL: readString('DATABASE_URL', 'mysql://root:password@localhost:3306/cwframe'),
   JWT_SECRET: readString('JWT_SECRET', 'dev-secret-key'),
   JWT_EXPIRES_IN: readString('JWT_EXPIRES_IN', '7d'),
-  CORS_ORIGIN: readString('CORS_ORIGIN', '*'),
+  CORS_ORIGIN: (() => {
+    const value = process.env['CORS_ORIGIN'];
+    if (!value) return '*';
+    try {
+      // 尝试解析 JSON 数组
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : value;
+    } catch {
+      // 如果不是 JSON，直接返回字符串
+      return value;
+    }
+  })(),
 } as const;

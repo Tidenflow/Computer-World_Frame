@@ -12,7 +12,16 @@ import { authMiddleware } from './middleware/auth.middleware';
 const app = express();
 
 app.use(cors({
-  origin: config.app.corsOrigin === '*' ? true : config.app.corsOrigin,
+  origin: (origin, callback) => {
+    // 允许没有 origin 的请求（如 Postman）或白名单中的 origin
+    const allowedOrigins = config.app.corsOrigin;
+    if (!origin || allowedOrigins === '*' || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
