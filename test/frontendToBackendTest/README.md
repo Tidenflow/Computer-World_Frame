@@ -1,6 +1,6 @@
 # 前端到后端集成与逻辑测试 (Frontend-to-Backend Test Guide)
 
-本项目已经完成了从 **静态 Mock** 到 **真实 API 交互** 的整体架构升级。为了确保这套逻辑在复杂的生产环境下依然稳健，我们设计了这套测试方案。
+本项目已经完成了从 **静态 Mock** 到 **文档化地图 API** 的整体架构升级。为了确保 `MapDocument + MapProjection + UserProgressDocument` 这套链路稳定，我们设计了这套测试方案。
 
 ---
 
@@ -30,8 +30,11 @@ npm install -D vitest jsdom
 ### 第三步：运行测试
 在 `test` 目录下执行以下命令：
 ```bash
-# 运行当前文件夹下的所有集成测试
+# 运行前端到后端契约测试
 npx vitest .\frontendToBackendTest\
+
+# 或运行文档化地图相关的核心回归
+npm test -- cwframe.api.test.ts cwframe.loader.test.ts cwframe.progress-document.test.ts
 ```
 
 ---
@@ -40,12 +43,12 @@ npx vitest .\frontendToBackendTest\
 
 ### A. API 封装层 (`cwframe.api.ts`)
 *   **登录注册 (Login/Register)**: 验证请求是否包含正确的 Body、Headers，且成功后是否能自动将 `userId` 存入 `localStorage`。
-*   **数据隔离 (URL/Path)**: 验证 `buildUrl` 函数是否正确拼接了 `VITE_API_BASE_URL` 和各个接口路径。
-*   **错误拦截 (Error Handling)**: 验证当后端返回 `{ success: false }` 时，前端是否能正确转化为 `Error` 对象并抛出，而不是直接奔溃。
+*   **地图载入 (Map Payload)**: 验证默认地图接口返回的是 `document + projection` 结构，而不是旧的 `version + nodes`。
+*   **错误拦截 (Error Handling)**: 验证当后端返回 `{ success: false }` 时，前端是否能正确转化为 `Error` 对象并抛出，而不是直接崩溃。
 
 ### B. 业务加载层 (`cwframe.loader.ts`)
-*   **跨逻辑调用 (Progress Loader)**: 验证 `loadProgress` 函数是否能正确从存储中读取当前用户 ID，并带着这个 ID 去调用 API 获取进度。
-*   **透传正确性**: 确保传入 `saveProgress` 的进度对象能够原样传递给 API 层。
+*   **地图装载 (Map Loader)**: 验证 `loadFrameMap` 会直接透传后端返回的 `CWFrameMapPayload`。
+*   **状态文档 (Progress Document)**: 验证 `UserProgressDocument` 会按 `mapId + mapVersion + unlocked` 的新结构流转，而不是旧的 `unlockedNodes`。
 
 ---
 

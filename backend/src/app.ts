@@ -3,8 +3,11 @@ import cors from 'cors';
 import authRouter from './routers/auth.router';
 import progressRouter from './routers/progress.router';
 import mapRouter from './routers/map.router';
+<<<<<<< HEAD
 import nodeRouter from './routers/node.router';
 import { config } from './config';
+=======
+>>>>>>> 3784d80 (refactor: remove legacy node api route)
 import { notFoundMiddleware } from './middleware/not-found.middleware';
 import { errorMiddleware } from './middleware/error.middleware';
 import { authMiddleware } from './middleware/auth.middleware';
@@ -28,7 +31,6 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use('/api/auth', authRouter);
 app.use('/api/maps', mapRouter);
-app.use('/api/nodes', nodeRouter);
 app.use('/api/users', authMiddleware, progressRouter);
 
 app.use(notFoundMiddleware);
