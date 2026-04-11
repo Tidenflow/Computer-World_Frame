@@ -17,9 +17,9 @@ import type {
 /**
  * 后端地址（支持用 Vite 环境变量覆盖）。
  * - 优先读取 `VITE_API_BASE_URL`
- * - 未配置时默认 `http://localhost:3000`
+ * - 未配置时开发环境走相对路径 `/api`，交给 Vite 代理到本地后端
  */
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:3000';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ?? '';
 const USER_ID_STORAGE_KEY = 'cwframe_user_id';
 const USERNAME_STORAGE_KEY = 'cwframe_username';
 const TOKEN_STORAGE_KEY = 'cwframe_token';
@@ -75,7 +75,7 @@ export function removeCurrentUsername(): void {
 }
 
 function buildUrl(path: string): string {
-  return `${API_BASE_URL}${path}`;
+  return API_BASE_URL ? `${API_BASE_URL}${path}` : path;
 }
 
 /**
