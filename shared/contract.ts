@@ -1,42 +1,25 @@
+import type { MapDocument, MapProjection, MapNodeDocument, UserProgressDocument } from './map-document';
+
+// shared/contract.ts
+
+//用户信息接口
 export interface User {
-  id: number;
-  username: string;
-  timeStamp: number;
+    id : number;         //用户id
+    username : string;  //用户名称
+    timeStamp : number;   //账户创建时间
 }
 
-/**
- * Shared node contract for backend/frontend data exchange.
- * This contract only describes stable domain data and should not carry
- * frontend-only rendering state such as visibility, focus, highlight, layout,
- * viewport, or zoom.
- */
-export interface CWFrameNode {
-  id: number;
-  label: string;
-  description: string;
-  category: string;
-  dependencies: number[];
-  /**
-   * Stable domain weight used as the base input for graph visual priority.
-   * It should always exist in shared data, with a backend-side default applied
-   * when the source data does not provide one.
-   */
-  weight: number;
-  tier?: number;
+export type CWFrameNodeDocument = MapNodeDocument;
+
+export interface CWFrameMapPayload {
+    document: MapDocument;
+    projection: MapProjection;
 }
 
-export interface CWFrameMap {
-  name: string;
-  slug: string;
-  version: string | number;
-  nodes: CWFrameNode[];
-}
+export type CWFrameProgressDocument = UserProgressDocument;
 
-export interface CWFrameProgress {
-  userId: number;
-  unlockedNodes: Record<number, { unlockedAt: number }>;
-}
 
+//枚举ApiError.code，防止后端随意返回
 export type ApiErrorCode =
   | 'VALIDATION_ERROR'
   | 'USER_EXISTS'
@@ -48,30 +31,35 @@ export type ApiErrorCode =
   | 'UNAUTHORIZED'
   | 'INVALID_TOKEN';
 
+// 规定error格式
 export interface ApiError {
   code: ApiErrorCode;
   message: string;
 }
 
+// 规定api返回格式
 export type ApiResponse<T> =
   | { success: true; data: T; message?: string }
   | { success: false; data: null; error: ApiError };
 
+// 规定注册请求格式
 export interface RegisterRequest {
-  username: string;
-  password: string;
+    username : string;
+    password : string;
 }
-
+// 规定登录请求格式
 export interface LoginRequest {
-  username: string;
-  password: string;
+    username : string;
+    password : string;
 }
-
+//凭证载体
 export interface AuthData {
-  userId: number;
-  username: string;
-  token?: string;
+    userId: number;
+    username: string;
+    token?: string;
 }
 
-export type GetMapResponse = ApiResponse<CWFrameMap>;
-export type GetProgressResponse = ApiResponse<CWFrameProgress>;
+// ===== Map API =====
+export type GetMapResponse = ApiResponse<CWFrameMapPayload>;
+// ===== Progress API =====
+export type GetProgressResponse = ApiResponse<UserProgressDocument>;
