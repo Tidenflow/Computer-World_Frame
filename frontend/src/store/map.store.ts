@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { CWFrameMap, CWFrameNode } from '@shared/contract';
+import type { CWFrameMapPayload, MapNodeDocument } from '@shared/contract';
 import * as loader from '../core/cwframe.loader';
 import { buildVisibilityMap } from '../core/cwframe.visibility';
 import { useProgressStore } from './progress.store';
@@ -14,13 +14,13 @@ export const useMapStore = defineStore('map', () => {
   /**
    * 当前加载的知识图谱（未加载时为 null）。
    */
-  const frameMap = ref<CWFrameMap | null>(null);
+  const frameMap = ref<CWFrameMapPayload | null>(null);
 
   /**
    * 当前选中的节点 id（未选中时为 null）。
    */
-  const selectedNodeId = ref<number | null>(null);
-  const focusRequest = ref<{ nodeId: number; requestedAt: number } | null>(null);
+  const selectedNodeId = ref<string | null>(null);
+  const focusRequest = ref<{ nodeId: string; requestedAt: number } | null>(null);
 
   const visibilityMap = computed(() => {
     if (!frameMap.value) return {};
@@ -28,24 +28,24 @@ export const useMapStore = defineStore('map', () => {
   });
 
   /**
-   * 当前选中的节点对象（由 `selectedNodeId` 反查 `frameMap.nodes`）。
+   * 当前选中的节点对象（由 `selectedNodeId` 反查 `frameMap.document.nodes`）。
    *
-   * @returns CWFrameNode | null
+   * @returns MapNodeDocument | null
    */
-  const selectedNode = computed<CWFrameNode | null>(() => {
+  const selectedNode = computed<MapNodeDocument | null>(() => {
     if (!frameMap.value || selectedNodeId.value === null) return null;
-    return frameMap.value.nodes.find(n => n.id === selectedNodeId.value) ?? null;
+    return frameMap.value.document.nodes.find(n => n.id === selectedNodeId.value) ?? null;
   });
 
   /**
    * 加载默认地图（从服务端拉取）。
    *
-   * @returns Promise<CWFrameMap> 加载到的地图对象
+   * @returns Promise<CWFrameMapPayload> 加载到的地图对象
    * @throws loader.loadFrameMap 失败时会抛出异常（上层可 catch 展示错误 UI）
    *
    * @sideEffects 会写入 `frameMap.value`
    */
-  async function loadMap(): Promise<CWFrameMap> {
+  async function loadMap(): Promise<CWFrameMapPayload> {
     try {
       const map = await loader.loadFrameMap();
       frameMap.value = map;
@@ -64,15 +64,15 @@ export const useMapStore = defineStore('map', () => {
    *
    * @sideEffects 会修改 `selectedNodeId.value`
    */
-  function selectNode(id: number | null): void {
+  function selectNode(id: string | null): void {
     selectedNodeId.value = selectedNodeId.value === id ? null : id;
   }
 
-  function openNode(id: number | null): void {
+  function openNode(id: string | null): void {
     selectedNodeId.value = id;
   }
 
-  function focusNode(id: number): void {
+  function focusNode(id: string): void {
     focusRequest.value = { nodeId: id, requestedAt: Date.now() };
   }
 

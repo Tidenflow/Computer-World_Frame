@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, reactive, computed } from 'vue';
-import type { CWFrameProgress, CWFrameNode } from '@shared/contract';
+import type { UserProgressDocument, MapNodeDocument } from '@shared/contract';
 import * as api from '../core/cwframe.api';
 import { unlockNode as localUnlockNode } from '../core/cwframe.progress';
 import { useUserStore } from './user.store';
 
 export interface LatestUnlockEntry {
-  nodeId: number;
+  nodeId: string;
   matchedTerm: string;
   unlockedAt: number;
 }
@@ -17,11 +17,11 @@ interface LatestInputSnapshot {
 }
 
 /**
- * 用户进度仓库：负责加载/更新“点亮记录”（unlockedNodes）。
+ * 用户进度仓库：负责加载/更新”点亮记录”（unlocked）。
  *
  * 注意：
  * - `progress` 是 reactive 对象，会被 actions 原地修改
- * - 与服务端同步目前使用覆盖式 `PUT`（写回 unlockedNodes）
+ * - 与服务端同步目前使用覆盖式 `PUT`（写回 unlocked）
  */
 export const useProgressStore = defineStore('progress', () => {
   const userStore = useUserStore();
@@ -29,16 +29,18 @@ export const useProgressStore = defineStore('progress', () => {
     () => `cwframe_latest_input_result_${userStore.userId || 'guest'}`
   );
 
-  const progress = reactive<CWFrameProgress>({
+  const progress = reactive<UserProgressDocument>({
     userId: userStore.userId,
-    unlockedNodes: {}
+    mapId: 'computer-world',
+    mapVersion: '',
+    unlocked: {}
   });
 
   const isLoaded = ref<boolean>(false);
   const latestInputEntries = ref<LatestUnlockEntry[]>([]);
   const latestInputText = ref<string>('');
   const hasLatestInput = ref<boolean>(false);
-  const recentlyUnlockedIds = ref<number[]>([]);
+  const recentlyUnlockedIds = ref<string[]>([]);
 
   // Getters
   /**
@@ -46,7 +48,7 @@ export const useProgressStore = defineStore('progress', () => {
    *
    * @returns number
    */
-  const unlockedNodesCount = computed(() => Object.keys(progress.unlockedNodes).length);
+  const unlockedNodesCount = computed(() => Object.keys(progress.unlocked).length);
 
   function persistLatestInputResult(): void {
     if (!hasLatestInput.value) {
@@ -74,7 +76,7 @@ export const useProgressStore = defineStore('progress', () => {
       const parsedEntries = Array.isArray(parsed.entries) ? parsed.entries : [];
 
       const validEntries = parsedEntries.filter(entry => {
-        const unlockedInfo = progress.unlockedNodes[entry.nodeId];
+        const unlockedInfo = progress.unlocked[entry.nodeId];
         return Boolean(
           unlockedInfo &&
           typeof entry.matchedTerm === 'string' &&
@@ -104,18 +106,20 @@ export const useProgressStore = defineStore('progress', () => {
    * @returns Promise<void>（无返回值；失败时只会在控制台打印错误）
    *
    * @sideEffects
-   * - 会覆盖 `progress.unlockedNodes`
+   * - 会覆盖 `progress.unlocked`
    * - 会设置 `isLoaded=true`
    */
   async function loadProgress(): Promise<void> {
     if (!userStore.userId) return;
-    
+
     try {
       const data = await api.fetchProgress(userStore.userId);
       progress.userId = data.userId;
+      progress.mapId = data.mapId;
+      progress.mapVersion = data.mapVersion;
       // Reset and re-assign
-      progress.unlockedNodes = {};
-      Object.assign(progress.unlockedNodes, data.unlockedNodes);
+      progress.unlocked = {};
+      Object.assign(progress.unlocked, data.unlocked);
       hydrateLatestInputResult();
       isLoaded.value = true;
     } catch (error) {
@@ -127,35 +131,35 @@ export const useProgressStore = defineStore('progress', () => {
    * 解锁指定节点，并同步到服务端。
    *
    * @param node - 要解锁的节点
-   * @param matchedTerm - 可选：触发本次解锁的“用户输入词”，用于历史记录展示
+   * @param matchedTerm - 可选：触发本次解锁的”用户输入词”，用于历史记录展示
    * @returns 一个轻量结果对象，供 UI toast/提示使用
    *
    * @sideEffects
-   * - 会修改 `progress.unlockedNodes`
+   * - 会修改 `progress.unlocked`
    * - 会发起网络请求写回服务端（失败时会返回 success:false）
    */
   async function unlockNode(
-    node: CWFrameNode,
+    node: MapNodeDocument,
     matchedTerm?: string
   ): Promise<{ success: boolean; message: string; isNewlyUnlocked: boolean }> {
-    const wasAlreadyUnlocked = Boolean(progress.unlockedNodes[node.id]);
+    const wasAlreadyUnlocked = Boolean(progress.unlocked[node.id]);
 
     // 1. 本地更新
     localUnlockNode(progress, node);
-    
+
     // 显式记录匹配词，用于历史记录展示
-    if (matchedTerm && progress.unlockedNodes[node.id]) {
-      (progress.unlockedNodes[node.id] as any).matchedTerm = matchedTerm;
+    if (matchedTerm && progress.unlocked[node.id]) {
+      (progress.unlocked[node.id] as any).matchedTerm = matchedTerm;
     }
 
-    // 2. 同步到服务端，确保下次刷新不会“复活”
+    // 2. 同步到服务端，确保下次刷新不会”复活”
     try {
       if (userStore.userId && !wasAlreadyUnlocked) {
         await api.updateProgress(userStore.userId, progress);
       }
       return {
         success: true,
-        message: wasAlreadyUnlocked ? `已存在: ${node.label}` : `已点亮: ${node.label}`,
+        message: wasAlreadyUnlocked ? `已存在: ${node.title}` : `已点亮: ${node.title}`,
         isNewlyUnlocked: !wasAlreadyUnlocked
       };
     } catch (error) {
@@ -189,18 +193,20 @@ export const useProgressStore = defineStore('progress', () => {
    * @returns Promise<void>
    *
    * @sideEffects
-   * - 会重置 `progress.unlockedNodes = {}`
+   * - 会重置 `progress.unlocked = {}`
    * - 会调用服务端 `PUT /progress` 写回空对象（若 userId 存在）
    */
   async function resetLocalProgress(): Promise<void> {
-    progress.unlockedNodes = {};
+    progress.unlocked = {};
     clearLatestInputResult();
     // 同步清空服务端进度
     if (userStore.userId) {
       try {
-        await api.updateProgress(userStore.userId, { 
-          userId: userStore.userId, 
-          unlockedNodes: {} 
+        await api.updateProgress(userStore.userId, {
+          userId: userStore.userId,
+          mapId: progress.mapId,
+          mapVersion: progress.mapVersion,
+          unlocked: {}
         });
       } catch (error) {
         console.error('重置服务端进度失败:', error);
