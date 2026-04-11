@@ -34,11 +34,11 @@ export function validateUserIdParam(req: Request, res: Response, next: NextFunct
   next();
 }
 
-// 校验学习进度的参数  unlockedNodes 必须是对象  不能是 null / 不能是数组
+// 校验学习进度的参数  unlocked 必须是对象  不能是 null / 不能是数组
 export function validateProgressBody(req: Request, res: Response, next: NextFunction): void {
-  const { unlockedNodes } = req.body as { unlockedNodes?: unknown };
-  if (typeof unlockedNodes !== 'object' || unlockedNodes === null || Array.isArray(unlockedNodes)) {
-    failValidation(res, 'invalid unlockedNodes');
+  const { unlocked } = req.body as { unlocked?: unknown };
+  if (typeof unlocked !== 'object' || unlocked === null || Array.isArray(unlocked)) {
+    failValidation(res, 'invalid unlocked');
     return;
   }
   next();
