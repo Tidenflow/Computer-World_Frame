@@ -1,27 +1,22 @@
-import type { ApiResponse, CWFrameNode } from '@shared/contract';
-import { prisma } from '../lib/prisma';
+import type { ApiResponse, CWFrameNodeDocument } from '@shared/contract';
+import { mapRepo } from '../repositories/map.repo';
 
 export class NodeService {
-  async getAllNodes(): Promise<ApiResponse<CWFrameNode[]>> {
-    const nodes = await prisma.node.findMany({
-      include: { dependencies: true }
-    });
+  async getAllNodes(): Promise<ApiResponse<CWFrameNodeDocument[]>> {
+    const map = await mapRepo.getDefaultMap();
+    if (!map) {
+      return {
+        success: false,
+        data: null,
+        error: { code: 'NOT_FOUND', message: 'default map not found' }
+      };
+    }
 
-    const cwfNodes: CWFrameNode[] = nodes.map(node => ({
-      id: node.id,
-      label: node.label,
-      description: node.description || '',
-      category: node.category || '',
-      dependencies: node.dependencies.map(dep => dep.dependsOnNodeId),
-      weight: node.weight,
-      tier: node.tier
-    }));
-
-    return { success: true, data: cwfNodes, message: 'ok' };
+    return { success: true, data: map.document.nodes, message: 'ok' };
   }
 
-  async getNodeById(nodeId: number): Promise<ApiResponse<CWFrameNode>> {
-    if (!Number.isInteger(nodeId) || nodeId <= 0) {
+  async getNodeById(nodeId: string): Promise<ApiResponse<CWFrameNodeDocument>> {
+    if (!nodeId.trim()) {
       return {
         success: false,
         data: null,
@@ -29,11 +24,16 @@ export class NodeService {
       };
     }
 
-    const node = await prisma.node.findUnique({
-      where: { id: nodeId },
-      include: { dependencies: true }
-    });
+    const map = await mapRepo.getDefaultMap();
+    if (!map) {
+      return {
+        success: false,
+        data: null,
+        error: { code: 'NOT_FOUND', message: 'default map not found' }
+      };
+    }
 
+    const node = map.projection.nodeById[nodeId];
     if (!node) {
       return {
         success: false,
@@ -42,17 +42,7 @@ export class NodeService {
       };
     }
 
-    const cwfNode: CWFrameNode = {
-      id: node.id,
-      label: node.label,
-      description: node.description || '',
-      category: node.category || '',
-      dependencies: node.dependencies.map(dep => dep.dependsOnNodeId),
-      weight: node.weight,
-      tier: node.tier
-    };
-
-    return { success: true, data: cwfNode, message: 'ok' };
+    return { success: true, data: node, message: 'ok' };
   }
 }
 

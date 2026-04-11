@@ -1,29 +1,26 @@
 import { prisma } from '../lib/prisma';
-import type { CWFrameMap, CWFrameNode } from '@shared/contract';
+import type { CWFrameMapPayload } from '@shared/contract';
 
 export class MapRepo {
-  async getDefaultMap(): Promise<CWFrameMap | null> {
-    const nodes = await prisma.node.findMany({
+  async getDefaultMap(): Promise<CWFrameMapPayload | null> {
+    const record = await prisma.mapDocumentRecord.findFirst({
+      where: {
+        mapId: 'computer-world',
+        status: 'published'
+      },
       include: {
-        dependencies: true
+        projection: true
+      },
+      orderBy: {
+        publishedAt: 'desc'
       }
     });
 
-    if (nodes.length === 0) return null;
-
-    const cwfNodes: CWFrameNode[] = nodes.map(node => ({
-      id: node.id,
-      label: node.label,
-      description: node.description || '',
-      category: node.category || '',
-      dependencies: node.dependencies.map(dep => dep.dependsOnNodeId),
-      weight: node.weight,
-      tier: node.tier
-    }));
+    if (!record || !record.projection) return null;
 
     return {
-      version: '0.2',
-      nodes: cwfNodes
+      document: record.documentJson as unknown as CWFrameMapPayload['document'],
+      projection: record.projection.projectionJson as unknown as CWFrameMapPayload['projection']
     };
   }
 }
