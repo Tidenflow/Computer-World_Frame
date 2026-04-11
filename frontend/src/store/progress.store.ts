@@ -6,13 +6,12 @@ import * as api from '../core/cwframe.api';
 import { useUserStore } from './user.store';
 import { useMapStore } from './map.store';
 
-/**
- * 用户进度仓库：负责加载/更新文档化的点亮记录（`progress.unlocked`）。
- *
- * 注意：
- * - `progress` 是 reactive 对象，会被 actions 原地修改
- * - 与服务端同步目前使用覆盖式 `PUT`（写回 unlocked）
- */
+export interface LatestUnlockEntry {
+  nodeId: string;
+  matchedTerm: string;
+  unlockedAt: number;
+}
+
 export const useProgressStore = defineStore('progress', () => {
   const userStore = useUserStore();
   const mapStore = useMapStore();
@@ -25,30 +24,18 @@ export const useProgressStore = defineStore('progress', () => {
   });
 
   const isLoaded = ref<boolean>(false);
+  const latestInputEntries = ref<LatestUnlockEntry[]>([]);
+  const latestInputText = ref<string>('');
+  const hasLatestInput = ref<boolean>(false);
+  const recentlyUnlockedIds = ref<string[]>([]);
 
-  // Getters
-  /**
-   * 已解锁节点数量（用于 UI 统计）。
-   *
-   * @returns number
-   */
   const unlockedNodesCount = computed(() => Object.keys(progress.unlocked).length);
 
-  // Actions
-  /**
-   * 从服务端加载当前用户进度，并写入到本地 `progress`。
-   *
-   * @returns Promise<void>（无返回值；失败时只会在控制台打印错误）
-   *
-   * @sideEffects
-   * - 会覆盖 `progress.unlocked`
-   * - 会设置 `isLoaded=true`
-   */
   async function loadProgress(): Promise<void> {
     if (!userStore.userId || !api.hasActiveSession()) return;
     const currentMap = mapStore.frameMap;
     if (!currentMap) return;
-    
+
     try {
       const data = await api.fetchProgress(
         userStore.userId,
@@ -66,21 +53,12 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
-  /**
-   * 解锁指定节点，并同步到服务端。
-   *
-   * @param node - 要解锁的节点
-   * @param matchedTerm - 可选：触发本次解锁的“用户输入词”，用于历史记录展示
-   * @returns 一个轻量结果对象，供 UI toast/提示使用
-   *
-   * @sideEffects
-   * - 会修改 `progress.unlocked`
-   * - 会发起网络请求写回服务端（失败时会返回 success:false）
-   */
   async function unlockNode(
     node: CWFrameNodeDocument,
     matchedTerm?: string
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<{ success: boolean; message: string; isNewlyUnlocked: boolean }> {
+    const wasAlreadyUnlocked = Boolean(progress.unlocked[node.id]);
+
     try {
       if (userStore.userId) {
         const result = await api.unlockProgressNode({
@@ -91,25 +69,43 @@ export const useProgressStore = defineStore('progress', () => {
           matchedTerm
         });
         progress.unlocked[node.id] = { unlockedAt: result.unlockedAt };
+      } else if (!wasAlreadyUnlocked) {
+        progress.unlocked[node.id] = { unlockedAt: Date.now() };
       }
-      return { success: true, message: `已点亮: ${node.title}` };
+
+      return {
+        success: true,
+        message: wasAlreadyUnlocked ? `已存在: ${node.title}` : `已点亮: ${node.title}`,
+        isNewlyUnlocked: !wasAlreadyUnlocked
+      };
     } catch (error) {
       console.error('同步进度至服务端失败:', error);
-      return { success: false, message: '进度同步失败' };
+      return {
+        success: false,
+        message: '进度同步失败',
+        isNewlyUnlocked: !wasAlreadyUnlocked
+      };
     }
   }
 
-  /**
-   * 清空本地进度，并尝试同步清空服务端进度。
-   *
-   * @returns Promise<void>
-   *
-   * @sideEffects
-   * - 会重置 `progress.unlocked = {}`
-   * - 会调用服务端 `PUT /progress` 写回空对象（若 userId 存在）
-   */
+  function setLatestInputResult(inputText: string, entries: LatestUnlockEntry[]): void {
+    hasLatestInput.value = true;
+    latestInputText.value = inputText;
+    latestInputEntries.value = entries;
+    recentlyUnlockedIds.value = entries.map(entry => entry.nodeId);
+  }
+
+  function clearLatestInputResult(): void {
+    hasLatestInput.value = false;
+    latestInputText.value = '';
+    latestInputEntries.value = [];
+    recentlyUnlockedIds.value = [];
+  }
+
   async function resetLocalProgress(): Promise<void> {
     progress.unlocked = {};
+    clearLatestInputResult();
+
     if (userStore.userId) {
       try {
         await api.updateProgress(userStore.userId, {
@@ -128,8 +124,14 @@ export const useProgressStore = defineStore('progress', () => {
     progress,
     isLoaded,
     unlockedNodesCount,
+    latestInputEntries,
+    latestInputText,
+    hasLatestInput,
+    recentlyUnlockedIds,
     loadProgress,
     unlockNode,
+    setLatestInputResult,
+    clearLatestInputResult,
     resetLocalProgress
   };
 });
