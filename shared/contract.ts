@@ -1,41 +1,27 @@
+import type {
+  MapDocument,
+  MapNodeDocument,
+  MapProjection,
+  UserProgressDocument
+} from './map-document';
+
+// Re-export types for frontend use
+export type { MapDocument, MapNodeDocument, MapProjection, UserProgressDocument };
+
 export interface User {
   id: number;
   username: string;
   timeStamp: number;
 }
 
-/**
- * Shared node contract for backend/frontend data exchange.
- * This contract only describes stable domain data and should not carry
- * frontend-only rendering state such as visibility, focus, highlight, layout,
- * viewport, or zoom.
- */
-export interface CWFrameNode {
-  id: number;
-  label: string;
-  description: string;
-  category: string;
-  dependencies: number[];
-  /**
-   * Stable domain weight used as the base input for graph visual priority.
-   * It should always exist in shared data, with a backend-side default applied
-   * when the source data does not provide one.
-   */
-  weight: number;
-  tier?: number;
+export type CWFrameNodeDocument = MapNodeDocument;
+
+export interface CWFrameMapPayload {
+  document: MapDocument;
+  projection: MapProjection;
 }
 
-export interface CWFrameMap {
-  name: string;
-  slug: string;
-  version: string | number;
-  nodes: CWFrameNode[];
-}
-
-export interface CWFrameProgress {
-  userId: number;
-  unlockedNodes: Record<number, { unlockedAt: number }>;
-}
+export type CWFrameProgressDocument = UserProgressDocument;
 
 export type ApiErrorCode =
   | 'VALIDATION_ERROR'
@@ -73,5 +59,5 @@ export interface AuthData {
   token?: string;
 }
 
-export type GetMapResponse = ApiResponse<CWFrameMap>;
-export type GetProgressResponse = ApiResponse<CWFrameProgress>;
+export type GetMapResponse = ApiResponse<CWFrameMapPayload>;
+export type GetProgressResponse = ApiResponse<CWFrameProgressDocument>;
