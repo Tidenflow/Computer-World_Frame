@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 用户表
 model User {
   id           Int            @id @default(autoincrement())
   username     String         @unique @db.VarChar(50)
@@ -20,26 +19,6 @@ model User {
   @@index([username])
 }
 
-<<<<<<< HEAD
-// 知识节点表
-model Node {
-  id           Int                @id @default(autoincrement())
-  mapSlug      String             @default("default") @map("map_slug") @db.VarChar(100)
-  label        String             @db.VarChar(100)
-  description  String?            @db.Text
-  category     String?            @db.VarChar(50)
-  weight       Int                @default(5)
-  tier         Int                @default(1)
-  createdAt    DateTime           @default(now()) @map("created_at")
-  dependencies NodeDependency[]   @relation("NodeDependencies")
-  dependents   NodeDependency[]   @relation("DependentNodes")
-  progress     UserProgress[]
-
-  @@map("nodes")
-  @@index([mapSlug])
-  @@index([category])
-  @@index([weight])
-=======
 model MapDocumentRecord {
   id           Int                  @id @default(autoincrement())
   mapId        String               @map("map_id") @db.VarChar(100)
@@ -53,7 +32,6 @@ model MapDocumentRecord {
   @@unique([mapId, version], name: "uk_map_version")
   @@index([mapId, status])
   @@map("map_documents")
->>>>>>> c81100e (refactor: move prisma schema to map documents)
 }
 
 model MapProjectionRecord {
@@ -66,7 +44,6 @@ model MapProjectionRecord {
   @@map("map_projections")
 }
 
-// 用户进度表
 model UserProgress {
   id           Int      @id @default(autoincrement())
   userId       Int      @map("user_id")
