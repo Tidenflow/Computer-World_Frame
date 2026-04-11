@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-<<<<<<< HEAD
-import { BookOpen, Lightbulb, Sparkles, Target, X, Zap } from 'lucide-vue-next';
-=======
 import type { CWFrameNodeDocument } from '@shared/contract';
->>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 import { useMapStore } from '../store/map.store';
+import { X, BookOpen, ArrowRight, Lightbulb, Sparkles, Target, Zap } from 'lucide-vue-next';
 
 const mapStore = useMapStore();
 const node = computed(() => mapStore.selectedNode);
 
+/**
+ * 关闭节点详情弹窗。
+ *
+ * @returns void
+ * @sideEffects 会调用 `mapStore.selectNode(null)` 清空选中节点，导致弹窗消失
+ */
 function handleClose(): void {
   mapStore.selectNode(null);
 }
 
-<<<<<<< HEAD
-=======
 /**
  * 前置知识（依赖节点）列表。
  *
@@ -30,24 +31,25 @@ const getPrerequisites = computed(() => {
     .filter((candidate): candidate is CWFrameNodeDocument => Boolean(candidate));
 });
 
->>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 // Mock deep dive until contract supports it
 const deepDive = {
-  overview: 'This panel stays focused on the selected concept itself, so the detail view does not turn into a side-channel for graph navigation.',
+  overview: '这是该领域的关键基石，在整个计算机科学体系中占据着承上启下的核心地位。',
   keyPoints: [
-    'Read the node description first to understand what this concept represents in the current map.',
-    'Use the graph itself when you want to explore spatial relationships between concepts.',
-    'Keep the sidebar focused on understanding, not on unlocking or redirecting the user.',
+    '理解底层运行机制对性能优化的影响',
+    '掌握主流工业界的最佳实践与标准',
+    '建立从抽象到底层的全链路思考能力'
   ],
-  learningPath: ['Read', 'Relate', 'Reflect', 'Return To Graph'],
+  learningPath: ['基础概念', '核心架构', '性能调优', '工程实践']
 };
 
+/**
+ * 点击“Spark AI 深度解读”按钮（当前为 mock 行为）。
+ *
+ * @returns void
+ * @sideEffects 会弹出浏览器 alert
+ */
 function handleSparkAI(): void {
-<<<<<<< HEAD
-  alert(`Spark AI: preparing an extended explanation for "${node.value?.label}"...`);
-=======
   alert(`Spark AI: 正在生成关于 "${node.value?.title}" 的深度工业应用分析...`);
->>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 }
 </script>
 
@@ -55,6 +57,8 @@ function handleSparkAI(): void {
   <Transition name="modal-bounce">
     <div v-if="node" class="modal-wrapper" @click="handleClose">
       <div class="modal-card glass-panel" @click.stop>
+        
+        <!-- Header Section -->
         <header class="modal-head">
           <div class="head-top">
             <div class="category-chip" :class="node.domain">
@@ -68,17 +72,13 @@ function handleSparkAI(): void {
           <div class="divider"></div>
         </header>
 
+        <!-- Scrollable Content -->
         <div class="modal-body custom-scroll">
+          
+          <!-- Quick Meta (Aliases mock) -->
           <div class="section-group">
-            <div class="tag-title">Aliases</div>
+            <div class="tag-title">别名 / Aliases</div>
             <div class="alias-chips">
-<<<<<<< HEAD
-              <span class="chip-item">#{{ node.label }}</span>
-              <span class="chip-item">#concept</span>
-            </div>
-          </div>
-
-=======
               <span class="chip-item">#{{ node.title }}</span>
               <span class="chip-item">#核心概念</span>
             </div>
@@ -104,21 +104,20 @@ function handleSparkAI(): void {
           </div>
 
           <!-- Deep Dive (Clone of NodeDetailPanel.tsx) -->
->>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
           <div class="deep-dive-box">
             <div class="deep-dive-head">
               <Sparkles :size="18" class="icon-spark" />
-              <span>Deep Dive</span>
+              <span>深度探索 🚀</span>
             </div>
-
+            
             <div class="dive-content">
               <div class="dive-section">
-                <div class="dive-label"><Target :size="12" /> Overview</div>
+                <div class="dive-label"><Target :size="12" /> 概述</div>
                 <p class="dive-text">{{ deepDive.overview }}</p>
               </div>
 
               <div class="dive-section">
-                <div class="dive-label"><Zap :size="12" /> Key Points</div>
+                <div class="dive-label"><Zap :size="12" /> 关键知识点</div>
                 <ul class="dive-list">
                   <li v-for="(point, i) in deepDive.keyPoints" :key="i">
                     {{ point }}
@@ -127,7 +126,7 @@ function handleSparkAI(): void {
               </div>
 
               <div class="dive-section">
-                <div class="dive-label"><BookOpen :size="12" /> Learning Path</div>
+                <div class="dive-label"><BookOpen :size="12" /> 学习路线建议</div>
                 <div class="path-steps">
                   <span v-for="(step, i) in deepDive.learningPath" :key="i" class="path-step">
                     {{ i + 1 }}. {{ step }}
@@ -136,14 +135,17 @@ function handleSparkAI(): void {
               </div>
             </div>
           </div>
+
         </div>
 
+        <!-- Footer Action -->
         <footer class="modal-foot">
           <button class="ai-spark-btn bg-gradient-brand shadow-glow" @click="handleSparkAI">
             <Sparkles :size="18" />
-            <span>Ask Spark AI</span>
+            <span>获取 Spark AI 深度解读</span>
           </button>
         </footer>
+
       </div>
     </div>
   </Transition>
@@ -199,12 +201,7 @@ function handleSparkAI(): void {
   color: var(--text-weak);
 }
 
-.chip-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 3px;
-  background: currentColor;
-}
+.chip-dot { width: 6px; height: 6px; border-radius: 3px; background: currentColor; }
 
 .icon-close {
   background: transparent;
@@ -214,10 +211,7 @@ function handleSparkAI(): void {
   transition: var(--transition-smooth);
 }
 
-.icon-close:hover {
-  color: var(--text-primary);
-  transform: rotate(90deg);
-}
+.icon-close:hover { color: var(--text-primary); transform: rotate(90deg); }
 
 .node-title {
   font-size: 32px;
@@ -247,34 +241,32 @@ function handleSparkAI(): void {
   gap: 28px;
 }
 
-.section-group {
+.section-group { display: flex; flex-direction: column; gap: 12px; }
+
+.tag-title { font-size: 12px; font-weight: 700; color: var(--text-weak); text-transform: uppercase; }
+
+.alias-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-item { font-size: 12px; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-slate); }
+
+.section-header { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; color: var(--text-secondary); }
+.icon-blue { color: var(--blue-400); }
+
+.nav-list { display: flex; flex-direction: column; gap: 8px; }
+.nav-item {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.tag-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-weak);
-  text-transform: uppercase;
-}
-
-.alias-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip-item {
-  font-size: 12px;
-  color: var(--text-muted);
-  background: var(--bg-card);
-  padding: 4px 10px;
-  border-radius: 6px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-slate);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  color: var(--text-secondary);
 }
+.nav-item:hover { background: var(--bg-card); border-color: var(--blue-400); transform: translateX(4px); }
 
+/* Deep Dive Box (The Core Clone) */
 .deep-dive-box {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.08));
   border: 1px solid rgba(37, 99, 235, 0.2);
@@ -292,53 +284,15 @@ function handleSparkAI(): void {
   margin-bottom: 20px;
 }
 
-.dive-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+.dive-content { display: flex; flex-direction: column; gap: 20px; }
+.dive-section { display: flex; flex-direction: column; gap: 8px; }
+.dive-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-weak); display: flex; align-items: center; gap: 6px; }
+.dive-text { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
 
-.dive-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.dive-list { padding-left: 14px; display: flex; flex-direction: column; gap: 6px; }
+.dive-list li { font-size: 13px; color: var(--text-secondary); opacity: 0.9; }
 
-.dive-label {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--text-weak);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dive-text {
-  font-size: 14px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-.dive-list {
-  padding-left: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.dive-list li {
-  font-size: 13px;
-  color: var(--text-secondary);
-  opacity: 0.9;
-}
-
-.path-steps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
+.path-steps { display: flex; flex-wrap: wrap; gap: 8px; }
 .path-step {
   font-size: 11px;
   background: rgba(37, 99, 235, 0.15);
@@ -348,10 +302,7 @@ function handleSparkAI(): void {
   border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
-.modal-foot {
-  padding: 24px 32px 32px 32px;
-  border-top: 1px solid var(--border-slate);
-}
+.modal-foot { padding: 24px 32px 32px 32px; border-top: 1px solid var(--border-slate); }
 
 .ai-spark-btn {
   width: 100%;
@@ -368,31 +319,13 @@ function handleSparkAI(): void {
   transition: var(--transition-smooth);
 }
 
-.shadow-glow {
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
-}
+.shadow-glow { box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4); }
+.ai-spark-btn:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 8px 30px rgba(37, 99, 235, 0.5); }
 
-.ai-spark-btn:hover {
-  transform: translateY(-3px);
-  filter: brightness(1.1);
-  box-shadow: 0 8px 30px rgba(37, 99, 235, 0.5);
-}
+/* Transitions */
+.modal-bounce-enter-active, .modal-bounce-leave-active { transition: opacity 0.4s ease; }
+.modal-bounce-enter-from, .modal-bounce-leave-to { opacity: 0; }
 
-.modal-bounce-enter-active,
-.modal-bounce-leave-active {
-  transition: opacity 0.4s ease;
-}
-
-.modal-bounce-enter-from,
-.modal-bounce-leave-to {
-  opacity: 0;
-}
-
-.modal-bounce-enter-active .modal-card {
-  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.modal-bounce-enter-from .modal-card {
-  transform: scale(0.8) translateY(40px);
-}
+.modal-bounce-enter-active .modal-card { transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.modal-bounce-enter-from .modal-card { transform: scale(0.8) translateY(40px); }
 </style>

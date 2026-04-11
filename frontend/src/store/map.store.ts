@@ -1,12 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-<<<<<<< HEAD
-import type { CWFrameMap, CWFrameNode } from '@shared/contract';
-=======
 import type { CWFrameMapPayload, CWFrameNodeDocument } from '@shared/contract';
->>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 import * as loader from '../core/cwframe.loader';
-import { buildVisibilityMap } from '../core/cwframe.visibility';
+import { buildStatusMap } from '../core/cwframe.status';
 import { useProgressStore } from './progress.store';
 
 /**
@@ -23,16 +19,16 @@ export const useMapStore = defineStore('map', () => {
   /**
    * 当前选中的节点 id（未选中时为 null）。
    */
-<<<<<<< HEAD
-  const selectedNodeId = ref<number | null>(null);
-  const focusRequest = ref<{ nodeId: number; requestedAt: number } | null>(null);
-=======
   const selectedNodeId = ref<string | null>(null);
->>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 
-  const visibilityMap = computed(() => {
+  /**
+   * 节点状态映射表：由 `frameMap` 与 `progressStore.progress` 计算得出。
+   *
+   * @returns Record<nodeId, 'Locked' | 'Discoverable' | 'Unlocked'>
+   */
+  const statusMap = computed(() => {
     if (!frameMap.value) return {};
-    return buildVisibilityMap(frameMap.value, progressStore.progress);
+    return buildStatusMap(frameMap.value, progressStore.progress);
   });
 
   /**
@@ -76,23 +72,12 @@ export const useMapStore = defineStore('map', () => {
     selectedNodeId.value = selectedNodeId.value === id ? null : id;
   }
 
-  function openNode(id: number | null): void {
-    selectedNodeId.value = id;
-  }
-
-  function focusNode(id: number): void {
-    focusRequest.value = { nodeId: id, requestedAt: Date.now() };
-  }
-
   return {
     frameMap,
     selectedNodeId,
-    focusRequest,
-    visibilityMap,
+    statusMap,
     selectedNode,
     loadMap,
-    selectNode,
-    openNode,
-    focusNode
+    selectNode
   };
 });

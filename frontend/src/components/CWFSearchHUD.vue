@@ -9,12 +9,7 @@ const mapStore = useMapStore();
 const progressStore = useProgressStore();
 
 const inputValue = ref('');
-const result = ref<{
-  term: string;
-  status: 'success' | 'no-new' | 'not-found';
-  nodeName?: string;
-  detail?: string;
-} | null>(null);
+const result = ref<{ term: string; matched: boolean; nodeName?: string } | null>(null);
 const showSuggestions = ref(false);
 
 const exampleTerms = [
@@ -36,28 +31,12 @@ const exampleTerms = [
  * - 可能触发进度更新（包含网络同步）
  * - 会清空 inputValue、关闭建议面板，并设置/清理 result
  */
-async function handleUnlock(): Promise<void> {
+function handleUnlock(): void {
   if (!mapStore.frameMap || !inputValue.value.trim()) return;
 
-  const rawInput = inputValue.value.trim();
   const terms = extractTerms(inputValue.value);
-  const latestEntries: Array<{ nodeId: number; matchedTerm: string; unlockedAt: number }> = [];
-  let hasMatchedNode = false;
+  let hasAnyMatch = false;
 
-<<<<<<< HEAD
-  for (const term of terms) {
-    const matchedNode = matchNodeByTerm(term, mapStore.frameMap.nodes);
-    if (matchedNode) {
-      hasMatchedNode = true;
-      const unlockResult = await progressStore.unlockNode(matchedNode, term);
-      if (unlockResult.isNewlyUnlocked) {
-        latestEntries.push({
-          nodeId: matchedNode.id,
-          matchedTerm: term,
-          unlockedAt: Date.now()
-        });
-      }
-=======
   terms.forEach(term => {
     const matchedNode = matchNodeByTerm(term, mapStore.frameMap!.document.nodes);
     if (matchedNode) {
@@ -73,37 +52,13 @@ async function handleUnlock(): Promise<void> {
         showSuggestions.value = false;
         clearResult();
       });
->>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
     }
+  });
+
+  if (!hasAnyMatch) {
+    result.value = { term: terms[0], matched: false };
+    clearResult();
   }
-
-  progressStore.setLatestInputResult(rawInput, latestEntries);
-
-  if (latestEntries.length === 1) {
-    mapStore.focusNode(latestEntries[0].nodeId);
-  }
-
-  if (latestEntries.length > 0) {
-    const latestNode = mapStore.frameMap.nodes.find(node => node.id === latestEntries[0].nodeId);
-    result.value = {
-      term: terms[0],
-      status: 'success',
-      nodeName: latestNode?.label,
-      detail: latestEntries.length > 1 ? `本次点亮 ${latestEntries.length} 个新节点` : '已点亮新的节点'
-    };
-  } else if (hasMatchedNode) {
-    result.value = {
-      term: terms[0],
-      status: 'no-new',
-      detail: '匹配到了节点，但这次没有点亮新的节点'
-    };
-  } else {
-    result.value = { term: terms[0], status: 'not-found', detail: '试试其他术语吧' };
-  }
-
-  inputValue.value = '';
-  showSuggestions.value = false;
-  clearResult();
 }
 
 /**
@@ -114,7 +69,7 @@ async function handleUnlock(): Promise<void> {
  */
 function selectSuggestion(s: string): void {
   inputValue.value = s;
-  void handleUnlock();
+  handleUnlock();
 }
 
 /**
@@ -135,30 +90,16 @@ function clearResult(): void {
   <div class="search-container">
     <!-- 匹配反馈 Toast -->
     <Transition name="feedback-slide">
-      <div
-        v-if="result"
-        class="feedback-toast glass-panel"
-        :class="{ success: result.status === 'success' }"
-      >
+      <div v-if="result" class="feedback-toast glass-panel" :class="{ success: result.matched }">
         <div class="icon-indicator">
-          <CheckCircle2 v-if="result.status === 'success'" class="icon-success" :size="24" />
+          <CheckCircle2 v-if="result.matched" class="icon-success" :size="24" />
           <XCircle v-else class="icon-error" :size="24" />
         </div>
         <div class="feedback-info">
-          <div class="status-title">
-            {{
-              result.status === 'success'
-                ? '匹配成功！'
-                : result.status === 'no-new'
-                  ? '没有新的点亮'
-                  : '未找到匹配'
-            }}
-          </div>
-          <div class="status-detail">
-            {{ result.status === 'success' ? `"${result.term}" → ${result.nodeName}` : result.detail }}
-          </div>
+          <div class="status-title">{{ result.matched ? '匹配成功！' : '未找到匹配' }}</div>
+          <div class="status-detail">{{ result.matched ? `"${result.term}" → ${result.nodeName}` : '试试其他术语吧' }}</div>
         </div>
-        <Sparkles v-if="result.status === 'success'" class="spark-fx" :size="20" />
+        <Sparkles v-if="result.matched" class="spark-fx" :size="20" />
       </div>
     </Transition>
 
@@ -169,12 +110,12 @@ function clearResult(): void {
         <input
           v-model="inputValue"
           placeholder="输入任何计算机相关的术语..."
-          @keyup.enter="void handleUnlock()"
+          @keyup.enter="handleUnlock"
           @focus="showSuggestions = true"
           class="search-input"
         />
         <button 
-          @click="void handleUnlock()" 
+          @click="handleUnlock" 
           class="ignite-btn bg-gradient-brand"
           :disabled="!inputValue.trim()"
         >
@@ -212,7 +153,7 @@ function clearResult(): void {
 
 .search-bar-wrapper {
   width: 100%;
-  max-width: 560px;
+  max-width: 640px;
   position: relative;
   z-index: 200;
 }
@@ -220,8 +161,8 @@ function clearResult(): void {
 .search-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 6px 6px 16px;
+  gap: 12px;
+  padding: 8px 8px 8px 20px;
   border-radius: 16px;
   transition: var(--transition-smooth);
   border: 1px solid var(--border-slate);
@@ -238,15 +179,15 @@ function clearResult(): void {
   flex: 1;
   background: transparent;
   border: none;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-primary);
   outline: none;
-  padding: 10px 0;
+  padding: 12px 0;
 }
 
 .ignite-btn {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   border: none;
   color: white;
@@ -267,7 +208,7 @@ function clearResult(): void {
   top: calc(100% + 12px);
   left: 0;
   right: 0;
-  padding: 18px;
+  padding: 20px;
   border-radius: 16px;
   z-index: 100;
 }
