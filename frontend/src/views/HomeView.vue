@@ -17,7 +17,7 @@ const isSidebarCollapsed = ref(true);
 
 const profileTitle = computed(() => userStore.username || 'Explorer');
 const unlockedRatio = computed(() => {
-  const total = mapStore.frameMap?.nodes.length ?? 0;
+  const total = mapStore.frameMap?.document.nodes.length ?? 0;
   return `${progressStore.unlockedNodesCount}/${total}`;
 });
 
@@ -105,7 +105,7 @@ onMounted(async (): Promise<void> => {
             <div class="progress-stats glass-panel">
               <span class="stats-label">Unlocked</span>
               <span class="stats-value">{{ progressStore.unlockedNodesCount }}</span>
-              <span class="stats-total"> / {{ mapStore.frameMap?.nodes.length || 0 }}</span>
+              <span class="stats-total"> / {{ mapStore.frameMap?.document.nodes.length || 0 }}</span>
             </div>
           </div>
         </section>

@@ -41,11 +41,11 @@ async function handleUnlock(): Promise<void> {
 
   const rawInput = inputValue.value.trim();
   const terms = extractTerms(inputValue.value);
-  const latestEntries: Array<{ nodeId: number; matchedTerm: string; unlockedAt: number }> = [];
+  const latestEntries: Array<{ nodeId: string; matchedTerm: string; unlockedAt: number }> = [];
   let hasMatchedNode = false;
 
   for (const term of terms) {
-    const matchedNode = matchNodeByTerm(term, mapStore.frameMap.nodes);
+    const matchedNode = matchNodeByTerm(term, mapStore.frameMap.document.nodes);
     if (matchedNode) {
       hasMatchedNode = true;
       const unlockResult = await progressStore.unlockNode(matchedNode, term);
@@ -66,11 +66,11 @@ async function handleUnlock(): Promise<void> {
   }
 
   if (latestEntries.length > 0) {
-    const latestNode = mapStore.frameMap.nodes.find(node => node.id === latestEntries[0].nodeId);
+    const latestNode = mapStore.frameMap.document.nodes.find((node: any) => node.id === latestEntries[0].nodeId);
     result.value = {
       term: terms[0],
       status: 'success',
-      nodeName: latestNode?.label,
+      nodeName: latestNode?.title,
       detail: latestEntries.length > 1 ? `本次点亮 ${latestEntries.length} 个新节点` : '已点亮新的节点'
     };
   } else if (hasMatchedNode) {

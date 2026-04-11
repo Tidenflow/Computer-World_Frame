@@ -22,7 +22,7 @@ const deepDive = {
 };
 
 function handleSparkAI(): void {
-  alert(`Spark AI: preparing an extended explanation for "${node.value?.label}"...`);
+  alert(`Spark AI: preparing an extended explanation for "${node.value?.title}"...`);
 }
 </script>
 
@@ -32,14 +32,14 @@ function handleSparkAI(): void {
       <div class="modal-card glass-panel" @click.stop>
         <header class="modal-head">
           <div class="head-top">
-            <div class="category-chip" :class="node.category">
+            <div class="category-chip" :class="node.domain">
               <div class="chip-dot"></div>
-              <span>{{ node.category.toUpperCase() }}</span>
+              <span>{{ node.domain.toUpperCase() }}</span>
             </div>
             <button @click="handleClose" class="icon-close"><X :size="20" /></button>
           </div>
-          <h2 class="node-title">{{ node.label }}</h2>
-          <p class="node-desc">{{ node.description }}</p>
+          <h2 class="node-title">{{ node.title }}</h2>
+          <p class="node-desc">{{ (node as any).description || 'No description available' }}</p>
           <div class="divider"></div>
         </header>
 
@@ -47,7 +47,7 @@ function handleSparkAI(): void {
           <div class="section-group">
             <div class="tag-title">Aliases</div>
             <div class="alias-chips">
-              <span class="chip-item">#{{ node.label }}</span>
+              <span class="chip-item">#{{ node.title }}</span>
               <span class="chip-item">#concept</span>
             </div>
           </div>

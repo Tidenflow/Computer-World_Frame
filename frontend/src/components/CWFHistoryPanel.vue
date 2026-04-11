@@ -11,16 +11,16 @@ const latestEntries = computed(() => {
   if (!mapStore.frameMap) return [];
 
   return progressStore.latestInputEntries
-    .map(entry => {
-      const node = mapStore.frameMap?.nodes.find(candidate => candidate.id === entry.nodeId);
+    .map((entry: any) => {
+      const node = mapStore.frameMap?.document.nodes.find((candidate: any) => candidate.id === entry.nodeId);
       if (!node) return null;
 
       return {
         nodeId: entry.nodeId,
         matchedTerm: entry.matchedTerm,
         unlockedAt: entry.unlockedAt,
-        label: node.label,
-        category: node.category || 'default'
+        label: node.title,
+        category: node.domain || 'default'
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
@@ -34,7 +34,7 @@ function handleClear(): Promise<void> {
   return progressStore.resetLocalProgress();
 }
 
-function focusEntry(nodeId: number): void {
+function focusEntry(nodeId: string): void {
   mapStore.focusNode(nodeId);
 }
 

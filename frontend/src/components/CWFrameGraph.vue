@@ -44,7 +44,7 @@ const dragState = reactive({
 });
 
 const getCategoryColor = (cat: string): string => categoryColors[cat] || categoryColors.default;
-const getDisplayColor = (nodeId: number, category: string): string =>
+const getDisplayColor = (nodeId: string, category: string): string =>
   recentNodeIds.value.has(nodeId) ? RECENT_HIGHLIGHT_COLOR : getCategoryColor(category);
 
 const visibilityMap = computed(() => mapStore.visibilityMap);
@@ -54,7 +54,7 @@ const renderableNodeIds = computed(
     new Set(
       Object.entries(visibilityMap.value)
         .filter(([, visibility]) => visibility !== 'Hidden')
-        .map(([nodeId]) => Number(nodeId))
+        .map(([nodeId]) => nodeId)
     )
 );
 
@@ -78,7 +78,7 @@ const treeLayout = computed(() => {
     return { instances: [], links: [] };
   }
 
-  return layoutGraphTree(mapStore.frameMap.nodes, {
+  return layoutGraphTree(mapStore.frameMap.document.nodes, {
     activeNodeIds: renderableNodeIds.value,
     width: VIEWBOX_WIDTH,
     height: VIEWBOX_HEIGHT
@@ -88,8 +88,8 @@ const treeLayout = computed(() => {
 const nodesWithPositions = computed(() =>
   treeLayout.value.instances.map(node => ({
     ...node,
-    radius: getNodeRadius(node.weight),
-    visibility: visibilityMap.value[node.id] ?? 'Hidden'
+    radius: getNodeRadius((node as any).weight ?? 1),
+    visibility: visibilityMap.value[node.sourceNodeId] ?? 'Hidden'
   }))
 );
 const outlinedLabelInstanceKeys = computed(() => {
@@ -123,7 +123,8 @@ const visibleNodes = computed(() => {
       return true;
     }
 
-    return node.weight >= minWeight || viewport.scale >= 1.02 || recentNodeIds.value.has(node.id);
+    const weight = (node as any).weight ?? 1;
+    return weight >= minWeight || viewport.scale >= 1.02 || recentNodeIds.value.has(node.sourceNodeId);
   });
 });
 
@@ -244,15 +245,15 @@ function getWeightAdjustment(weight: number): number {
   return 0;
 }
 
-function computeFocusZoom(nodeId: number): number {
+function computeFocusZoom(nodeId: string): number {
   if (!mapStore.frameMap) return 1;
 
-  const targetNode = mapStore.frameMap.nodes.find(node => node.id === nodeId);
+  const targetNode = mapStore.frameMap.document.nodes.find(node => node.id === nodeId);
   if (!targetNode) return 1;
 
-  const adjacentIds = new Set<number>(targetNode.dependencies);
-  for (const node of mapStore.frameMap.nodes) {
-    if (node.dependencies.includes(nodeId)) adjacentIds.add(node.id);
+  const adjacentIds = new Set<string>(targetNode.deps);
+  for (const node of mapStore.frameMap.document.nodes) {
+    if (node.deps.includes(nodeId)) adjacentIds.add(node.id);
   }
 
   let unlockedNeighbors = 0;
@@ -271,14 +272,15 @@ function computeFocusZoom(nodeId: number): number {
     outlinedNeighbors * 0.45 +
     visibleEdges * 0.25;
 
+  const weight = (targetNode as any).weight ?? 1;
   return clampZoom(
-    1.0 + getDensityAdjustment(densityScore) + getWeightAdjustment(targetNode.weight)
+    1.0 + getDensityAdjustment(densityScore) + getWeightAdjustment(weight)
   );
 }
 
-function focusNodeInGraph(nodeId: number): void {
+function focusNodeInGraph(nodeId: string): void {
   const targetNode = [...nodesWithPositions.value]
-    .filter(node => node.id === nodeId)
+    .filter(node => node.sourceNodeId === nodeId)
     .sort((left, right) => {
       if (left.depth !== right.depth) return left.depth - right.depth;
 
@@ -297,7 +299,7 @@ function focusNodeInGraph(nodeId: number): void {
   viewport.translateY = VIEWBOX_CENTER_Y - targetNode.y * nextScale;
 }
 
-function handleNodeClick(nodeId: number): void {
+function handleNodeClick(nodeId: string): void {
   if (visibilityMap.value[nodeId] === 'Unlocked') {
     mapStore.openNode(nodeId);
   }
@@ -353,18 +355,18 @@ watch(
             :class="[
               node.visibility.toLowerCase(),
               {
-                selected: mapStore.selectedNodeId === node.id,
-                recent: recentNodeIds.has(node.id)
+                selected: mapStore.selectedNodeId === node.sourceNodeId,
+                recent: recentNodeIds.has(node.sourceNodeId)
               }
             ]"
-            @click.stop="handleNodeClick(node.id)"
+            @click.stop="handleNodeClick(node.sourceNodeId)"
           >
             <circle
               v-if="node.visibility === 'Unlocked'"
               :cx="node.x"
               :cy="node.y"
               :r="node.radius + 11"
-              :fill="getDisplayColor(node.id, node.category)"
+              :fill="getDisplayColor(node.sourceNodeId, node.domain)"
               class="breathe-halo"
             />
 
@@ -373,8 +375,8 @@ watch(
               :cx="node.x"
               :cy="node.y"
               :r="node.radius"
-              :fill="getDisplayColor(node.id, node.category)"
-              :stroke="getDisplayColor(node.id, node.category)"
+              :fill="getDisplayColor(node.sourceNodeId, node.domain)"
+              :stroke="getDisplayColor(node.sourceNodeId, node.domain)"
               stroke-width="2"
               class="main-circle"
             />
@@ -395,7 +397,7 @@ watch(
               :cx="node.x + node.radius * 0.6"
               :cy="node.y - node.radius * 0.6"
               r="4.5"
-              :fill="getDisplayColor(node.id, node.category)"
+              :fill="getDisplayColor(node.sourceNodeId, node.domain)"
               class="cat-dot"
             />
 
@@ -407,7 +409,7 @@ watch(
               class="node-label"
               fill="#f8fafc"
             >
-              {{ node.label }}
+              {{ node.title }}
             </text>
 
             <text
@@ -422,7 +424,7 @@ watch(
               class="node-label node-label-outlined"
               fill="rgba(226, 232, 240, 0.76)"
             >
-              {{ node.label }}
+              {{ node.title }}
             </text>
           </g>
         </g>
