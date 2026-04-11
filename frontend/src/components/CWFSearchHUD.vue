@@ -44,6 +44,7 @@ async function handleUnlock(): Promise<void> {
   const latestEntries: Array<{ nodeId: number; matchedTerm: string; unlockedAt: number }> = [];
   let hasMatchedNode = false;
 
+<<<<<<< HEAD
   for (const term of terms) {
     const matchedNode = matchNodeByTerm(term, mapStore.frameMap.nodes);
     if (matchedNode) {
@@ -56,6 +57,23 @@ async function handleUnlock(): Promise<void> {
           unlockedAt: Date.now()
         });
       }
+=======
+  terms.forEach(term => {
+    const matchedNode = matchNodeByTerm(term, mapStore.frameMap!.document.nodes);
+    if (matchedNode) {
+      hasAnyMatch = true;
+      // 修复调用处：传递 matchedTerm (term) 确保历史记录能正确显示用户输入
+      progressStore.unlockNode(matchedNode, term).then(res => {
+        result.value = { 
+          term, 
+          matched: true, 
+          nodeName: matchedNode.title 
+        };
+        inputValue.value = '';
+        showSuggestions.value = false;
+        clearResult();
+      });
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
     }
   }
 

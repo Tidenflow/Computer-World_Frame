@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+<<<<<<< HEAD
 import { BookOpen, Lightbulb, Sparkles, Target, X, Zap } from 'lucide-vue-next';
+=======
+import type { CWFrameNodeDocument } from '@shared/contract';
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 import { useMapStore } from '../store/map.store';
 
 const mapStore = useMapStore();
@@ -10,6 +14,23 @@ function handleClose(): void {
   mapStore.selectNode(null);
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * 前置知识（依赖节点）列表。
+ *
+ * 当当前节点存在且地图已加载时，把 `node.dependencies` 映射为具体节点对象。
+ *
+ * @returns 前置节点数组（不包含 null）
+ */
+const getPrerequisites = computed(() => {
+  if (!node.value || !mapStore.frameMap) return [];
+  return node.value.deps
+    .map(id => mapStore.frameMap?.projection.nodeById[id])
+    .filter((candidate): candidate is CWFrameNodeDocument => Boolean(candidate));
+});
+
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 // Mock deep dive until contract supports it
 const deepDive = {
   overview: 'This panel stays focused on the selected concept itself, so the detail view does not turn into a side-channel for graph navigation.',
@@ -22,7 +43,11 @@ const deepDive = {
 };
 
 function handleSparkAI(): void {
+<<<<<<< HEAD
   alert(`Spark AI: preparing an extended explanation for "${node.value?.label}"...`);
+=======
+  alert(`Spark AI: 正在生成关于 "${node.value?.title}" 的深度工业应用分析...`);
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 }
 </script>
 
@@ -32,14 +57,14 @@ function handleSparkAI(): void {
       <div class="modal-card glass-panel" @click.stop>
         <header class="modal-head">
           <div class="head-top">
-            <div class="category-chip" :class="node.category">
+            <div class="category-chip" :class="node.domain">
               <div class="chip-dot"></div>
-              <span>{{ node.category.toUpperCase() }}</span>
+              <span>{{ node.domain.toUpperCase() }}</span>
             </div>
             <button @click="handleClose" class="icon-close"><X :size="20" /></button>
           </div>
-          <h2 class="node-title">{{ node.label }}</h2>
-          <p class="node-desc">{{ node.description }}</p>
+          <h2 class="node-title">{{ node.title }}</h2>
+          <p class="node-desc">{{ node.tags?.join(' / ') || '暂无扩展说明' }}</p>
           <div class="divider"></div>
         </header>
 
@@ -47,11 +72,39 @@ function handleSparkAI(): void {
           <div class="section-group">
             <div class="tag-title">Aliases</div>
             <div class="alias-chips">
+<<<<<<< HEAD
               <span class="chip-item">#{{ node.label }}</span>
               <span class="chip-item">#concept</span>
             </div>
           </div>
 
+=======
+              <span class="chip-item">#{{ node.title }}</span>
+              <span class="chip-item">#核心概念</span>
+            </div>
+          </div>
+
+          <!-- Dependencies -->
+          <div class="section-group" v-if="getPrerequisites.length > 0">
+            <div class="section-header">
+              <BookOpen :size="16" class="icon-blue" />
+              <span>前置知识 / Prerequisites</span>
+            </div>
+            <div class="nav-list">
+              <button 
+                v-for="pre in getPrerequisites" 
+                :key="pre.id"
+                class="nav-item"
+                @click="mapStore.selectNode(pre.id)"
+              >
+                    <span>{{ pre.title }}</span>
+                <ArrowRight :size="14" class="icon-weak" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Deep Dive (Clone of NodeDetailPanel.tsx) -->
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
           <div class="deep-dive-box">
             <div class="deep-dive-head">
               <Sparkles :size="18" class="icon-spark" />

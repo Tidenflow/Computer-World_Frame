@@ -1,4 +1,4 @@
-import type { CWFrameNode } from '@shared/contract';
+import type { CWFrameNodeDocument } from '@shared/contract';
 
 /**
  * 将用户输入的术语与知识节点进行匹配（轻量、无模型版）。
@@ -12,13 +12,13 @@ import type { CWFrameNode } from '@shared/contract';
  * @param nodes - 候选节点列表（通常来自 `CWFrameMap.nodes`）
  * @returns 命中的节点；若未命中返回 null
  */
-export function matchNodeByTerm(term: string, nodes: CWFrameNode[]): CWFrameNode | null {
+export function matchNodeByTerm(term: string, nodes: CWFrameNodeDocument[]): CWFrameNodeDocument | null {
   const normalizedTerm = term.toLowerCase().trim();
   if (!normalizedTerm) return null;
 
   // 1. 精确匹配节点名称 (label)
   let matched = nodes.find(node => 
-    node.label.toLowerCase() === normalizedTerm
+    node.title.toLowerCase() === normalizedTerm
   );
   if (matched) return matched;
 
@@ -31,8 +31,8 @@ export function matchNodeByTerm(term: string, nodes: CWFrameNode[]): CWFrameNode
 
   // 3. 部分匹配节点名称
   matched = nodes.find(node =>
-    node.label.toLowerCase().includes(normalizedTerm) ||
-    normalizedTerm.includes(node.label.toLowerCase())
+    node.title.toLowerCase().includes(normalizedTerm) ||
+    normalizedTerm.includes(node.title.toLowerCase())
   );
   if (matched) return matched;
 
