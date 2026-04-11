@@ -20,47 +20,42 @@ model User {
   @@index([username])
 }
 
-// 知识节点表
-model Node {
-  id           Int                @id @default(autoincrement())
-  label        String             @db.VarChar(100)
-  description  String?            @db.Text
-  category     String?            @db.VarChar(50)
-  weight       Int                @default(5)
-  tier         Int                @default(1)
-  createdAt    DateTime           @default(now()) @map("created_at")
-  dependencies NodeDependency[]   @relation("NodeDependencies")
-  dependents   NodeDependency[]   @relation("DependentNodes")
-  progress     UserProgress[]
+model MapDocumentRecord {
+  id           Int                  @id @default(autoincrement())
+  mapId        String               @map("map_id") @db.VarChar(100)
+  version      String               @db.VarChar(100)
+  status       String               @default("draft") @db.VarChar(20)
+  documentJson Json                 @map("document_json")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  publishedAt  DateTime?            @map("published_at")
+  projection   MapProjectionRecord?
 
-  @@map("nodes")
-  @@index([category])
-  @@index([weight])
+  @@unique([mapId, version], name: "uk_map_version")
+  @@index([mapId, status])
+  @@map("map_documents")
 }
 
-// 节点依赖关系表
-model NodeDependency {
-  nodeId          Int  @map("node_id")
-  dependsOnNodeId Int  @map("depends_on_node_id")
-  node            Node @relation("NodeDependencies", fields: [nodeId], references: [id], onDelete: Cascade)
-  dependsOnNode   Node @relation("DependentNodes", fields: [dependsOnNodeId], references: [id], onDelete: Cascade)
+model MapProjectionRecord {
+  id             Int               @id @default(autoincrement())
+  mapDocumentId  Int               @unique @map("map_document_id")
+  projectionJson Json              @map("projection_json")
+  generatedAt    DateTime          @default(now()) @map("generated_at")
+  mapDocument    MapDocumentRecord @relation(fields: [mapDocumentId], references: [id], onDelete: Cascade)
 
-  @@id([nodeId, dependsOnNodeId])
-  @@map("node_dependencies")
+  @@map("map_projections")
 }
 
 // 用户进度表
 model UserProgress {
-  id          Int      @id @default(autoincrement())
-  userId      Int      @map("user_id")
-  nodeId      Int      @map("node_id")
-  unlockedAt  DateTime @default(now()) @map("unlocked_at")
-  matchedTerm String?  @map("matched_term") @db.VarChar(100)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  node        Node     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  mapId        String   @map("map_id") @db.VarChar(100)
+  mapVersion   String   @map("map_version") @db.VarChar(100)
+  progressJson Json     @map("progress_json")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, nodeId], name: "uk_user_node")
+  @@unique([userId, mapId, mapVersion], name: "uk_user_map_version")
   @@map("user_progress")
-  @@index([userId])
-  @@index([unlockedAt])
+  @@index([userId, mapId])
 }

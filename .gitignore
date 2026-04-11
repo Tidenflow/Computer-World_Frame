@@ -34,9 +34,6 @@ tsconfig.tsbuildinfo
 *.sqlite
 *.sqlite3
 
-# --- Prisma ---
-backend/prisma/migrations/
-
 # --- Claude Code ---
 .claude/
 
