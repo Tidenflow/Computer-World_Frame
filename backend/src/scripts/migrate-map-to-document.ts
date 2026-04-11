@@ -15,7 +15,7 @@ async function main() {
       mapId: document.mapId,
       version: document.version,
       status: 'published',
-      documentJson: document,
+      documentJson: document as unknown as object,
       publishedAt: new Date()
     }
   });
@@ -23,7 +23,7 @@ async function main() {
   await prisma.mapProjectionRecord.create({
     data: {
       mapDocumentId: saved.id,
-      projectionJson: projection
+      projectionJson: projection as unknown as object
     }
   });
 }

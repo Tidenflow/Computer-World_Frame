@@ -5,7 +5,9 @@ import { statusByErrorCode } from '../utils/error-status';
 export class ProgressController {
   async getProgress(req: Request, res: Response): Promise<void> {
     const userId = Number(req.params.userId);
-    const result = await progressService.getProgress(userId);
+    const mapId = typeof req.query.mapId === 'string' ? req.query.mapId : 'computer-world';
+    const mapVersion = typeof req.query.mapVersion === 'string' ? req.query.mapVersion : undefined;
+    const result = await progressService.getProgress(userId, mapId, mapVersion);
 
     if (!result.success) {
       res.status(statusByErrorCode(result.error.code)).json(result);
@@ -17,8 +19,17 @@ export class ProgressController {
 
   async updateProgress(req: Request, res: Response): Promise<void> {
     const userId = Number(req.params.userId);
-    const { unlockedNodes } = req.body as { unlockedNodes?: unknown };
-    const result = await progressService.updateProgress(userId, unlockedNodes);
+    const { mapId, mapVersion, unlocked } = req.body as {
+      mapId?: unknown;
+      mapVersion?: unknown;
+      unlocked?: unknown;
+    };
+    const result = await progressService.updateProgress(
+      userId,
+      typeof mapId === 'string' ? mapId : 'computer-world',
+      typeof mapVersion === 'string' ? mapVersion : '',
+      unlocked
+    );
 
     if (!result.success) {
       res.status(statusByErrorCode(result.error.code)).json(result);
@@ -30,8 +41,19 @@ export class ProgressController {
 
   async unlockNode(req: Request, res: Response): Promise<void> {
     const userId = req.userId!;
-    const { nodeId, matchedTerm } = req.body;
-    const result = await progressService.unlockNode(userId, nodeId, matchedTerm);
+    const { mapId, mapVersion, nodeId, matchedTerm } = req.body as {
+      mapId?: unknown;
+      mapVersion?: unknown;
+      nodeId?: unknown;
+      matchedTerm?: unknown;
+    };
+    const result = await progressService.unlockNode({
+      userId,
+      mapId: typeof mapId === 'string' ? mapId : 'computer-world',
+      mapVersion: typeof mapVersion === 'string' ? mapVersion : '',
+      nodeId: typeof nodeId === 'string' ? nodeId : '',
+      matchedTerm: typeof matchedTerm === 'string' ? matchedTerm : undefined
+    });
 
     if (!result.success) {
       res.status(statusByErrorCode(result.error.code)).json(result);
