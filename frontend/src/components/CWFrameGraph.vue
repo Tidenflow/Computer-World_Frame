@@ -38,7 +38,8 @@ const dragState = reactive({
   startClientX: 0,
   startClientY: 0,
   originTranslateX: 0,
-  originTranslateY: 0
+  originTranslateY: 0,
+  pointerId: null as number | null
 });
 
 const getCategoryColor = (cat: string): string => categoryColors[cat] || categoryColors.default;
@@ -164,11 +165,14 @@ function getSvgPoint(clientX: number, clientY: number): { x: number; y: number }
 }
 
 function handlePointerDown(event: PointerEvent): void {
+  event.preventDefault();
   dragState.active = true;
+  dragState.pointerId = event.pointerId;
   dragState.startClientX = event.clientX;
   dragState.startClientY = event.clientY;
   dragState.originTranslateX = viewport.translateX;
   dragState.originTranslateY = viewport.translateY;
+  svgRef.value?.setPointerCapture(event.pointerId);
 }
 
 function handlePointerMove(event: PointerEvent): void {
@@ -182,8 +186,14 @@ function handlePointerMove(event: PointerEvent): void {
   viewport.translateY = dragState.originTranslateY + deltaY;
 }
 
-function handlePointerUp(): void {
+function handlePointerUp(event?: PointerEvent): void {
+  const pointerId = event?.pointerId ?? dragState.pointerId;
+  if (pointerId !== null && svgRef.value?.hasPointerCapture(pointerId)) {
+    svgRef.value.releasePointerCapture(pointerId);
+  }
+
   dragState.active = false;
+  dragState.pointerId = null;
 }
 
 function handleWheel(event: WheelEvent): void {
@@ -291,6 +301,7 @@ watch(
       @pointermove="handlePointerMove"
       @pointerup="handlePointerUp"
       @pointerleave="handlePointerUp"
+      @pointercancel="handlePointerUp"
       @wheel="handleWheel"
     >
       <defs>
@@ -423,18 +434,23 @@ watch(
   transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.graph-canvas:active .graph-transform-layer {
+  transition: none;
+}
+
 .link-line {
   transition: all 0.35s ease;
+  stroke-linecap: round;
 }
 
 .link-line.full {
-  stroke: rgba(96, 165, 250, 0.45);
-  stroke-width: 2.1;
+  stroke: rgba(96, 165, 250, 0.62);
+  stroke-width: 2.35;
 }
 
 .link-line.partial {
-  stroke: rgba(148, 163, 184, 0.14);
-  stroke-width: 1.2;
+  stroke: rgba(148, 163, 184, 0.34);
+  stroke-width: 1.65;
 }
 
 .node-unit {
