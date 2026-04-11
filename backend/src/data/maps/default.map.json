@@ -2,8 +2,302 @@
   "mapId": "computer-world",
   "version": "2026-04-11",
   "domains": [
-    { "id": "hardware", "title": "Hardware", "order": 1 },
-    { "id": "software", "title": "Software", "order": 2 }
+    { "id": "fundamentals", "title": "Fundamentals", "order": 1 },
+    { "id": "hardware", "title": "Hardware", "order": 2 },
+    { "id": "os", "title": "Operating Systems", "order": 3 },
+    { "id": "network", "title": "Networking", "order": 4 },
+    { "id": "programming", "title": "Programming", "order": 5 },
+    { "id": "data", "title": "Data", "order": 6 },
+    { "id": "application", "title": "Application", "order": 7 }
   ],
-  "nodes": []
+  "nodes": [
+    {
+      "id": "binary-basics",
+      "title": "Binary Basics",
+      "domain": "fundamentals",
+      "stage": 1,
+      "deps": [],
+      "aliases": ["binary", "bits"],
+      "tags": ["encoding", "bit", "number-system"]
+    },
+    {
+      "id": "logic-basics",
+      "title": "Logic Basics",
+      "domain": "fundamentals",
+      "stage": 1,
+      "deps": [],
+      "aliases": ["boolean logic", "logic gates"],
+      "tags": ["boolean", "and-or-not"]
+    },
+    {
+      "id": "abstraction",
+      "title": "Abstraction",
+      "domain": "fundamentals",
+      "stage": 1,
+      "deps": [],
+      "aliases": ["layers", "abstraction layer"],
+      "tags": ["model", "layer"]
+    },
+    {
+      "id": "algorithms-intro",
+      "title": "Algorithms Intro",
+      "domain": "fundamentals",
+      "stage": 1,
+      "deps": [],
+      "aliases": ["algorithm", "algorithms"],
+      "tags": ["problem-solving", "procedure"]
+    },
+    {
+      "id": "cpu-basics",
+      "title": "CPU Basics",
+      "domain": "hardware",
+      "stage": 2,
+      "deps": ["binary-basics", "logic-basics"],
+      "aliases": ["cpu", "processor"],
+      "tags": ["execution", "compute"]
+    },
+    {
+      "id": "memory-basics",
+      "title": "Memory Basics",
+      "domain": "hardware",
+      "stage": 2,
+      "deps": ["binary-basics"],
+      "aliases": ["ram", "memory"],
+      "tags": ["storage", "runtime"]
+    },
+    {
+      "id": "storage-basics",
+      "title": "Storage Basics",
+      "domain": "hardware",
+      "stage": 2,
+      "deps": ["abstraction"],
+      "aliases": ["disk", "ssd", "storage"],
+      "tags": ["persistence", "device"]
+    },
+    {
+      "id": "io-basics",
+      "title": "I/O Basics",
+      "domain": "hardware",
+      "stage": 2,
+      "deps": ["abstraction"],
+      "aliases": ["input output", "io"],
+      "tags": ["device", "peripheral"]
+    },
+    {
+      "id": "computer-architecture",
+      "title": "Computer Architecture",
+      "domain": "hardware",
+      "stage": 3,
+      "deps": ["cpu-basics", "memory-basics"],
+      "aliases": ["architecture", "computer organization"],
+      "tags": ["system design", "hardware stack"]
+    },
+    {
+      "id": "programming-basics",
+      "title": "Programming Basics",
+      "domain": "programming",
+      "stage": 3,
+      "deps": ["abstraction", "algorithms-intro"],
+      "aliases": ["coding basics", "programming"],
+      "tags": ["syntax", "control flow"]
+    },
+    {
+      "id": "process-basics",
+      "title": "Process Basics",
+      "domain": "os",
+      "stage": 3,
+      "deps": ["cpu-basics", "memory-basics"],
+      "aliases": ["process", "program execution"],
+      "tags": ["runtime", "execution unit"]
+    },
+    {
+      "id": "data-structures",
+      "title": "Data Structures",
+      "domain": "programming",
+      "stage": 4,
+      "deps": ["programming-basics"],
+      "aliases": ["data structure", "array list tree"],
+      "tags": ["collection", "organization"]
+    },
+    {
+      "id": "c-language",
+      "title": "C Language",
+      "domain": "programming",
+      "stage": 4,
+      "deps": ["programming-basics", "memory-basics"],
+      "aliases": ["c", "c programming"],
+      "tags": ["systems", "manual memory"]
+    },
+    {
+      "id": "javascript-basics",
+      "title": "JavaScript Basics",
+      "domain": "programming",
+      "stage": 4,
+      "deps": ["programming-basics"],
+      "aliases": ["javascript", "js"],
+      "tags": ["web", "runtime"]
+    },
+    {
+      "id": "python-basics",
+      "title": "Python Basics",
+      "domain": "programming",
+      "stage": 4,
+      "deps": ["programming-basics"],
+      "aliases": ["python", "py"],
+      "tags": ["scripting", "general purpose"]
+    },
+    {
+      "id": "operating-system",
+      "title": "Operating System",
+      "domain": "os",
+      "stage": 4,
+      "deps": ["computer-architecture", "storage-basics", "io-basics"],
+      "aliases": ["os", "system software"],
+      "tags": ["kernel", "resource management"]
+    },
+    {
+      "id": "internet-basics",
+      "title": "Internet Basics",
+      "domain": "network",
+      "stage": 4,
+      "deps": ["operating-system"],
+      "aliases": ["internet", "network basics"],
+      "tags": ["communication", "routing"]
+    },
+    {
+      "id": "shell-basics",
+      "title": "Shell Basics",
+      "domain": "os",
+      "stage": 5,
+      "deps": ["operating-system"],
+      "aliases": ["shell", "terminal", "command line"],
+      "tags": ["cli", "tooling"]
+    },
+    {
+      "id": "file-system",
+      "title": "File System",
+      "domain": "os",
+      "stage": 5,
+      "deps": ["operating-system", "storage-basics"],
+      "aliases": ["filesystem", "file system"],
+      "tags": ["persistence", "directory"]
+    },
+    {
+      "id": "concurrency-basics",
+      "title": "Concurrency Basics",
+      "domain": "os",
+      "stage": 5,
+      "deps": ["process-basics", "operating-system"],
+      "aliases": ["concurrency", "parallelism"],
+      "tags": ["thread", "scheduling"]
+    },
+    {
+      "id": "tcp-ip",
+      "title": "TCP/IP",
+      "domain": "network",
+      "stage": 5,
+      "deps": ["internet-basics"],
+      "aliases": ["tcpip", "ip", "tcp"],
+      "tags": ["transport", "network stack"]
+    },
+    {
+      "id": "sql-basics",
+      "title": "SQL Basics",
+      "domain": "data",
+      "stage": 5,
+      "deps": ["data-structures"],
+      "aliases": ["sql", "query language"],
+      "tags": ["query", "relational"]
+    },
+    {
+      "id": "database-basics",
+      "title": "Database Basics",
+      "domain": "data",
+      "stage": 5,
+      "deps": ["file-system", "data-structures"],
+      "aliases": ["database", "db"],
+      "tags": ["storage engine", "persistence"]
+    },
+    {
+      "id": "http-basics",
+      "title": "HTTP Basics",
+      "domain": "network",
+      "stage": 6,
+      "deps": ["tcp-ip"],
+      "aliases": ["http", "https"],
+      "tags": ["request", "response"]
+    },
+    {
+      "id": "client-server",
+      "title": "Client-Server",
+      "domain": "network",
+      "stage": 6,
+      "deps": ["http-basics", "process-basics"],
+      "aliases": ["client server", "server architecture"],
+      "tags": ["service", "request flow"]
+    },
+    {
+      "id": "api-design",
+      "title": "API Design",
+      "domain": "programming",
+      "stage": 6,
+      "deps": ["programming-basics", "http-basics", "client-server"],
+      "aliases": ["api", "interface design", "rest api"],
+      "tags": ["contract", "endpoint"]
+    },
+    {
+      "id": "relational-model",
+      "title": "Relational Model",
+      "domain": "data",
+      "stage": 6,
+      "deps": ["database-basics", "sql-basics"],
+      "aliases": ["relational database", "relations"],
+      "tags": ["table", "schema"]
+    },
+    {
+      "id": "indexing-basics",
+      "title": "Indexing Basics",
+      "domain": "data",
+      "stage": 7,
+      "deps": ["relational-model"],
+      "aliases": ["index", "database index"],
+      "tags": ["performance", "lookup"]
+    },
+    {
+      "id": "frontend-basics",
+      "title": "Frontend Basics",
+      "domain": "application",
+      "stage": 7,
+      "deps": ["javascript-basics", "http-basics"],
+      "aliases": ["frontend", "ui development"],
+      "tags": ["browser", "interaction"]
+    },
+    {
+      "id": "backend-basics",
+      "title": "Backend Basics",
+      "domain": "application",
+      "stage": 7,
+      "deps": ["api-design", "database-basics"],
+      "aliases": ["backend", "server development"],
+      "tags": ["service", "data flow"]
+    },
+    {
+      "id": "web-application",
+      "title": "Web Application",
+      "domain": "application",
+      "stage": 8,
+      "deps": ["frontend-basics", "backend-basics"],
+      "aliases": ["web app", "website"],
+      "tags": ["full stack", "integration"]
+    },
+    {
+      "id": "deployment-basics",
+      "title": "Deployment Basics",
+      "domain": "application",
+      "stage": 9,
+      "deps": ["web-application", "operating-system", "client-server"],
+      "aliases": ["deployment", "deploy", "production"],
+      "tags": ["release", "hosting"]
+    }
+  ]
 }
