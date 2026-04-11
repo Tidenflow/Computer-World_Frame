@@ -60,6 +60,7 @@ onMounted(async (): Promise<void> => {
         <CWFSearchHUD />
       </header>
 
+<<<<<<< HEAD
       <div class="app-grid" :class="{ collapsed: isSidebarCollapsed }">
         <aside v-if="!isSidebarCollapsed" class="sidebar-col custom-scroll">
             <div class="profile-brief glass-panel">
@@ -74,6 +75,26 @@ onMounted(async (): Promise<void> => {
                 <span>ID #{{ userStore.userId }}</span>
                 <span>{{ unlockedRatio }} unlocked</span>
               </div>
+=======
+      <div class="app-grid">
+        <!-- 侧边栏列 (历史记录与图例) -->
+        <aside class="sidebar-col custom-scroll">
+          <CWFHistoryPanel/>
+          <!-- 下面这个是用来调试的，不要删掉 -->
+          <!-- <CWFHistoryPanel style="border: 3px solid red;" /> -->
+          
+          <!-- 分类图例面板 -->
+          <div class="legend-box glass-panel">
+            <h4 class="legend-title">分类图例 / Categories</h4>
+            <div class="legend-items">
+              <div class="legend-item"><span class="dot fundamentals"></span> 基础层 / Fundamentals</div>
+              <div class="legend-item"><span class="dot hardware"></span> 硬件层 / Hardware</div>
+              <div class="legend-item"><span class="dot os"></span> 系统层 / Operating Systems</div>
+              <div class="legend-item"><span class="dot network"></span> 网络层 / Networking</div>
+              <div class="legend-item"><span class="dot programming"></span> 编程层 / Programming</div>
+              <div class="legend-item"><span class="dot data"></span> 数据层 / Data</div>
+              <div class="legend-item"><span class="dot application"></span> 应用层 / Application</div>
+>>>>>>> bfb968a (fix: seed a usable default map document for local development)
             </div>
 
             <CWFHistoryPanel />
@@ -270,6 +291,7 @@ onMounted(async (): Promise<void> => {
   gap: 10px;
 }
 
+<<<<<<< HEAD
 .dot {
   width: 8px;
   height: 8px;
@@ -281,6 +303,16 @@ onMounted(async (): Promise<void> => {
 .dot.sw { background: #a855f7; box-shadow: 0 0 10px #a855f7; }
 .dot.th { background: #60a5fa; box-shadow: 0 0 10px #60a5fa; }
 .dot.net { background: #0ea5e9; box-shadow: 0 0 10px #0ea5e9; }
+=======
+.dot { width: 8px; height: 8px; border-radius: 50%; opacity: 0.8; }
+.dot.fundamentals { background: #60a5fa; box-shadow: 0 0 10px #60a5fa; }
+.dot.hardware { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+.dot.os { background: #a855f7; box-shadow: 0 0 10px #a855f7; }
+.dot.network { background: #0ea5e9; box-shadow: 0 0 10px #0ea5e9; }
+.dot.programming { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+.dot.data { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+.dot.application { background: #f43f5e; box-shadow: 0 0 10px #f43f5e; }
+>>>>>>> bfb968a (fix: seed a usable default map document for local development)
 
 .tips-list {
   padding-left: 14px;
