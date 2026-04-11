@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { CWFrameNodeDocument } from '@shared/contract';
 import { useMapStore } from '../store/map.store';
 import { X, BookOpen, ArrowRight, Lightbulb, Sparkles, Target, Zap } from 'lucide-vue-next';
 
@@ -25,9 +26,9 @@ function handleClose(): void {
  */
 const getPrerequisites = computed(() => {
   if (!node.value || !mapStore.frameMap) return [];
-  return node.value.dependencies
-    .map(id => mapStore.frameMap?.nodes.find(n => n.id === id))
-    .filter(Boolean);
+  return node.value.deps
+    .map(id => mapStore.frameMap?.projection.nodeById[id])
+    .filter((candidate): candidate is CWFrameNodeDocument => Boolean(candidate));
 });
 
 // Mock deep dive until contract supports it
@@ -48,7 +49,7 @@ const deepDive = {
  * @sideEffects 会弹出浏览器 alert
  */
 function handleSparkAI(): void {
-  alert(`Spark AI: 正在生成关于 "${node.value?.label}" 的深度工业应用分析...`);
+  alert(`Spark AI: 正在生成关于 "${node.value?.title}" 的深度工业应用分析...`);
 }
 </script>
 
@@ -60,14 +61,14 @@ function handleSparkAI(): void {
         <!-- Header Section -->
         <header class="modal-head">
           <div class="head-top">
-            <div class="category-chip" :class="node.category">
+            <div class="category-chip" :class="node.domain">
               <div class="chip-dot"></div>
-              <span>{{ node.category.toUpperCase() }}</span>
+              <span>{{ node.domain.toUpperCase() }}</span>
             </div>
             <button @click="handleClose" class="icon-close"><X :size="20" /></button>
           </div>
-          <h2 class="node-title">{{ node.label }}</h2>
-          <p class="node-desc">{{ node.description }}</p>
+          <h2 class="node-title">{{ node.title }}</h2>
+          <p class="node-desc">{{ node.tags?.join(' / ') || '暂无扩展说明' }}</p>
           <div class="divider"></div>
         </header>
 
@@ -78,7 +79,7 @@ function handleSparkAI(): void {
           <div class="section-group">
             <div class="tag-title">别名 / Aliases</div>
             <div class="alias-chips">
-              <span class="chip-item">#{{ node.label }}</span>
+              <span class="chip-item">#{{ node.title }}</span>
               <span class="chip-item">#核心概念</span>
             </div>
           </div>
@@ -96,7 +97,7 @@ function handleSparkAI(): void {
                 class="nav-item"
                 @click="mapStore.selectNode(pre.id)"
               >
-                <span>{{ pre.label }}</span>
+                    <span>{{ pre.title }}</span>
                 <ArrowRight :size="14" class="icon-weak" />
               </button>
             </div>

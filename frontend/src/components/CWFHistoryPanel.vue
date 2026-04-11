@@ -17,15 +17,15 @@ const mapStore = useMapStore();
 const historyEntries = computed(() => {
   if (!mapStore.frameMap) return [];
   
-  return Object.entries(progressStore.progress.unlockedNodes)
+  return Object.entries(progressStore.progress.unlocked)
     .map(([nodeId, info]) => {
-      const node = mapStore.frameMap?.nodes.find(n => n.id === parseInt(nodeId));
+      const node = mapStore.frameMap?.projection.nodeById[nodeId];
       return {
         id: nodeId,
-        name: node?.label || '未知节点',
+        name: node?.title || '未知节点',
         time: info.unlockedAt,
-        category: node?.category || 'default',
-        matchedTerm: (info as any).matchedTerm || node?.label
+        category: node?.domain || 'default',
+        matchedTerm: node?.title || nodeId
       };
     })
     .sort((a, b) => b.time - a.time);
@@ -55,7 +55,7 @@ async function handleClear() {
  * @sideEffects 会调用 `mapStore.selectNode()` 修改选中节点状态
  */
 function selectNode(id: string): void {
-  mapStore.selectNode(parseInt(id));
+  mapStore.selectNode(id);
 }
 
 /**

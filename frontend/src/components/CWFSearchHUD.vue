@@ -38,7 +38,7 @@ function handleUnlock(): void {
   let hasAnyMatch = false;
 
   terms.forEach(term => {
-    const matchedNode = matchNodeByTerm(term, mapStore.frameMap!.nodes);
+    const matchedNode = matchNodeByTerm(term, mapStore.frameMap!.document.nodes);
     if (matchedNode) {
       hasAnyMatch = true;
       // 修复调用处：传递 matchedTerm (term) 确保历史记录能正确显示用户输入
@@ -46,7 +46,7 @@ function handleUnlock(): void {
         result.value = { 
           term, 
           matched: true, 
-          nodeName: matchedNode.label 
+          nodeName: matchedNode.title 
         };
         inputValue.value = '';
         showSuggestions.value = false;

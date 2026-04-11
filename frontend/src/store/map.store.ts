@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { ref, computed, reactive } from 'vue';
-import type { CWFrameMap, CWFrameNode } from '@shared/contract';
+import { ref, computed } from 'vue';
+import type { CWFrameMapPayload, CWFrameNodeDocument } from '@shared/contract';
 import * as loader from '../core/cwframe.loader';
 import { buildStatusMap } from '../core/cwframe.status';
 import { useProgressStore } from './progress.store';
@@ -14,12 +14,12 @@ export const useMapStore = defineStore('map', () => {
   /**
    * 当前加载的知识图谱（未加载时为 null）。
    */
-  const frameMap = ref<CWFrameMap | null>(null);
+  const frameMap = ref<CWFrameMapPayload | null>(null);
 
   /**
    * 当前选中的节点 id（未选中时为 null）。
    */
-  const selectedNodeId = ref<number | null>(null);
+  const selectedNodeId = ref<string | null>(null);
 
   /**
    * 节点状态映射表：由 `frameMap` 与 `progressStore.progress` 计算得出。
@@ -36,9 +36,9 @@ export const useMapStore = defineStore('map', () => {
    *
    * @returns CWFrameNode | null
    */
-  const selectedNode = computed<CWFrameNode | null>(() => {
+  const selectedNode = computed<CWFrameNodeDocument | null>(() => {
     if (!frameMap.value || selectedNodeId.value === null) return null;
-    return frameMap.value.nodes.find(n => n.id === selectedNodeId.value) ?? null;
+    return frameMap.value.projection.nodeById[selectedNodeId.value] ?? null;
   });
 
   /**
@@ -49,7 +49,7 @@ export const useMapStore = defineStore('map', () => {
    *
    * @sideEffects 会写入 `frameMap.value`
    */
-  async function loadMap(): Promise<CWFrameMap> {
+  async function loadMap(): Promise<CWFrameMapPayload> {
     try {
       const map = await loader.loadFrameMap();
       frameMap.value = map;
@@ -68,7 +68,7 @@ export const useMapStore = defineStore('map', () => {
    *
    * @sideEffects 会修改 `selectedNodeId.value`
    */
-  function selectNode(id: number | null): void {
+  function selectNode(id: string | null): void {
     selectedNodeId.value = selectedNodeId.value === id ? null : id;
   }
 

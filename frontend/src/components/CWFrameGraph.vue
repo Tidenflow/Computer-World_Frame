@@ -17,9 +17,9 @@ const categoryColors: Record<string, string> = {
 };
 
 /**
- * 根据节点分类返回对应的主题色。
+ * 根据节点所属 domain 返回对应的主题色。
  *
- * @param cat - 节点分类（来自 `CWFrameNode.category`）
+ * @param cat - 节点所属 domain
  * @returns 十六进制颜色字符串（若未知分类则返回 default）
  */
 const getCategoryColor = (cat: string): string => categoryColors[cat] || categoryColors.default;
@@ -38,14 +38,14 @@ const statusMap = computed(() => mapStore.statusMap);
  */
 const nodesWithPositions = computed(() => {
   if (!mapStore.frameMap) return [];
-  
-  const nodes = mapStore.frameMap.nodes;
+
+  const nodes = mapStore.frameMap.document.nodes;
   const paddingX = 150;
   const vWidth = 1200;
   const vHeight = 840;
-  
+
   // 层级计算
-  const depthMap: Record<number, number> = {};
+  const depthMap: Record<string, number> = {};
   /**
    * 递归计算节点“依赖深度”（用于决定横向分层）。
    *
@@ -56,15 +56,15 @@ const nodesWithPositions = computed(() => {
    * @param path - 当前递归路径，用于检测循环
    * @returns 依赖深度（非负整数）
    */
-  const resolveDepth = (id: number, path = new Set()): number => {
+  const resolveDepth = (id: string, path = new Set<string>()): number => {
     if (depthMap[id] !== undefined) return depthMap[id];
     if (path.has(id)) return 0;
-    
+
     path.add(id);
     const node = nodes.find(n => n.id === id);
-    if (!node || !node.dependencies.length) return 0;
-    
-    const depth = 1 + Math.max(...node.dependencies.map(d => resolveDepth(d, path)));
+    if (!node || !node.deps.length) return 0;
+
+    const depth = 1 + Math.max(...node.deps.map(d => resolveDepth(d, path)));
     depthMap[id] = depth;
     return depth;
   };
@@ -72,7 +72,7 @@ const nodesWithPositions = computed(() => {
   nodes.forEach(n => resolveDepth(n.id));
   
   const maxDepth = Math.max(...Object.values(depthMap), 0) || 1;
-  const buckets: Record<number, number[]> = {};
+  const buckets: Record<number, string[]> = {};
   nodes.forEach(n => {
     const d = depthMap[n.id] || 0;
     if (!buckets[d]) buckets[d] = [];
@@ -84,12 +84,12 @@ const nodesWithPositions = computed(() => {
     const bucket = buckets[depth];
     const index = bucket.indexOf(node.id);
     const count = bucket.length;
-    
+
     // 复刻 React 的布局感
     const x = paddingX + (depth / maxDepth) * (vWidth - 2 * paddingX);
     // 垂直方向根据数量居中
     const y = (vHeight / 2) + (index - (count - 1) / 2) * 160 + (depth % 2 === 0 ? 0 : 40);
-    
+
     return { ...node, x, y };
   });
 });
@@ -104,8 +104,8 @@ const nodesWithPositions = computed(() => {
  */
 const links = computed(() => {
   const nodes = nodesWithPositions.value;
-  return nodes.flatMap(node => 
-    node.dependencies.map(depId => {
+  return nodes.flatMap(node =>
+    node.deps.map(depId => {
       const source = nodes.find(n => n.id === depId);
       if (source) {
         // 高亮逻辑: 仅当起点和终点都解锁时高亮
@@ -125,7 +125,7 @@ const links = computed(() => {
  * @param nodeId - 被点击的节点 id
  * @returns void
  */
-function handleNodeClick(nodeId: number): void {
+function handleNodeClick(nodeId: string): void {
   // 逻辑调整：允许查看 Unlocked 和 Discoverable 节点的详情
   const status = statusMap.value[nodeId];
   if (status === 'Unlocked' || status === 'Discoverable') {
@@ -174,15 +174,15 @@ function handleNodeClick(nodeId: number): void {
           <circle 
             v-if="statusMap[node.id] === 'Unlocked'"
             :cx="node.x" :cy="node.y" r="35"
-            :fill="getCategoryColor(node.category)"
+            :fill="getCategoryColor(node.domain)"
             class="breathe-halo"
           />
 
           <!-- 节点主体 -->
           <circle 
             :cx="node.x" :cy="node.y" r="25"
-            :fill="statusMap[node.id] === 'Unlocked' ? getCategoryColor(node.category) : '#1e293b'"
-            :stroke="statusMap[node.id] === 'Unlocked' ? getCategoryColor(node.category) : '#334155'"
+            :fill="statusMap[node.id] === 'Unlocked' ? getCategoryColor(node.domain) : '#1e293b'"
+            :stroke="statusMap[node.id] === 'Unlocked' ? getCategoryColor(node.domain) : '#334155'"
             stroke-width="2"
             class="main-circle"
           />
@@ -190,7 +190,7 @@ function handleNodeClick(nodeId: number): void {
           <!-- 装饰小标 -->
           <circle 
             :cx="node.x + 15" :cy="node.y - 15" r="4.5"
-            :fill="getCategoryColor(node.category)"
+            :fill="getCategoryColor(node.domain)"
             class="cat-dot"
           />
 
@@ -201,7 +201,7 @@ function handleNodeClick(nodeId: number): void {
             class="node-label"
             :fill="statusMap[node.id] === 'Unlocked' ? '#f8fafc' : '#64748b'"
           >
-            {{ node.label }}
+            {{ node.title }}
           </text>
         </g>
       </g>
