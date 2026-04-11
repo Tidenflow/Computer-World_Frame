@@ -24,6 +24,8 @@ describe('mapRepo fallback loading', () => {
     expect(result).not.toBeNull();
     expect(result?.document.mapId).toBe('computer-world');
     expect(result?.document.version).toBe('2026-04-11');
-    expect(result?.projection.topologicalOrder).toEqual([]);
+    expect(result?.document.nodes.length).toBeGreaterThanOrEqual(20);
+    expect(result?.projection.roots.length).toBeGreaterThan(0);
+    expect(result?.projection.topologicalOrder.length).toBe(result?.document.nodes.length);
   });
 });
