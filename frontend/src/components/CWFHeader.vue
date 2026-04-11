@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Lightbulb, Github, Info } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Lightbulb, Github, Info, User } from 'lucide-vue-next';
+import { useUserStore } from '../store/user.store';
 
-const showAbout = ref(false);
+const userStore = useUserStore();
 </script>
 
 <template>
@@ -19,6 +19,10 @@ const showAbout = ref(false);
       </div>
       
       <div class="header-right">
+        <router-link to="/profile" class="profile-link">
+          <User :size="18" />
+          <span>{{ userStore.username || 'Profile' }}</span>
+        </router-link>
         <button class="nav-btn" @click="$emit('toggle-about')">
           <Info :size="20" />
         </button>
@@ -91,6 +95,29 @@ const showAbout = ref(false);
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.profile-link {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-slate);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 999px;
+  transition: var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-highlight);
 }
 
 .nav-btn, .nav-link {
