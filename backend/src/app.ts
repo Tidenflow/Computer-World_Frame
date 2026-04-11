@@ -3,11 +3,8 @@ import cors from 'cors';
 import authRouter from './routers/auth.router';
 import progressRouter from './routers/progress.router';
 import mapRouter from './routers/map.router';
-<<<<<<< HEAD
-import nodeRouter from './routers/node.router';
 import { config } from './config';
-=======
->>>>>>> 3784d80 (refactor: remove legacy node api route)
+import { isAllowedCorsOrigin } from './config/cors';
 import { notFoundMiddleware } from './middleware/not-found.middleware';
 import { errorMiddleware } from './middleware/error.middleware';
 import { authMiddleware } from './middleware/auth.middleware';
@@ -16,9 +13,8 @@ const app = express();
 
 app.use(cors({
   origin: (origin, callback) => {
-    // 允许没有 origin 的请求（如 Postman）或白名单中的 origin
     const allowedOrigins = config.app.corsOrigin;
-    if (!origin || allowedOrigins === '*' || allowedOrigins.includes(origin)) {
+    if (isAllowedCorsOrigin(origin, allowedOrigins)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
