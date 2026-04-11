@@ -1,4 +1,4 @@
-import type { CWFrameProgress, CWFrameNode } from "@shared/contract";
+import type { UserProgressDocument, MapNodeDocument } from "@shared/contract";
 
 /**
  * 解锁单个节点（开放式探索：不检查依赖是否已解锁）。
@@ -7,11 +7,11 @@ import type { CWFrameProgress, CWFrameNode } from "@shared/contract";
  * @param node - 要解锁的目标节点
  * @returns void
  *
- * @sideEffects 会直接写入 `progress.unlockedNodes[node.id]`
+ * @sideEffects 会直接写入 `progress.unlocked[node.id]`
  */
-export function unlockNode(progress: CWFrameProgress, node: CWFrameNode): void {
-    if (progress.unlockedNodes[node.id]) return;
-    progress.unlockedNodes[node.id] = { unlockedAt: Date.now() };
+export function unlockNode(progress: UserProgressDocument, node: MapNodeDocument): void {
+    if (progress.unlocked[node.id]) return;
+    progress.unlocked[node.id] = { unlockedAt: Date.now() };
 }
 
 /**
@@ -21,10 +21,10 @@ export function unlockNode(progress: CWFrameProgress, node: CWFrameNode): void {
  * @param node - 要移除解锁记录的节点
  * @returns void
  *
- * @sideEffects 会删除 `progress.unlockedNodes[node.id]`
+ * @sideEffects 会删除 `progress.unlocked[node.id]`
  */
-export function lockNode(progress: CWFrameProgress, node: CWFrameNode): void {
-    delete progress.unlockedNodes[node.id];
+export function lockNode(progress: UserProgressDocument, node: MapNodeDocument): void {
+    delete progress.unlocked[node.id];
 }
 
 /**
@@ -33,8 +33,8 @@ export function lockNode(progress: CWFrameProgress, node: CWFrameNode): void {
  * @param progress - 当前用户进度对象（会被原地修改）
  * @returns void
  *
- * @sideEffects 会重置 `progress.unlockedNodes = {}`
+ * @sideEffects 会重置 `progress.unlocked = {}`
  */
-export function resetProgress(progress: CWFrameProgress): void {
-    progress.unlockedNodes = {};
+export function resetProgress(progress: UserProgressDocument): void {
+    progress.unlocked = {};
 }

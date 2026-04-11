@@ -1,10 +1,10 @@
-import type { CWFrameNode } from '@shared/contract';
+import type { MapNodeDocument } from '@shared/contract';
 
-export interface GraphTreeInstance extends CWFrameNode {
+export interface GraphTreeInstance extends MapNodeDocument {
   instanceKey: string;
-  sourceNodeId: number;
+  sourceNodeId: string;
   parentInstanceKey: string | null;
-  branchPath: number[];
+  branchPath: string[];
   depth: number;
   x: number;
   y: number;
@@ -14,12 +14,12 @@ export interface GraphTreeLink {
   key: string;
   sourceInstanceKey: string;
   targetInstanceKey: string;
-  sourceNodeId: number;
-  targetNodeId: number;
+  sourceNodeId: string;
+  targetNodeId: string;
 }
 
 interface LayoutOptions {
-  activeNodeIds?: Iterable<number>;
+  activeNodeIds?: Iterable<string>;
   width?: number;
   height?: number;
   paddingX?: number;
@@ -29,10 +29,10 @@ interface LayoutOptions {
 }
 
 interface TreeProjectionNode {
-  node: CWFrameNode;
+  node: MapNodeDocument;
   instanceKey: string;
   parentInstanceKey: string | null;
-  branchPath: number[];
+  branchPath: string[];
   depth: number;
   children: TreeProjectionNode[];
 }
@@ -50,7 +50,7 @@ const DEFAULT_SIBLING_GAP = 152;
 const DEFAULT_TREE_OFFSET_X_STEP = 42;
 
 export function layoutGraphTree(
-  nodes: CWFrameNode[],
+  nodes: MapNodeDocument[],
   options: LayoutOptions = {}
 ): TreeLayoutResult {
   const activeNodeIdSet = options.activeNodeIds
@@ -77,13 +77,13 @@ export function layoutGraphTree(
   const roots = sortedRoots.length > 0 ? sortedRoots : [...visibleNodes].sort(compareNodes);
 
   let instanceCounter = 0;
-  const expandedSourceNodeIds = new Set<number>();
+  const expandedSourceNodeIds = new Set<string>();
   const createTreeNode = (
-    node: CWFrameNode,
+    node: MapNodeDocument,
     depth: number,
     parentInstanceKey: string | null,
-    branchPath: number[],
-    pathSet: Set<number>
+    branchPath: string[],
+    pathSet: Set<string>
   ): TreeProjectionNode => {
     const instanceKey = `${node.id}:${instanceCounter++}`;
     const nextBranchPath = [...branchPath, node.id];
@@ -112,7 +112,7 @@ export function layoutGraphTree(
     };
   };
 
-  const treeRoots = roots.map(root => createTreeNode(root, 0, null, [], new Set<number>()));
+  const treeRoots = roots.map(root => createTreeNode(root, 0, null, [], new Set<string>()));
   const leafWeights = new Map<string, number>();
   const rootBands = allocateRootBands(treeRoots, leafWeights, height, paddingY, siblingGap);
   const globalMaxDepth = Math.max(...treeRoots.map(root => getMaxDepth(root)), 0);
@@ -213,17 +213,17 @@ export function layoutGraphTree(
 }
 
 function buildVisibleChildrenMap(
-  nodes: CWFrameNode[],
-  nodeMap: Map<number, CWFrameNode>
-): Map<number, CWFrameNode[]> {
-  const childrenMap = new Map<number, CWFrameNode[]>();
+  nodes: MapNodeDocument[],
+  nodeMap: Map<string, MapNodeDocument>
+): Map<string, MapNodeDocument[]> {
+  const childrenMap = new Map<string, MapNodeDocument[]>();
 
   for (const node of nodes) {
     childrenMap.set(node.id, []);
   }
 
   for (const node of nodes) {
-    for (const dependencyId of node.dependencies) {
+    for (const dependencyId of node.deps) {
       if (!nodeMap.has(dependencyId)) continue;
       childrenMap.get(dependencyId)?.push(node);
     }
@@ -233,27 +233,29 @@ function buildVisibleChildrenMap(
 }
 
 function getVisibleRoots(
-  nodes: CWFrameNode[],
-  nodeMap: Map<number, CWFrameNode>
-): CWFrameNode[] {
+  nodes: MapNodeDocument[],
+  nodeMap: Map<string, MapNodeDocument>
+): MapNodeDocument[] {
   return nodes
-    .filter(node => node.dependencies.filter(dependencyId => nodeMap.has(dependencyId)).length === 0)
+    .filter(node => node.deps.filter(dependencyId => nodeMap.has(dependencyId)).length === 0)
     .sort(compareNodes);
 }
 
-function compareNodes(left: CWFrameNode, right: CWFrameNode): number {
-  if ((left.tier ?? 0) !== (right.tier ?? 0)) {
-    return (left.tier ?? 0) - (right.tier ?? 0);
+function compareNodes(left: MapNodeDocument, right: MapNodeDocument): number {
+  if (left.stage !== right.stage) {
+    return left.stage - right.stage;
   }
 
-  if (left.weight !== right.weight) {
-    return right.weight - left.weight;
+  const leftWeight = (left as any).weight ?? 0;
+  const rightWeight = (right as any).weight ?? 0;
+  if (leftWeight !== rightWeight) {
+    return rightWeight - leftWeight;
   }
 
-  const labelCompare = left.label.localeCompare(right.label);
-  if (labelCompare !== 0) return labelCompare;
+  const titleCompare = left.title.localeCompare(right.title);
+  if (titleCompare !== 0) return titleCompare;
 
-  return left.id - right.id;
+  return left.id.localeCompare(right.id);
 }
 
 function computeLeafWeight(

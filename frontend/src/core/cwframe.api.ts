@@ -8,8 +8,8 @@
 import type {
   ApiResponse,
   AuthData,
-  CWFrameMap,
-  CWFrameProgress,
+  CWFrameMapPayload,
+  UserProgressDocument,
   LoginRequest,
   RegisterRequest,
 } from '@shared/contract';
@@ -103,10 +103,16 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(buildUrl(path), {
-    ...init,
-    headers,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(buildUrl(path), {
+      ...init,
+      headers,
+    });
+  } catch {
+    throw new Error('Unable to reach backend service');
+  }
 
   const data = (await response.json()) as ApiResponse<T>;
 
@@ -196,36 +202,40 @@ export async function login(payload: LoginRequest): Promise<AuthData> {
 /**
  * 获取默认知识图谱（地图）。
  *
- * @returns 默认地图（包含版本号与节点列表）
+ * @returns 默认地图（包含 document 和 projection）
  * @throws 后端返回失败时抛出 Error
  */
-export async function fetchDefaultMap(): Promise<CWFrameMap> {
-  return requestJson<CWFrameMap>('/api/maps/default');
+export async function fetchDefaultMap(): Promise<CWFrameMapPayload> {
+  return requestJson<CWFrameMapPayload>('/api/maps/default');
 }
 
 /**
  * 获取指定用户的点亮进度。
  *
  * @param userId - 用户 id（正整数）
- * @returns 用户进度（unlockedNodes 为点亮记录表）
+ * @returns 用户进度（unlocked 为点亮记录表）
  * @throws 后端返回失败时抛出 Error
  */
-export async function fetchProgress(userId: number): Promise<CWFrameProgress> {
-  return requestJson<CWFrameProgress>(`/api/users/${userId}/progress`);
+export async function fetchProgress(userId: number): Promise<UserProgressDocument> {
+  return requestJson<UserProgressDocument>(`/api/users/${userId}/progress`);
 }
 
 /**
- * 更新指定用户的点亮进度（当前实现为“整份覆盖式”更新）。
+ * 更新指定用户的点亮进度（当前实现为”整份覆盖式”更新）。
  *
  * @param userId - 用户 id（正整数）
- * @param progress - 要写回服务端的进度对象（实际只会发送 unlockedNodes）
+ * @param progress - 要写回服务端的进度对象
  * @returns 服务端保存后的进度对象
  * @throws 后端返回失败时抛出 Error
  */
-export async function updateProgress(userId: number, progress: CWFrameProgress): Promise<CWFrameProgress> {
-  return requestJson<CWFrameProgress>(`/api/users/${userId}/progress`, {
+export async function updateProgress(userId: number, progress: UserProgressDocument): Promise<UserProgressDocument> {
+  return requestJson<UserProgressDocument>(`/api/users/${userId}/progress`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ unlockedNodes: progress.unlockedNodes }),
+    body: JSON.stringify({
+      mapId: progress.mapId,
+      mapVersion: progress.mapVersion,
+      unlocked: progress.unlocked,
+    }),
   });
 }

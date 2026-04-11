@@ -1,38 +1,37 @@
-import type { CWFrameNode } from '@shared/contract';
+import type { MapNodeDocument } from '@shared/contract';
 
 /**
  * 将用户输入的术语与知识节点进行匹配（轻量、无模型版）。
  *
  * 匹配顺序（从强到弱）：
- * - 精确匹配：`node.label === term`
- * - 别名匹配：`(node as any).aliases` 中存在与 term 精确相等的别名（可选字段）
- * - 部分匹配：label 包含 term 或 term 包含 label
+ * - 精确匹配：`node.title === term`
+ * - 别名匹配：`node.aliases` 中存在与 term 精确相等的别名（可选字段）
+ * - 部分匹配：title 包含 term 或 term 包含 title
  *
  * @param term - 用户输入的单个术语（会被 trim + toLowerCase 归一化）
- * @param nodes - 候选节点列表（通常来自 `CWFrameMap.nodes`）
+ * @param nodes - 候选节点列表（通常来自 `CWFrameMapPayload.document.nodes`）
  * @returns 命中的节点；若未命中返回 null
  */
-export function matchNodeByTerm(term: string, nodes: CWFrameNode[]): CWFrameNode | null {
+export function matchNodeByTerm(term: string, nodes: MapNodeDocument[]): MapNodeDocument | null {
   const normalizedTerm = term.toLowerCase().trim();
   if (!normalizedTerm) return null;
 
-  // 1. 精确匹配节点名称 (label)
-  let matched = nodes.find(node => 
-    node.label.toLowerCase() === normalizedTerm
+  // 1. 精确匹配节点名称 (title)
+  let matched = nodes.find(node =>
+    node.title.toLowerCase() === normalizedTerm
   );
   if (matched) return matched;
 
-  // 2. 别名匹配 (如果数据中有就匹配)
+  // 2. 别名匹配
   matched = nodes.find(node =>
-    // @ts-ignore - 预留别名匹配逻辑
-    (node as any).aliases?.some((alias: string) => alias.toLowerCase() === normalizedTerm)
+    node.aliases?.some((alias: string) => alias.toLowerCase() === normalizedTerm)
   );
   if (matched) return matched;
 
   // 3. 部分匹配节点名称
   matched = nodes.find(node =>
-    node.label.toLowerCase().includes(normalizedTerm) ||
-    normalizedTerm.includes(node.label.toLowerCase())
+    node.title.toLowerCase().includes(normalizedTerm) ||
+    normalizedTerm.includes(node.title.toLowerCase())
   );
   if (matched) return matched;
 
