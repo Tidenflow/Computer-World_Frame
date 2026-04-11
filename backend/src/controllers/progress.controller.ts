@@ -38,30 +38,6 @@ export class ProgressController {
 
     res.status(200).json(result);
   }
-
-  async unlockNode(req: Request, res: Response): Promise<void> {
-    const userId = req.userId!;
-    const { mapId, mapVersion, nodeId, matchedTerm } = req.body as {
-      mapId?: unknown;
-      mapVersion?: unknown;
-      nodeId?: unknown;
-      matchedTerm?: unknown;
-    };
-    const result = await progressService.unlockNode({
-      userId,
-      mapId: typeof mapId === 'string' ? mapId : 'computer-world',
-      mapVersion: typeof mapVersion === 'string' ? mapVersion : '',
-      nodeId: typeof nodeId === 'string' ? nodeId : '',
-      matchedTerm: typeof matchedTerm === 'string' ? matchedTerm : undefined
-    });
-
-    if (!result.success) {
-      res.status(statusByErrorCode(result.error.code)).json(result);
-      return;
-    }
-
-    res.status(200).json(result);
-  }
 }
 
 export const progressController = new ProgressController();

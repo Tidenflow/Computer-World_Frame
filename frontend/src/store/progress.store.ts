@@ -131,7 +131,7 @@ export const useProgressStore = defineStore('progress', () => {
    * 解锁指定节点，并同步到服务端。
    *
    * @param node - 要解锁的节点
-   * @param matchedTerm - 可选：触发本次解锁的”用户输入词”，用于历史记录展示
+   * @param matchedTerm - 可选：触发本次解锁的用户输入词，用于历史记录展示
    * @returns 一个轻量结果对象，供 UI toast/提示使用
    *
    * @sideEffects
@@ -146,11 +146,6 @@ export const useProgressStore = defineStore('progress', () => {
 
     // 1. 本地更新
     localUnlockNode(progress, node);
-
-    // 显式记录匹配词，用于历史记录展示
-    if (matchedTerm && progress.unlocked[node.id]) {
-      (progress.unlocked[node.id] as any).matchedTerm = matchedTerm;
-    }
 
     // 2. 同步到服务端，确保下次刷新不会”复活”
     try {
