@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+<<<<<<< HEAD
 import type { CWFrameMap, CWFrameNode } from '@shared/contract';
+=======
+import type { CWFrameMapPayload, CWFrameNodeDocument } from '@shared/contract';
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 import * as loader from '../core/cwframe.loader';
 import { buildVisibilityMap } from '../core/cwframe.visibility';
 import { useProgressStore } from './progress.store';
@@ -14,13 +18,17 @@ export const useMapStore = defineStore('map', () => {
   /**
    * 当前加载的知识图谱（未加载时为 null）。
    */
-  const frameMap = ref<CWFrameMap | null>(null);
+  const frameMap = ref<CWFrameMapPayload | null>(null);
 
   /**
    * 当前选中的节点 id（未选中时为 null）。
    */
+<<<<<<< HEAD
   const selectedNodeId = ref<number | null>(null);
   const focusRequest = ref<{ nodeId: number; requestedAt: number } | null>(null);
+=======
+  const selectedNodeId = ref<string | null>(null);
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 
   const visibilityMap = computed(() => {
     if (!frameMap.value) return {};
@@ -32,9 +40,9 @@ export const useMapStore = defineStore('map', () => {
    *
    * @returns CWFrameNode | null
    */
-  const selectedNode = computed<CWFrameNode | null>(() => {
+  const selectedNode = computed<CWFrameNodeDocument | null>(() => {
     if (!frameMap.value || selectedNodeId.value === null) return null;
-    return frameMap.value.nodes.find(n => n.id === selectedNodeId.value) ?? null;
+    return frameMap.value.projection.nodeById[selectedNodeId.value] ?? null;
   });
 
   /**
@@ -45,7 +53,7 @@ export const useMapStore = defineStore('map', () => {
    *
    * @sideEffects 会写入 `frameMap.value`
    */
-  async function loadMap(): Promise<CWFrameMap> {
+  async function loadMap(): Promise<CWFrameMapPayload> {
     try {
       const map = await loader.loadFrameMap();
       frameMap.value = map;
@@ -64,7 +72,7 @@ export const useMapStore = defineStore('map', () => {
    *
    * @sideEffects 会修改 `selectedNodeId.value`
    */
-  function selectNode(id: number | null): void {
+  function selectNode(id: string | null): void {
     selectedNodeId.value = selectedNodeId.value === id ? null : id;
   }
 

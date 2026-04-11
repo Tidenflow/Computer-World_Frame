@@ -42,6 +42,15 @@ const dragState = reactive({
   originTranslateY: 0
 });
 
+<<<<<<< HEAD
+=======
+/**
+ * 根据节点所属 domain 返回对应的主题色。
+ *
+ * @param cat - 节点所属 domain
+ * @returns 十六进制颜色字符串（若未知分类则返回 default）
+ */
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 const getCategoryColor = (cat: string): string => categoryColors[cat] || categoryColors.default;
 const getDisplayColor = (nodeId: number, category: string): string =>
   recentNodeIds.value.has(nodeId) ? RECENT_HIGHLIGHT_COLOR : getCategoryColor(category);
@@ -57,6 +66,7 @@ const renderableNodeIds = computed(
     )
 );
 
+<<<<<<< HEAD
 function getNodeRadius(weight: number): number {
   return 11 + (weight - 1) * 1.15;
 }
@@ -81,6 +91,73 @@ const treeLayout = computed(() => {
     activeNodeIds: renderableNodeIds.value,
     width: VIEWBOX_WIDTH,
     height: VIEWBOX_HEIGHT
+=======
+/**
+ * 把地图节点扩展为带坐标的节点（用于 SVG 渲染）。
+ *
+ * 坐标体系：
+ * - 使用固定 `viewBox="0 0 1200 840"`
+ * - 横向按“依赖深度”分层
+ * - 纵向按同层节点数量进行居中分布
+ *
+ * @returns 节点数组；若地图未加载返回空数组
+ */
+const nodesWithPositions = computed(() => {
+  if (!mapStore.frameMap) return [];
+
+  const nodes = mapStore.frameMap.document.nodes;
+  const paddingX = 150;
+  const vWidth = 1200;
+  const vHeight = 840;
+
+  // 层级计算
+  const depthMap: Record<string, number> = {};
+  /**
+   * 递归计算节点“依赖深度”（用于决定横向分层）。
+   *
+   * - 若存在循环依赖：使用 `path` 集合阻断，循环链返回深度 0
+   * - 若节点无依赖：返回深度 0
+   *
+   * @param id - 要计算深度的节点 id
+   * @param path - 当前递归路径，用于检测循环
+   * @returns 依赖深度（非负整数）
+   */
+  const resolveDepth = (id: string, path = new Set<string>()): number => {
+    if (depthMap[id] !== undefined) return depthMap[id];
+    if (path.has(id)) return 0;
+
+    path.add(id);
+    const node = nodes.find(n => n.id === id);
+    if (!node || !node.deps.length) return 0;
+
+    const depth = 1 + Math.max(...node.deps.map(d => resolveDepth(d, path)));
+    depthMap[id] = depth;
+    return depth;
+  };
+
+  nodes.forEach(n => resolveDepth(n.id));
+  
+  const maxDepth = Math.max(...Object.values(depthMap), 0) || 1;
+  const buckets: Record<number, string[]> = {};
+  nodes.forEach(n => {
+    const d = depthMap[n.id] || 0;
+    if (!buckets[d]) buckets[d] = [];
+    buckets[d].push(n.id);
+  });
+
+  return nodes.map(node => {
+    const depth = depthMap[node.id] || 0;
+    const bucket = buckets[depth];
+    const index = bucket.indexOf(node.id);
+    const count = bucket.length;
+
+    // 复刻 React 的布局感
+    const x = paddingX + (depth / maxDepth) * (vWidth - 2 * paddingX);
+    // 垂直方向根据数量居中
+    const y = (vHeight / 2) + (index - (count - 1) / 2) * 160 + (depth % 2 === 0 ? 0 : 40);
+
+    return { ...node, x, y };
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
   });
 });
 
@@ -131,6 +208,7 @@ const visibleInstanceKeys = computed(
 );
 
 const links = computed(() => {
+<<<<<<< HEAD
   const instanceMap = new Map(nodesWithPositions.value.map(node => [node.instanceKey, node]));
 
   return treeLayout.value.links
@@ -143,6 +221,16 @@ const links = computed(() => {
         !visibleInstanceKeys.value.has(target.instanceKey)
       ) {
         return null;
+=======
+  const nodes = nodesWithPositions.value;
+  return nodes.flatMap(node =>
+    node.deps.map(depId => {
+      const source = nodes.find(n => n.id === depId);
+      if (source) {
+        // 高亮逻辑: 仅当起点和终点都解锁时高亮
+        const isUnlocked = statusMap.value[node.id] === 'Unlocked' && statusMap.value[source.id] === 'Unlocked';
+        return { x1: source.x, y1: source.y, x2: node.x, y2: node.y, isUnlocked };
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
       }
 
       const variant =
@@ -159,6 +247,7 @@ const links = computed(() => {
     .filter((value): value is NonNullable<typeof value> => value !== null);
 });
 
+<<<<<<< HEAD
 const graphTransform = computed(
   () => `translate(${viewport.translateX} ${viewport.translateY}) scale(${viewport.scale})`
 );
@@ -290,6 +379,21 @@ function focusNodeInGraph(nodeId: number): void {
 function handleNodeClick(nodeId: number): void {
   if (visibilityMap.value[nodeId] === 'Unlocked') {
     mapStore.openNode(nodeId);
+=======
+/**
+ * 处理节点点击：
+ * - 允许打开 `Unlocked` 与 `Discoverable` 节点的详情
+ * - `Locked` 节点点击无效果（避免“不可探索”误导）
+ *
+ * @param nodeId - 被点击的节点 id
+ * @returns void
+ */
+function handleNodeClick(nodeId: string): void {
+  // 逻辑调整：允许查看 Unlocked 和 Discoverable 节点的详情
+  const status = statusMap.value[nodeId];
+  if (status === 'Unlocked' || status === 'Discoverable') {
+    mapStore.selectNode(nodeId);
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
   }
 }
 
@@ -323,6 +427,7 @@ watch(
 
       <rect width="100%" height="100%" fill="url(#dotGrid)" />
 
+<<<<<<< HEAD
       <g class="graph-transform-layer" :transform="graphTransform">
         <g class="layer-links">
           <path
@@ -331,9 +436,39 @@ watch(
             :d="link.path"
             :class="['link-line', link.variant]"
             fill="none"
+=======
+      <!-- 连线层 -->
+      <g class="layer-links">
+        <line
+          v-for="(link, i) in links"
+          :key="i"
+          :x1="link.x1" :y1="link.y1"
+          :x2="link.x2" :y2="link.y2"
+          :class="{ active: link.isUnlocked }"
+          class="link-line"
+        />
+      </g>
+
+      <!-- 节点层 -->
+      <g class="layer-nodes">
+        <g 
+          v-for="node in nodesWithPositions" 
+          :key="node.id"
+          class="node-unit"
+          :class="[statusMap[node.id]?.toLowerCase(), { selected: mapStore.selectedNodeId === node.id }]"
+          @click="handleNodeClick(node.id)"
+        >
+          <!-- 呼吸 Halo (仅解锁状态) -->
+          <circle 
+            v-if="statusMap[node.id] === 'Unlocked'"
+            :cx="node.x" :cy="node.y" r="35"
+            :fill="getCategoryColor(node.domain)"
+            class="breathe-halo"
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
           />
         </g>
 
+<<<<<<< HEAD
         <g class="layer-nodes">
           <g
             v-for="node in visibleNodes"
@@ -414,6 +549,33 @@ watch(
               {{ node.label }}
             </text>
           </g>
+=======
+          <!-- 节点主体 -->
+          <circle 
+            :cx="node.x" :cy="node.y" r="25"
+            :fill="statusMap[node.id] === 'Unlocked' ? getCategoryColor(node.domain) : '#1e293b'"
+            :stroke="statusMap[node.id] === 'Unlocked' ? getCategoryColor(node.domain) : '#334155'"
+            stroke-width="2"
+            class="main-circle"
+          />
+
+          <!-- 装饰小标 -->
+          <circle 
+            :cx="node.x + 15" :cy="node.y - 15" r="4.5"
+            :fill="getCategoryColor(node.domain)"
+            class="cat-dot"
+          />
+
+          <!-- 节点文字 -->
+          <text 
+            :x="node.x" :y="node.y + 50" 
+            text-anchor="middle"
+            class="node-label"
+            :fill="statusMap[node.id] === 'Unlocked' ? '#f8fafc' : '#64748b'"
+          >
+            {{ node.title }}
+          </text>
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
         </g>
       </g>
     </svg>

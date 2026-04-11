@@ -9,6 +9,7 @@ const mapStore = useMapStore();
 
 const latestEntries = computed(() => {
   if (!mapStore.frameMap) return [];
+<<<<<<< HEAD
 
   return progressStore.latestInputEntries
     .map(entry => {
@@ -21,6 +22,18 @@ const latestEntries = computed(() => {
         unlockedAt: entry.unlockedAt,
         label: node.label,
         category: node.category || 'default'
+=======
+  
+  return Object.entries(progressStore.progress.unlocked)
+    .map(([nodeId, info]) => {
+      const node = mapStore.frameMap?.projection.nodeById[nodeId];
+      return {
+        id: nodeId,
+        name: node?.title || '未知节点',
+        time: info.unlockedAt,
+        category: node?.domain || 'default',
+        matchedTerm: node?.title || nodeId
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
@@ -34,8 +47,20 @@ function handleClear(): Promise<void> {
   return progressStore.resetLocalProgress();
 }
 
+<<<<<<< HEAD
 function focusEntry(nodeId: number): void {
   mapStore.focusNode(nodeId);
+=======
+/**
+ * 点击某条历史记录后，选中对应节点并打开详情。
+ *
+ * @param id - 历史条目中的节点 id（当前以字符串传入，来自 v-for 的 entry.id）
+ * @returns void
+ * @sideEffects 会调用 `mapStore.selectNode()` 修改选中节点状态
+ */
+function selectNode(id: string): void {
+  mapStore.selectNode(id);
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 }
 
 function getTimeText(timestamp: number): string {

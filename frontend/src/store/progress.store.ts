@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref, reactive, computed } from 'vue';
-import type { CWFrameProgress, CWFrameNode } from '@shared/contract';
+import type { CWFrameNodeDocument } from '@shared/contract';
+import type { UserProgressDocument } from '@shared/map-document';
 import * as api from '../core/cwframe.api';
-import { unlockNode as localUnlockNode } from '../core/cwframe.progress';
 import { useUserStore } from './user.store';
+import { useMapStore } from './map.store';
 
 export interface LatestUnlockEntry {
   nodeId: number;
@@ -25,13 +26,19 @@ interface LatestInputSnapshot {
  */
 export const useProgressStore = defineStore('progress', () => {
   const userStore = useUserStore();
+<<<<<<< HEAD
   const latestInputStorageKey = computed(
     () => `cwframe_latest_input_result_${userStore.userId || 'guest'}`
   );
+=======
+  const mapStore = useMapStore();
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
 
-  const progress = reactive<CWFrameProgress>({
+  const progress = reactive<UserProgressDocument>({
     userId: userStore.userId,
-    unlockedNodes: {}
+    mapId: 'computer-world',
+    mapVersion: '',
+    unlocked: {}
   });
 
   const isLoaded = ref<boolean>(false);
@@ -46,7 +53,7 @@ export const useProgressStore = defineStore('progress', () => {
    *
    * @returns number
    */
-  const unlockedNodesCount = computed(() => Object.keys(progress.unlockedNodes).length);
+  const unlockedNodesCount = computed(() => Object.keys(progress.unlocked).length);
 
   function persistLatestInputResult(): void {
     if (!hasLatestInput.value) {
@@ -109,14 +116,27 @@ export const useProgressStore = defineStore('progress', () => {
    */
   async function loadProgress(): Promise<void> {
     if (!userStore.userId) return;
+    const currentMap = mapStore.frameMap;
+    if (!currentMap) return;
     
     try {
-      const data = await api.fetchProgress(userStore.userId);
+      const data = await api.fetchProgress(
+        userStore.userId,
+        currentMap.document.mapId,
+        currentMap.document.version
+      );
       progress.userId = data.userId;
+<<<<<<< HEAD
       // Reset and re-assign
       progress.unlockedNodes = {};
       Object.assign(progress.unlockedNodes, data.unlockedNodes);
       hydrateLatestInputResult();
+=======
+      progress.mapId = data.mapId;
+      progress.mapVersion = data.mapVersion;
+      progress.unlocked = {};
+      Object.assign(progress.unlocked, data.unlocked);
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
       isLoaded.value = true;
     } catch (error) {
       console.error('Failed to load progress from server:', error);
@@ -135,8 +155,9 @@ export const useProgressStore = defineStore('progress', () => {
    * - 会发起网络请求写回服务端（失败时会返回 success:false）
    */
   async function unlockNode(
-    node: CWFrameNode,
+    node: CWFrameNodeDocument,
     matchedTerm?: string
+<<<<<<< HEAD
   ): Promise<{ success: boolean; message: string; isNewlyUnlocked: boolean }> {
     const wasAlreadyUnlocked = Boolean(progress.unlockedNodes[node.id]);
 
@@ -158,6 +179,21 @@ export const useProgressStore = defineStore('progress', () => {
         message: wasAlreadyUnlocked ? `已存在: ${node.label}` : `已点亮: ${node.label}`,
         isNewlyUnlocked: !wasAlreadyUnlocked
       };
+=======
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      if (userStore.userId) {
+        const result = await api.unlockProgressNode({
+          userId: userStore.userId,
+          mapId: progress.mapId,
+          mapVersion: progress.mapVersion,
+          nodeId: node.id,
+          matchedTerm
+        });
+        progress.unlocked[node.id] = { unlockedAt: result.unlockedAt };
+      }
+      return { success: true, message: `已点亮: ${node.title}` };
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
     } catch (error) {
       console.error('同步进度至服务端失败:', error);
       return { success: false, message: '进度同步失败', isNewlyUnlocked: !wasAlreadyUnlocked };
@@ -193,14 +229,20 @@ export const useProgressStore = defineStore('progress', () => {
    * - 会调用服务端 `PUT /progress` 写回空对象（若 userId 存在）
    */
   async function resetLocalProgress(): Promise<void> {
+<<<<<<< HEAD
     progress.unlockedNodes = {};
     clearLatestInputResult();
     // 同步清空服务端进度
+=======
+    progress.unlocked = {};
+>>>>>>> 46e04ac (refactor: consume document-based maps in frontend)
     if (userStore.userId) {
       try {
-        await api.updateProgress(userStore.userId, { 
-          userId: userStore.userId, 
-          unlockedNodes: {} 
+        await api.updateProgress(userStore.userId, {
+          userId: userStore.userId,
+          mapId: progress.mapId,
+          mapVersion: progress.mapVersion,
+          unlocked: {}
         });
       } catch (error) {
         console.error('重置服务端进度失败:', error);
