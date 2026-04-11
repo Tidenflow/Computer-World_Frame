@@ -4,19 +4,19 @@ import type { CWFrameNodeDocument } from '@shared/contract';
  * 将用户输入的术语与知识节点进行匹配（轻量、无模型版）。
  *
  * 匹配顺序（从强到弱）：
- * - 精确匹配：`node.label === term`
+ * - 精确匹配：`node.title === term`
  * - 别名匹配：`(node as any).aliases` 中存在与 term 精确相等的别名（可选字段）
- * - 部分匹配：label 包含 term 或 term 包含 label
+ * - 部分匹配：title 包含 term 或 term 包含 title
  *
  * @param term - 用户输入的单个术语（会被 trim + toLowerCase 归一化）
- * @param nodes - 候选节点列表（通常来自 `CWFrameMap.nodes`）
+ * @param nodes - 候选节点列表（通常来自 `MapDocument.nodes`）
  * @returns 命中的节点；若未命中返回 null
  */
 export function matchNodeByTerm(term: string, nodes: CWFrameNodeDocument[]): CWFrameNodeDocument | null {
   const normalizedTerm = term.toLowerCase().trim();
   if (!normalizedTerm) return null;
 
-  // 1. 精确匹配节点名称 (label)
+  // 1. 精确匹配节点名称 (title)
   let matched = nodes.find(node => 
     node.title.toLowerCase() === normalizedTerm
   );

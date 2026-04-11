@@ -18,11 +18,11 @@ interface LatestInputSnapshot {
 }
 
 /**
- * 用户进度仓库：负责加载/更新“点亮记录”（unlockedNodes）。
+ * 用户进度仓库：负责加载/更新文档化的点亮记录（`progress.unlocked`）。
  *
  * 注意：
  * - `progress` 是 reactive 对象，会被 actions 原地修改
- * - 与服务端同步目前使用覆盖式 `PUT`（写回 unlockedNodes）
+ * - 与服务端同步目前使用覆盖式 `PUT`（写回 unlocked）
  */
 export const useProgressStore = defineStore('progress', () => {
   const userStore = useUserStore();
@@ -111,7 +111,7 @@ export const useProgressStore = defineStore('progress', () => {
    * @returns Promise<void>（无返回值；失败时只会在控制台打印错误）
    *
    * @sideEffects
-   * - 会覆盖 `progress.unlockedNodes`
+   * - 会覆盖 `progress.unlocked`
    * - 会设置 `isLoaded=true`
    */
   async function loadProgress(): Promise<void> {
@@ -151,7 +151,7 @@ export const useProgressStore = defineStore('progress', () => {
    * @returns 一个轻量结果对象，供 UI toast/提示使用
    *
    * @sideEffects
-   * - 会修改 `progress.unlockedNodes`
+   * - 会修改 `progress.unlocked`
    * - 会发起网络请求写回服务端（失败时会返回 success:false）
    */
   async function unlockNode(
@@ -225,7 +225,7 @@ export const useProgressStore = defineStore('progress', () => {
    * @returns Promise<void>
    *
    * @sideEffects
-   * - 会重置 `progress.unlockedNodes = {}`
+   * - 会重置 `progress.unlocked = {}`
    * - 会调用服务端 `PUT /progress` 写回空对象（若 userId 存在）
    */
   async function resetLocalProgress(): Promise<void> {
