@@ -3,7 +3,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
  * 注意：测试代码运行在 test/ 目录下，通过相对路径引用 frontend 的源代码
  * 这里的路径跳出了 test/ 目录，进入 root，再进入 frontend/src/core/
  */
-import { login, fetchDefaultMap, getCurrentUserId, setCurrentUserId } from '../../frontend/src/core/cwframe.api';
+import {
+    login,
+    fetchDefaultMap,
+    getCurrentUserId,
+    hasActiveSession,
+    setCurrentUserId
+} from '../../frontend/src/core/cwframe.api';
 
 /**
  * [Vitest API: vi.stubGlobal]
@@ -50,6 +56,14 @@ describe('cwframe.api (前端 API 封装层测试)', () => {
         it('getCurrentUserId 应该能正确读取并转换存储中的字符串 ID 为数字', () => {
             localStorage.setItem('cwframe_user_id', '123');
             expect(getCurrentUserId()).toBe(123);
+        });
+
+        it('hasActiveSession 应该只在 token 存在时返回 true，而不是只看 userId', () => {
+            localStorage.setItem('cwframe_user_id', '123');
+            expect(hasActiveSession()).toBe(false);
+
+            localStorage.setItem('cwframe_token', 'fake-jwt');
+            expect(hasActiveSession()).toBe(true);
         });
     });
 

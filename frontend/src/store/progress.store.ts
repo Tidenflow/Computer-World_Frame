@@ -45,7 +45,7 @@ export const useProgressStore = defineStore('progress', () => {
    * - 会设置 `isLoaded=true`
    */
   async function loadProgress(): Promise<void> {
-    if (!userStore.userId) return;
+    if (!userStore.userId || !api.hasActiveSession()) return;
     const currentMap = mapStore.frameMap;
     if (!currentMap) return;
     

@@ -6,7 +6,7 @@ import * as api from '../core/cwframe.api';
 /**
  * 用户状态仓库（MVP 版会话）。
  *
- * 说明：当前项目用 localStorage 的 `cwframe_user_id` 来恢复/维持“登录态”。
+ * 说明：当前项目以 JWT token 是否存在来恢复/维持“登录态”。
  * - `api.login` 会在成功后写入 localStorage
  * - `register` 成功后也会对齐 login 行为写入 localStorage
  */
@@ -15,8 +15,8 @@ export const useUserStore = defineStore('user', () => {
   const userId = ref<number>(api.getCurrentUserId());
   const username = ref<string>(api.getCurrentUsername());
   // localStorage 就是浏览器端 Web Storage，属于网页环境提供的本地存储。
-  // 用 localStorage 中是否存在 userId 来恢复登录态（避免刷新/直达路由被守卫踢回登录页）
-  const isAuthenticated = ref<boolean>(localStorage.getItem('cwframe_user_id') !== null);
+  // 受保护接口依赖 JWT，因此恢复登录态也必须看 token，而不是只看 userId。
+  const isAuthenticated = ref<boolean>(api.hasActiveSession());
 
   /**
    * 登录。
