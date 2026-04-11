@@ -52,3 +52,63 @@
 大部分失败的导论课，往往源于老师难以衡量班级中水平参差不齐的学生。
 
 而 `Computer World Frame` 的意义在于：它不定义起点，它只负责连接。无论你从哪个词开始，最终我们都会在计算机科学的最深处相遇。
+
+## 🧱 当前数据架构 (Current Data Architecture)
+
+当前版本已经从“节点拆表再回拼”的旧链路，重构为文档优先架构：
+
+- `MapDocument` 是唯一内容真相源
+- `MapProjection` 是从地图文档自动派生出的渲染/遍历索引
+- `UserProgressDocument` 负责存储绑定 `mapId + mapVersion` 的用户进度
+
+当前默认地图作者文件在：
+
+- `backend/src/data/maps/default.map.json`
+
+后端数据库中保存的是：
+
+- `map_documents.document_json`
+- `map_projections.projection_json`
+- `user_progress.progress_json`
+
+这意味着：
+
+- 地图内容维护以 JSON 文档为中心
+- 前端渲染消费 `document + projection`
+- 不再维护旧的 `/api/nodes` 节点中心接口
+
+## 🗺️ 地图维护工作流 (Map Authoring Workflow)
+
+1. 编辑 `backend/src/data/maps/default.map.json`
+2. 运行地图校验与投影逻辑，确保文档结构合法
+3. 使用迁移脚本把最新 `MapDocument` 与 `MapProjection` 写入数据库
+4. 启动前后端，验证地图加载与用户进度链路
+
+常用命令：
+
+```bash
+# 后端类型检查
+cd backend
+npm run build
+
+# 前端构建验证
+cd ../frontend
+npm run build
+
+# 运行核心测试
+cd ../test
+npm test -- cwframe.api.test.ts cwframe.loader.test.ts cwframe.progress-document.test.ts progress-validation.test.ts backend-document-services.test.ts
+```
+
+如果要重新写入默认地图文档：
+
+```bash
+cd backend
+npx tsx src/scripts/migrate-map-to-document.ts
+```
+
+对应的地图文档校验与投影构建逻辑位于：
+
+- `backend/src/scripts/build-map-projection.ts`
+- `backend/src/scripts/migrate-map-to-document.ts`
+- `shared/map-document.ts`
