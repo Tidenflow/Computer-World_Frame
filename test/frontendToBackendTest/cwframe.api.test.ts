@@ -108,14 +108,24 @@ describe('cwframe.api (前端 API 封装层测试)', () => {
 
         it('fetchDefaultMap() 应该发起一个 GET 请求到正确的地图路径', async () => {
             vi.mocked(fetch).mockResolvedValueOnce({
-                json: () => Promise.resolve({ success: true, data: { nodes: [] } })
+                json: () => Promise.resolve({
+                    success: true,
+                    data: {
+                        document: { mapId: 'computer-world', version: '2026-04-11', domains: [], nodes: [] },
+                        projection: { nodeById: {}, childrenById: {}, roots: [], topologicalOrder: [] }
+                    }
+                })
             } as any);
 
             await fetchDefaultMap();
 
             expect(fetch).toHaveBeenCalledWith(
                 expect.stringContaining('/api/maps/default'),
-                undefined // GET 请求通常不需要传 Body 参数
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        'Content-Type': 'application/json'
+                    })
+                })
             );
         });
     });
