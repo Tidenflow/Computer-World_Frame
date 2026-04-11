@@ -10,7 +10,7 @@ const mapStore = useMapStore();
 /**
  * 点亮历史条目列表（按时间倒序）。
  *
- * 从 `progress.unlockedNodes` 读取节点解锁记录，并通过 `mapStore.frameMap` 反查节点名称/分类。
+ * 从 `progress.unlocked` 读取节点解锁记录，并通过 `mapStore.frameMap` 反查节点名称/分类。
  *
  * @returns 历史条目数组，每一项包含：id、name、time、category、matchedTerm
  */
@@ -39,7 +39,7 @@ const historyEntries = computed(() => {
  * - 若确认则调用 `progressStore.resetLocalProgress()`（该函数会同步到服务端）
  *
  * @returns Promise<void>
- * @sideEffects 会清空本地/服务端的 `unlockedNodes` 并导致 UI 状态变化
+ * @sideEffects 会清空本地/服务端的 `unlocked` 并导致 UI 状态变化
  */
 async function handleClear() {
   if (confirm('确定要重置本地进度并清空历史记录吗？此操作将同步至云端。')) {

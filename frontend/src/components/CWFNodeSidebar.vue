@@ -20,7 +20,7 @@ function handleClose(): void {
 /**
  * 前置知识（依赖节点）列表。
  *
- * 当当前节点存在且地图已加载时，把 `node.dependencies` 映射为具体节点对象。
+ * 当当前节点存在且地图已加载时，把 `node.deps` 映射为具体节点对象。
  *
  * @returns 前置节点数组（不包含 null）
  */

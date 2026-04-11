@@ -32,9 +32,9 @@ export const useMapStore = defineStore('map', () => {
   });
 
   /**
-   * 当前选中的节点对象（由 `selectedNodeId` 反查 `frameMap.nodes`）。
+   * 当前选中的节点对象（由 `selectedNodeId` 反查 `projection.nodeById`）。
    *
-   * @returns CWFrameNode | null
+   * @returns CWFrameNodeDocument | null
    */
   const selectedNode = computed<CWFrameNodeDocument | null>(() => {
     if (!frameMap.value || selectedNodeId.value === null) return null;
@@ -44,7 +44,7 @@ export const useMapStore = defineStore('map', () => {
   /**
    * 加载默认地图（从服务端拉取）。
    *
-   * @returns Promise<CWFrameMap> 加载到的地图对象
+   * @returns Promise<CWFrameMapPayload> 加载到的地图文档与派生投影
    * @throws loader.loadFrameMap 失败时会抛出异常（上层可 catch 展示错误 UI）
    *
    * @sideEffects 会写入 `frameMap.value`
