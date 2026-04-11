@@ -17,25 +17,8 @@ const result = ref<{
 } | null>(null);
 const showSuggestions = ref(false);
 
-const exampleTerms = [
-  'Python', 'CPU', '显卡', '操作系统', '算法', 
-  '神经网络', 'React', 'Linux', '数据库'
-];
+const exampleTerms = ['Python', 'CPU', '显卡', '操作系统', '算法', '神经网络', 'React', 'Linux', '数据库'];
 
-/**
- * 尝试将输入框内容匹配到节点并解锁。
- *
- * 流程：
- * - 将输入拆分为多个术语（支持逗号/空格）
- * - 对每个术语尝试匹配节点并调用 `progressStore.unlockNode`
- * - 将匹配结果写入 `result` 作为 toast 展示
- *
- * @returns void
- *
- * @sideEffects
- * - 可能触发进度更新（包含网络同步）
- * - 会清空 inputValue、关闭建议面板，并设置/清理 result
- */
 async function handleUnlock(): Promise<void> {
   if (!mapStore.frameMap || !inputValue.value.trim()) return;
 
@@ -88,24 +71,11 @@ async function handleUnlock(): Promise<void> {
   clearResult();
 }
 
-/**
- * 选择一个推荐术语：写入输入框并立即触发解锁逻辑。
- *
- * @param s - 推荐术语文本
- * @returns void
- */
 function selectSuggestion(s: string): void {
   inputValue.value = s;
   void handleUnlock();
 }
 
-/**
- * 延迟清除匹配结果 toast。
- *
- * @returns void
- *
- * @sideEffects 4 秒后会将 `result.value` 置为 null
- */
 function clearResult(): void {
   setTimeout(() => {
     result.value = null;
@@ -115,7 +85,6 @@ function clearResult(): void {
 
 <template>
   <div class="search-container">
-    <!-- 匹配反馈 Toast -->
     <Transition name="feedback-slide">
       <div
         v-if="result"
@@ -144,7 +113,6 @@ function clearResult(): void {
       </div>
     </Transition>
 
-    <!-- 搜索栏主体 -->
     <div class="search-bar-wrapper">
       <div class="search-bar glass-panel" :class="{ active: showSuggestions && !inputValue }">
         <Search :size="20" class="search-icon" />
@@ -155,8 +123,8 @@ function clearResult(): void {
           @focus="showSuggestions = true"
           class="search-input"
         />
-        <button 
-          @click="void handleUnlock()" 
+        <button
+          @click="void handleUnlock()"
           class="ignite-btn bg-gradient-brand"
           :disabled="!inputValue.trim()"
         >
@@ -164,13 +132,12 @@ function clearResult(): void {
         </button>
       </div>
 
-      <!-- 搜索建议下拉 -->
       <Transition name="dropdown">
         <div v-if="showSuggestions && !inputValue" class="suggestions-dropdown glass-panel">
           <div class="suggest-title">热门搜索关键词：</div>
           <div class="suggest-grid">
-            <button 
-              v-for="term in exampleTerms" 
+            <button
+              v-for="term in exampleTerms"
               :key="term"
               @click="selectSuggestion(term)"
               class="suggest-tag"
@@ -306,7 +273,6 @@ function clearResult(): void {
 .icon-success { color: var(--success); }
 .icon-error { color: var(--error); }
 
-/* Transitions */
 .dropdown-enter-active, .dropdown-leave-active { transition: all 0.4s ease; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-10px); }
 

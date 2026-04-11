@@ -35,8 +35,8 @@ onMounted(async (): Promise<void> => {
       await progressStore.loadProgress();
     }
   } catch (err: any) {
-    console.error('Failed to initialize home view:', err);
-    errorMessage.value = `Load failed: ${err.message || 'Unknown error'}`;
+    console.error('初始化失败:', err);
+    errorMessage.value = `同步失败: ${err.message || '网络连接异常，请检查后端服务'}`;
   }
 });
 </script>
@@ -62,40 +62,43 @@ onMounted(async (): Promise<void> => {
 
       <div class="app-grid" :class="{ collapsed: isSidebarCollapsed }">
         <aside v-if="!isSidebarCollapsed" class="sidebar-col custom-scroll">
-            <div class="profile-brief glass-panel">
-              <div class="profile-brief-header">
-                <div>
-                  <div class="profile-label">Current Explorer</div>
-                  <div class="profile-name">{{ profileTitle }}</div>
-                </div>
-                <router-link to="/profile" class="profile-link">Profile</router-link>
+          <div class="profile-brief glass-panel">
+            <div class="profile-brief-header">
+              <div>
+                <div class="profile-label">Current Explorer</div>
+                <div class="profile-name">{{ profileTitle }}</div>
               </div>
-              <div class="profile-meta">
-                <span>ID #{{ userStore.userId }}</span>
-                <span>{{ unlockedRatio }} unlocked</span>
-              </div>
+              <router-link to="/profile" class="profile-link">Profile</router-link>
             </div>
-
-            <CWFHistoryPanel />
-
-            <div class="legend-box glass-panel">
-              <h4 class="legend-title">Node Categories</h4>
-              <div class="legend-items">
-                <div class="legend-item"><span class="dot hw"></span> Hardware</div>
-                <div class="legend-item"><span class="dot sw"></span> Software</div>
-                <div class="legend-item"><span class="dot th"></span> Theory</div>
-                <div class="legend-item"><span class="dot net"></span> Networking</div>
-              </div>
+            <div class="profile-meta">
+              <span>ID #{{ userStore.userId }}</span>
+              <span>{{ unlockedRatio }} unlocked</span>
             </div>
+          </div>
 
-            <div class="tips-box glass-panel">
-              <h4 class="legend-title">Tips</h4>
-              <ul class="tips-list">
-                <li>Use the search panel to light up concepts you just mentioned.</li>
-                <li>Click an unlocked node when you want to read its detail instead of interrupting the graph flow.</li>
-                <li>Use the latest result list to relocate the nodes unlocked by your most recent input.</li>
-              </ul>
+          <CWFHistoryPanel />
+
+          <div class="legend-box glass-panel">
+            <h4 class="legend-title">Node Categories</h4>
+            <div class="legend-items">
+              <div class="legend-item"><span class="dot fundamentals"></span> Fundamentals</div>
+              <div class="legend-item"><span class="dot hardware"></span> Hardware</div>
+              <div class="legend-item"><span class="dot os"></span> Operating Systems</div>
+              <div class="legend-item"><span class="dot network"></span> Networking</div>
+              <div class="legend-item"><span class="dot programming"></span> Programming</div>
+              <div class="legend-item"><span class="dot data"></span> Data</div>
+              <div class="legend-item"><span class="dot application"></span> Application</div>
             </div>
+          </div>
+
+          <div class="tips-box glass-panel">
+            <h4 class="legend-title">Tips</h4>
+            <ul class="tips-list">
+              <li>Use the search panel to light up concepts you just mentioned.</li>
+              <li>Click an unlocked node when you want to read its detail instead of interrupting the graph flow.</li>
+              <li>Use the latest result list to relocate the nodes unlocked by your most recent input.</li>
+            </ul>
+          </div>
         </aside>
 
         <section class="visualization-area">
@@ -117,7 +120,7 @@ onMounted(async (): Promise<void> => {
     <Transition name="fade">
       <div v-if="!mapStore.frameMap" class="loading-screen">
         <div class="loader-ripple"><div></div><div></div></div>
-        <p v-if="!errorMessage">Loading map...</p>
+        <p v-if="!errorMessage">正在构造宇宙级知识图谱...</p>
         <p v-else class="error-msg">{{ errorMessage }}</p>
       </div>
     </Transition>
@@ -277,10 +280,13 @@ onMounted(async (): Promise<void> => {
   opacity: 0.8;
 }
 
-.dot.hw { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
-.dot.sw { background: #a855f7; box-shadow: 0 0 10px #a855f7; }
-.dot.th { background: #60a5fa; box-shadow: 0 0 10px #60a5fa; }
-.dot.net { background: #0ea5e9; box-shadow: 0 0 10px #0ea5e9; }
+.dot.fundamentals { background: #60a5fa; box-shadow: 0 0 10px #60a5fa; }
+.dot.hardware { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+.dot.os { background: #a855f7; box-shadow: 0 0 10px #a855f7; }
+.dot.network { background: #0ea5e9; box-shadow: 0 0 10px #0ea5e9; }
+.dot.programming { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+.dot.data { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+.dot.application { background: #f43f5e; box-shadow: 0 0 10px #f43f5e; }
 
 .tips-list {
   padding-left: 14px;

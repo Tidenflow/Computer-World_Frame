@@ -13,7 +13,6 @@ const MAX_ZOOM = 2.1;
 
 const mapStore = useMapStore();
 const progressStore = useProgressStore();
-
 const svgRef = ref<SVGSVGElement | null>(null);
 
 const categoryColors: Record<string, string> = {
@@ -92,6 +91,7 @@ const nodesWithPositions = computed(() =>
     visibility: visibilityMap.value[node.sourceNodeId] ?? 'Hidden'
   }))
 );
+
 const outlinedLabelInstanceKeys = computed(() => {
   const instanceMap = new Map(nodesWithPositions.value.map(node => [node.instanceKey, node]));
   const directOutlinedKeys = new Set<string>();
@@ -128,9 +128,7 @@ const visibleNodes = computed(() => {
   });
 });
 
-const visibleInstanceKeys = computed(
-  () => new Set(visibleNodes.value.map(node => node.instanceKey))
-);
+const visibleInstanceKeys = computed(() => new Set(visibleNodes.value.map(node => node.instanceKey)));
 
 const links = computed(() => {
   const instanceMap = new Map(nodesWithPositions.value.map(node => [node.instanceKey, node]));
@@ -140,17 +138,12 @@ const links = computed(() => {
       const source = instanceMap.get(link.sourceInstanceKey);
       const target = instanceMap.get(link.targetInstanceKey);
       if (!source || !target) return null;
-      if (
-        !visibleInstanceKeys.value.has(source.instanceKey) ||
-        !visibleInstanceKeys.value.has(target.instanceKey)
-      ) {
+      if (!visibleInstanceKeys.value.has(source.instanceKey) || !visibleInstanceKeys.value.has(target.instanceKey)) {
         return null;
       }
 
       const variant =
-        source.visibility === 'Unlocked' && target.visibility === 'Unlocked'
-          ? 'full'
-          : 'partial';
+        source.visibility === 'Unlocked' && target.visibility === 'Unlocked' ? 'full' : 'partial';
 
       return {
         key: link.key,
@@ -227,7 +220,6 @@ function buildLinkPath(x1: number, y1: number, x2: number, y2: number): string {
   const controlOffsetX = Math.max(Math.abs(deltaX) * 0.45, 40);
   const controlX1 = x1 + controlOffsetX;
   const controlX2 = x2 - controlOffsetX;
-
   return `M ${x1} ${y1} C ${controlX1} ${y1}, ${controlX2} ${y2}, ${x2} ${y2}`;
 }
 
@@ -240,8 +232,8 @@ function getDensityAdjustment(densityScore: number): number {
 }
 
 function getWeightAdjustment(weight: number): number {
-  if (weight >= 8) return -0.05;
-  if (weight <= 3) return 0.03;
+  if (weight >= 6) return -0.05;
+  if (weight <= 2) return 0.03;
   return 0;
 }
 
@@ -283,12 +275,8 @@ function focusNodeInGraph(nodeId: string): void {
     .filter(node => node.sourceNodeId === nodeId)
     .sort((left, right) => {
       if (left.depth !== right.depth) return left.depth - right.depth;
-
-      const leftDistance =
-        Math.abs(left.x - VIEWBOX_CENTER_X) + Math.abs(left.y - VIEWBOX_CENTER_Y);
-      const rightDistance =
-        Math.abs(right.x - VIEWBOX_CENTER_X) + Math.abs(right.y - VIEWBOX_CENTER_Y);
-
+      const leftDistance = Math.abs(left.x - VIEWBOX_CENTER_X) + Math.abs(left.y - VIEWBOX_CENTER_Y);
+      const rightDistance = Math.abs(right.x - VIEWBOX_CENTER_X) + Math.abs(right.y - VIEWBOX_CENTER_Y);
       return leftDistance - rightDistance;
     })[0];
   if (!targetNode || targetNode.visibility === 'Hidden') return;

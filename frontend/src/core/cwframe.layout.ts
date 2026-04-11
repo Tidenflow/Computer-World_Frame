@@ -6,6 +6,9 @@ export interface GraphTreeInstance extends MapNodeDocument {
   parentInstanceKey: string | null;
   branchPath: string[];
   depth: number;
+  weight: number;
+  label: string;
+  category: string;
   x: number;
   y: number;
 }
@@ -60,9 +63,10 @@ export function layoutGraphTree(
     ? nodes.filter(node => activeNodeIdSet.has(node.id))
     : nodes;
 
-  if (visibleNodes.length === 0) {
-    return { instances: [], links: [] };
-  }
+function compareNodes(left: CWFrameNodeDocument, right: CWFrameNodeDocument): number {
+  if (left.stage !== right.stage) return left.stage - right.stage;
+  return left.title.localeCompare(right.title);
+}
 
   const width = options.width ?? DEFAULT_WIDTH;
   const height = options.height ?? DEFAULT_HEIGHT;
@@ -276,6 +280,11 @@ function computeLeafWeight(
   return weight;
 }
 
+function getMaxDepth(node: TreeProjectionNode): number {
+  if (node.children.length === 0) return node.depth;
+  return Math.max(...node.children.map(child => getMaxDepth(child)));
+}
+
 function allocateRootBands(
   roots: TreeProjectionNode[],
   leafWeights: Map<string, number>,
@@ -296,21 +305,127 @@ function allocateRootBands(
   const gap = roots.length > 1 ? totalGap / (roots.length - 1) : 0;
 
   let cursor = paddingY;
-
   return roots.map(root => {
     const rootWeight = leafWeights.get(root.instanceKey) ?? 1;
     const bandHeight = Math.max(rootWeight * unitHeight, siblingGap);
-    const band = {
-      root,
-      topY: cursor,
-      bottomY: cursor + bandHeight
-    };
+    const band = { root, topY: cursor, bottomY: cursor + bandHeight };
     cursor += bandHeight + gap;
     return band;
   });
 }
 
-function getMaxDepth(node: TreeProjectionNode): number {
-  if (node.children.length === 0) return node.depth;
-  return Math.max(...node.children.map(child => getMaxDepth(child)));
+export function layoutGraphTree(
+  nodes: CWFrameNodeDocument[],
+  options: LayoutOptions = {}
+): TreeLayoutResult {
+  const activeNodeIdSet = options.activeNodeIds ? new Set(Array.from(options.activeNodeIds)) : null;
+  const visibleNodes = activeNodeIdSet
+    ? nodes.filter(node => activeNodeIdSet.has(node.id))
+    : nodes;
+
+  if (visibleNodes.length === 0) {
+    return { instances: [], links: [] };
+  }
+
+  const width = options.width ?? DEFAULT_WIDTH;
+  const height = options.height ?? DEFAULT_HEIGHT;
+  const paddingX = options.paddingX ?? DEFAULT_PADDING_X;
+  const paddingY = options.paddingY ?? DEFAULT_PADDING_Y;
+  const siblingGap = options.siblingGap ?? DEFAULT_SIBLING_GAP;
+  const treeOffsetXStep = options.treeOffsetXStep ?? DEFAULT_TREE_OFFSET_X_STEP;
+
+  const nodeMap = new Map(visibleNodes.map(node => [node.id, node]));
+  const childrenMap = buildVisibleChildrenMap(visibleNodes, nodeMap);
+  const sortedRoots = getVisibleRoots(visibleNodes, nodeMap);
+  const roots = sortedRoots.length > 0 ? sortedRoots : [...visibleNodes].sort(compareNodes);
+
+  let instanceCounter = 0;
+  const expandedSourceNodeIds = new Set<string>();
+
+  const createTreeNode = (
+    node: CWFrameNodeDocument,
+    depth: number,
+    parentInstanceKey: string | null,
+    branchPath: string[],
+    pathSet: Set<string>
+  ): TreeProjectionNode => {
+    const instanceKey = `${node.id}:${instanceCounter++}`;
+    const nextBranchPath = [...branchPath, node.id];
+    const nextPathSet = new Set(pathSet);
+    nextPathSet.add(node.id);
+
+    const shouldExpandChildren = !expandedSourceNodeIds.has(node.id);
+    if (shouldExpandChildren) expandedSourceNodeIds.add(node.id);
+
+    const children = shouldExpandChildren
+      ? (childrenMap.get(node.id) ?? [])
+          .filter(child => !nextPathSet.has(child.id))
+          .sort(compareNodes)
+          .map(child => createTreeNode(child, depth + 1, instanceKey, nextBranchPath, nextPathSet))
+      : [];
+
+    return { node, instanceKey, parentInstanceKey, branchPath: nextBranchPath, depth, children };
+  };
+
+  const treeRoots = roots.map(root => createTreeNode(root, 0, null, [], new Set<string>()));
+  const leafWeights = new Map<string, number>();
+  const rootBands = allocateRootBands(treeRoots, leafWeights, height, paddingY, siblingGap);
+  const globalMaxDepth = Math.max(...treeRoots.map(root => getMaxDepth(root)), 0);
+  const xStep = globalMaxDepth > 0 ? (width - paddingX * 2) / globalMaxDepth : 0;
+
+  const instances: GraphTreeInstance[] = [];
+  const links: GraphTreeLink[] = [];
+
+  rootBands.forEach(({ root, topY, bottomY }, rootIndex) => {
+    const direction = rootIndex % 2 === 0 ? -1 : 1;
+    const magnitude = Math.ceil(rootIndex / 2);
+    const treeOffsetX = direction * magnitude * treeOffsetXStep;
+
+    const assignCoordinates = (
+      treeNode: TreeProjectionNode,
+      branchTopY: number,
+      branchBottomY: number
+    ): void => {
+      const centerY = (branchTopY + branchBottomY) / 2;
+      const nodeWeight = getNodeWeight(treeNode.node);
+
+      instances.push({
+        ...treeNode.node,
+        instanceKey: treeNode.instanceKey,
+        sourceNodeId: treeNode.node.id,
+        parentInstanceKey: treeNode.parentInstanceKey,
+        branchPath: treeNode.branchPath,
+        depth: treeNode.depth,
+        weight: nodeWeight,
+        label: treeNode.node.title,
+        category: treeNode.node.domain,
+        x: paddingX + xStep * treeNode.depth + treeOffsetX,
+        y: centerY
+      });
+
+      if (treeNode.parentInstanceKey) {
+        links.push({
+          key: `${treeNode.parentInstanceKey}->${treeNode.instanceKey}`,
+          sourceInstanceKey: treeNode.parentInstanceKey,
+          targetInstanceKey: treeNode.instanceKey,
+          sourceNodeId: treeNode.branchPath[treeNode.branchPath.length - 2] ?? treeNode.node.id,
+          targetNodeId: treeNode.node.id
+        });
+      }
+
+      if (treeNode.children.length === 0) return;
+
+      let cursor = branchTopY;
+      treeNode.children.forEach(child => {
+        const childWeight = leafWeights.get(child.instanceKey) ?? 1;
+        const childHeight = childWeight * siblingGap;
+        assignCoordinates(child, cursor, cursor + childHeight);
+        cursor += childHeight;
+      });
+    };
+
+    assignCoordinates(root, topY, bottomY);
+  });
+
+  return { instances, links };
 }

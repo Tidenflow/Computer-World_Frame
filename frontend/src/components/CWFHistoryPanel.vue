@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Compass, Crosshair, Trash2 } from 'lucide-vue-next';
+import { History, Trash2 } from 'lucide-vue-next';
 import { useProgressStore } from '../store/progress.store';
 import { useMapStore } from '../store/map.store';
+import { computed } from 'vue';
 
 const progressStore = useProgressStore();
 const mapStore = useMapStore();
 
-const latestEntries = computed(() => {
+/**
+ * 点亮历史条目列表（按时间倒序）。
+ *
+ * 从 `progress.unlocked` 读取节点解锁记录，并通过 `mapStore.frameMap` 反查节点名称/分类。
+ *
+ * @returns 历史条目数组，每一项包含：id、name、time、category、matchedTerm
+ */
+const historyEntries = computed(() => {
   if (!mapStore.frameMap) return [];
 
   return progressStore.latestInputEntries
@@ -23,70 +30,73 @@ const latestEntries = computed(() => {
         category: node.domain || 'default'
       };
     })
-    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+    .sort((a, b) => b.time - a.time);
 });
 
-const hasStrictEmptyState = computed(() =>
-  progressStore.hasLatestInput && latestEntries.value.length === 0
-);
-
-function handleClear(): Promise<void> {
-  return progressStore.resetLocalProgress();
+/**
+ * 清空本地进度与历史记录。
+ *
+ * 行为：
+ * - 弹出确认框
+ * - 若确认则调用 `progressStore.resetLocalProgress()`（该函数会同步到服务端）
+ *
+ * @returns Promise<void>
+ * @sideEffects 会清空本地/服务端的 `unlocked` 并导致 UI 状态变化
+ */
+async function handleClear() {
+  if (confirm('确定要重置本地进度并清空历史记录吗？此操作将同步至云端。')) {
+    await progressStore.resetLocalProgress();
+  }
 }
 
 function focusEntry(nodeId: string): void {
   mapStore.focusNode(nodeId);
 }
 
+/**
+ * 把时间戳转换为人类可读的相对时间文本。
+ *
+ * @param timestamp - 毫秒级时间戳（与 `progress.unlockedAt=Date.now()` 对齐）
+ * @returns 相对时间字符串，如：`刚刚` / `xx分钟前` / `xx小时前` / 日期字符串
+ */
 function getTimeText(timestamp: number): string {
   const diff = Date.now() - timestamp;
   if (diff < 60000) return '刚刚';
-  if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`;
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`;
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
   return new Date(timestamp).toLocaleDateString();
 }
 </script>
 
 <template>
-  <div v-if="progressStore.hasLatestInput" class="history-panel glass-panel">
+  <div class="history-panel glass-panel" v-if="historyEntries.length > 0">
     <div class="panel-header">
       <div class="title-group">
-        <Compass :size="18" class="icon-muted" />
-        <div class="title-stack">
-          <h3>最近一次输入结果</h3>
-          <p class="panel-subtitle">{{ progressStore.latestInputText || '本轮输入' }}</p>
-        </div>
+        <History :size="18" class="icon-muted" />
+        <h3>点亮历史</h3>
       </div>
       <button class="clear-btn" @click="handleClear">
         <Trash2 :size="14" />
-        <span>重置</span>
+        <span>清空</span>
       </button>
     </div>
 
-    <div v-if="latestEntries.length > 0" class="entries-list custom-scroll">
-      <button
-        v-for="entry in latestEntries"
-        :key="entry.nodeId"
+    <div class="entries-list custom-scroll">
+      <div 
+        v-for="entry in historyEntries" 
+        :key="entry.id"
         class="entry-item"
-        @click="focusEntry(entry.nodeId)"
+        @click="selectNode(entry.id)"
       >
         <div class="entry-content">
           <div class="entry-row">
-            <span class="entry-node">{{ entry.label }}</span>
-            <span class="entry-time">{{ getTimeText(entry.unlockedAt) }}</span>
+            <span class="entry-node">{{ entry.name }}</span>
+            <span class="entry-time">{{ getTimeText(entry.time) }}</span>
           </div>
           <div class="entry-sub">匹配词: {{ entry.matchedTerm }}</div>
         </div>
-        <div class="entry-side">
-          <div class="category-dot" :class="entry.category"></div>
-          <Crosshair :size="14" class="entry-focus-icon" />
-        </div>
-      </button>
-    </div>
-
-    <div v-else-if="hasStrictEmptyState" class="empty-state">
-      <div class="empty-title">本次输入没有点亮新的节点</div>
-      <div class="empty-text">图谱没有发生新的变化，因此这里不会回退显示旧结果。</div>
+        <div class="category-dot" :class="entry.category"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -98,44 +108,28 @@ function getTimeText(timestamp: number): string {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 180px;
+  max-height: 500px;
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
 }
 
 .title-group {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
 
-.title-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.title-stack h3 {
+.title-group h3 {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
 }
 
-.panel-subtitle {
-  font-size: 11px;
-  color: var(--text-weak);
-  line-height: 1.5;
-}
-
-.icon-muted {
-  color: var(--text-weak);
-  margin-top: 1px;
-}
+.icon-muted { color: var(--text-weak); }
 
 .clear-btn {
   background: transparent;
@@ -174,7 +168,6 @@ function getTimeText(timestamp: number): string {
   align-items: center;
   cursor: pointer;
   transition: var(--transition-smooth);
-  text-align: left;
 }
 
 .entry-item:hover {
@@ -194,7 +187,6 @@ function getTimeText(timestamp: number): string {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
 }
 
 .entry-node {
@@ -206,7 +198,6 @@ function getTimeText(timestamp: number): string {
 .entry-time {
   font-size: 10px;
   color: var(--text-weak);
-  white-space: nowrap;
 }
 
 .entry-sub {
@@ -214,43 +205,9 @@ function getTimeText(timestamp: number): string {
   color: var(--text-muted);
 }
 
-.entry-side {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.category-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-.entry-focus-icon {
-  color: var(--text-weak);
-}
-
-.empty-state {
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 2px;
-}
-
-.empty-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.empty-text {
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--text-muted);
-}
-
-.category-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
+/* 分类颜色对齐 */
 .fundamentals { background: #60a5fa; }
 .hardware { background: #38bdf8; }
 .os { background: #a855f7; }
@@ -258,5 +215,4 @@ function getTimeText(timestamp: number): string {
 .programming { background: #22c55e; }
 .data { background: #f59e0b; }
 .application { background: #f43f5e; }
-.default { background: #94a3b8; }
 </style>

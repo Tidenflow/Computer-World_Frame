@@ -2,8 +2,8 @@ import { defineStore } from 'pinia';
 import { ref, reactive, computed } from 'vue';
 import type { UserProgressDocument, MapNodeDocument } from '@shared/contract';
 import * as api from '../core/cwframe.api';
-import { unlockNode as localUnlockNode } from '../core/cwframe.progress';
 import { useUserStore } from './user.store';
+import { useMapStore } from './map.store';
 
 export interface LatestUnlockEntry {
   nodeId: string;
@@ -25,9 +25,7 @@ interface LatestInputSnapshot {
  */
 export const useProgressStore = defineStore('progress', () => {
   const userStore = useUserStore();
-  const latestInputStorageKey = computed(
-    () => `cwframe_latest_input_result_${userStore.userId || 'guest'}`
-  );
+  const mapStore = useMapStore();
 
   const progress = reactive<UserProgressDocument>({
     userId: userStore.userId,
@@ -113,7 +111,11 @@ export const useProgressStore = defineStore('progress', () => {
     if (!userStore.userId) return;
 
     try {
-      const data = await api.fetchProgress(userStore.userId);
+      const data = await api.fetchProgress(
+        userStore.userId,
+        currentMap.document.mapId,
+        currentMap.document.version
+      );
       progress.userId = data.userId;
       progress.mapId = data.mapId;
       progress.mapVersion = data.mapVersion;
@@ -154,9 +156,19 @@ export const useProgressStore = defineStore('progress', () => {
 
     // 2. 同步到服务端，确保下次刷新不会”复活”
     try {
-      if (userStore.userId && !wasAlreadyUnlocked) {
-        await api.updateProgress(userStore.userId, progress);
+      if (userStore.userId) {
+        const result = await api.unlockProgressNode({
+          userId: userStore.userId,
+          mapId: progress.mapId,
+          mapVersion: progress.mapVersion,
+          nodeId: node.id,
+          matchedTerm
+        });
+        progress.unlocked[node.id] = { unlockedAt: result.unlockedAt };
+      } else if (!wasAlreadyUnlocked) {
+        progress.unlocked[node.id] = { unlockedAt: Date.now() };
       }
+
       return {
         success: true,
         message: wasAlreadyUnlocked ? `已存在: ${node.title}` : `已点亮: ${node.title}`,
@@ -164,7 +176,11 @@ export const useProgressStore = defineStore('progress', () => {
       };
     } catch (error) {
       console.error('同步进度至服务端失败:', error);
-      return { success: false, message: '进度同步失败', isNewlyUnlocked: !wasAlreadyUnlocked };
+      return {
+        success: false,
+        message: '进度同步失败',
+        isNewlyUnlocked: !wasAlreadyUnlocked
+      };
     }
   }
 
@@ -173,18 +189,13 @@ export const useProgressStore = defineStore('progress', () => {
     latestInputText.value = inputText;
     latestInputEntries.value = entries;
     recentlyUnlockedIds.value = entries.map(entry => entry.nodeId);
-    persistLatestInputResult();
   }
 
-  function clearLatestInputResult(shouldPersist = true): void {
+  function clearLatestInputResult(): void {
     hasLatestInput.value = false;
     latestInputText.value = '';
     latestInputEntries.value = [];
     recentlyUnlockedIds.value = [];
-
-    if (shouldPersist) {
-      persistLatestInputResult();
-    }
   }
 
   /**
@@ -199,7 +210,7 @@ export const useProgressStore = defineStore('progress', () => {
   async function resetLocalProgress(): Promise<void> {
     progress.unlocked = {};
     clearLatestInputResult();
-    // 同步清空服务端进度
+
     if (userStore.userId) {
       try {
         await api.updateProgress(userStore.userId, {

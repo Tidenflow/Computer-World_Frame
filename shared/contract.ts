@@ -9,9 +9,9 @@ import type {
 export type { MapDocument, MapNodeDocument, MapProjection, UserProgressDocument };
 
 export interface User {
-  id: number;
-  username: string;
-  timeStamp: number;
+    id : number;         //用户id
+    username : string;  //用户名称
+    timeStamp : number;   //账户创建时间
 }
 
 export type CWFrameNodeDocument = MapNodeDocument;
@@ -23,6 +23,7 @@ export interface CWFrameMapPayload {
 
 export type CWFrameProgressDocument = UserProgressDocument;
 
+//枚举ApiError.code，防止后端随意返回
 export type ApiErrorCode =
   | 'VALIDATION_ERROR'
   | 'USER_EXISTS'
@@ -34,29 +35,32 @@ export type ApiErrorCode =
   | 'UNAUTHORIZED'
   | 'INVALID_TOKEN';
 
+// 规定error格式
 export interface ApiError {
   code: ApiErrorCode;
   message: string;
 }
 
+// 规定api返回格式
 export type ApiResponse<T> =
   | { success: true; data: T; message?: string }
   | { success: false; data: null; error: ApiError };
 
+// 规定注册请求格式
 export interface RegisterRequest {
-  username: string;
-  password: string;
+    username : string;
+    password : string;
 }
-
+// 规定登录请求格式
 export interface LoginRequest {
-  username: string;
-  password: string;
+    username : string;
+    password : string;
 }
-
+//凭证载体
 export interface AuthData {
-  userId: number;
-  username: string;
-  token?: string;
+    userId: number;
+    username: string;
+    token?: string;
 }
 
 export type GetMapResponse = ApiResponse<CWFrameMapPayload>;

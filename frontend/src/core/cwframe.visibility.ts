@@ -28,6 +28,7 @@ export function buildVisibilityMap(
 
   const unlockedIds = new Set(Object.keys(progress.unlocked));
 
+  const unlockedIds = new Set(Object.keys(progress.unlocked));
   for (const nodeId of unlockedIds) {
     visibilityMap[nodeId] = 'Unlocked';
   }

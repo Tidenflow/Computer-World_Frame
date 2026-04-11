@@ -2,12 +2,10 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { CWFrameMapPayload, MapNodeDocument } from '@shared/contract';
 import * as loader from '../core/cwframe.loader';
+import { buildStatusMap } from '../core/cwframe.status';
 import { buildVisibilityMap } from '../core/cwframe.visibility';
 import { useProgressStore } from './progress.store';
 
-/**
- * 地图（知识图谱）仓库：负责加载地图、维护选中节点，以及根据 progress 计算节点状态。
- */
 export const useMapStore = defineStore('map', () => {
   const progressStore = useProgressStore();
 
@@ -80,6 +78,7 @@ export const useMapStore = defineStore('map', () => {
     frameMap,
     selectedNodeId,
     focusRequest,
+    statusMap,
     visibilityMap,
     selectedNode,
     loadMap,

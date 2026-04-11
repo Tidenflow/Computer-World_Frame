@@ -4,6 +4,7 @@ import authRouter from './routers/auth.router';
 import progressRouter from './routers/progress.router';
 import mapRouter from './routers/map.router';
 import { config } from './config';
+import { isAllowedCorsOrigin } from './config/cors';
 import { notFoundMiddleware } from './middleware/not-found.middleware';
 import { errorMiddleware } from './middleware/error.middleware';
 import { authMiddleware } from './middleware/auth.middleware';
@@ -33,7 +34,6 @@ function isAllowedCorsOrigin(origin: string | undefined, allowedOrigins: string[
 
 app.use(cors({
   origin: (origin, callback) => {
-    // 允许没有 origin 的请求（如 Postman）或白名单中的 origin
     const allowedOrigins = config.app.corsOrigin;
     if (isAllowedCorsOrigin(origin, allowedOrigins)) {
       callback(null, true);
