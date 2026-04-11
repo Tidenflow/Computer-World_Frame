@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { BookOpen, Lightbulb, Sparkles, Target, X, Zap } from 'lucide-vue-next';
+import { BookOpen, Sparkles, Target, X, Zap } from 'lucide-vue-next';
 import { useMapStore } from '../store/map.store';
 
 const mapStore = useMapStore();
