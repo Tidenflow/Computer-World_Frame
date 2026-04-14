@@ -209,7 +209,7 @@ const exampleTerms = ['Python', 'CPU', '显卡', '操作系统', '算法', '神�
           placeholder="输入任何计算机相关的术语..."
           @keyup.enter="void handleEnter()"
           @keydown="handleKeydown"
-          @focus="if (candidates.length > 0) showCandidates = true"
+          @focus="candidates.length > 0 && (showCandidates = true)"
           class="search-input"
         />
         <button
