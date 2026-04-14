@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { Search, Sparkles, CheckCircle2, XCircle, ChevronDown, RotateCcw, Undo2 } from 'lucide-vue-next';
 import { useMapStore } from '../store/map.store';
 import { useProgressStore } from '../store/progress.store';
-import { extractTerms, matchNodeByTerm } from '../core/matching';
+import { extractTerms, matchNodeByTerm, matchNodeByTermAsync } from '../core/matching';
 import type { MatchResult, MatchCandidate } from '../core/matching';
 import type { MapNodeDocument } from '@shared/contract';
 
@@ -89,7 +89,11 @@ async function handleEnter(): Promise<void> {
   let hasMatchedNode = false;
 
   for (const term of terms) {
-    const matchResult = matchNodeByTerm(term, mapStore.frameMap.document.nodes);
+    const matchResult = await matchNodeByTermAsync(
+      term,
+      mapStore.frameMap.document.nodes,
+      mapStore.frameMap.document.version
+    );
 
     if (matchResult.candidates.length === 0) {
       // 未找到任何候选
