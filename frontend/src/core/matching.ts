@@ -67,10 +67,27 @@ export function matchNodeByTerm(
     return { candidates: [], autoSelect: false };
   }
 
-  // 阶段 1：关键词精确匹配
+  // 阶段 0：意图分析（优先于关键词匹配）
+  // 宁可漏判（放过部分"碰巧技术"的内容），也不把明显的非技术词兜底成技术节点
+  if (isLikelyNonTech(normalizedTerm)) {
+    return {
+      candidates: [{
+        node: null,
+        matchType: 'non-tech',
+        contextHints: [
+          `未找到 "${term}" 相关节点`,
+          `请输入技术术语，如 "API"、"CPU"、"HTTP" 等`
+        ],
+        score: 0
+      }],
+      autoSelect: false
+    };
+  }
+
+  // 阶段 1：关键词精确匹配（exact → alias → partial）
   let candidates = keywordMatch(normalizedTerm, nodes);
 
-  // 阶段 2：无匹配时进入动态兜底
+  // 阶段 2：无匹配时进入动态兜底（字符串相似度）
   if (candidates.length === 0) {
     candidates = fuzzyFallback(normalizedTerm, nodes);
   }
@@ -146,20 +163,11 @@ function fuzzyFallback(
   term: string,
   nodes: MapNodeDocument[]
 ): MatchCandidate[] {
-  // 步骤 a：意图黑名单
-  if (isLikelyNonTech(term)) {
-    return [{
-      node: null,
-      matchType: 'non-tech',
-      contextHints: [
-        `未找到 "${term}" 相关节点`,
-        `请输入技术术语，如 "API"、"CPU"、"HTTP" 等`
-      ],
-      score: 0
-    }];
-  }
+  // 此函数仅在 keywordMatch 返回空集时被调用
+  // 意图判断已在外层 matchNodeByTerm 中优先完成
+  // 此处直接计算字符串相似度兜底
 
-  // 步骤 b：计算所有节点的字符串相似度
+  // 计算所有节点的字符串相似度
   const scored = nodes
     .map(node => ({
       node,
