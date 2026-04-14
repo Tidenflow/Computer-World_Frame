@@ -1,4 +1,5 @@
 import type { MapNodeDocument } from '@shared/contract';
+import { vectorCache } from './vector-cache';
 
 /**
  * ========================================================================
@@ -373,4 +374,46 @@ export function extractTerms(input: string): string[] {
     .split(/[,，、\s]+/)
     .map(t => t.trim())
     .filter(t => t.length > 0);
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2: 异步语义重排
+// ---------------------------------------------------------------------------
+
+/**
+ * 语义匹配入口（异步版）
+ *
+ * 与 matchNodeByTerm 的区别：
+ * - 候选数 ≥ 3 时，调用 vectorCache.rerank() 做语义重排
+ * - vectorCache 会在首次调用时后台预计算所有节点向量
+ *
+ * @param term - 用户输入词
+ * @param nodes - 地图节点列表
+ * @param mapVersion - 地图版本（用于向量缓存失效）
+ * @param onVectorProgress - 向量预计算进度回调（可选）
+ */
+export async function matchNodeByTermAsync(
+  term: string,
+  nodes: MapNodeDocument[],
+  mapVersion: string,
+  onVectorProgress?: (done: number, total: number) => void
+): Promise<MatchResult> {
+  // 阶段 1：关键词匹配（同步，纯规则）
+  const result = matchNodeByTerm(term, nodes);
+
+  // 阶段 2：候选 ≥ 3 → 语义重排
+  if (result.candidates.length >= 3) {
+    try {
+      // 初始化向量缓存（命中 IndexedDB 则跳过计算）
+      await vectorCache.init(nodes, mapVersion, onVectorProgress);
+
+      // 对候选列表按语义相关性重排
+      await vectorCache.rerank(result.candidates, term);
+    } catch (e) {
+      // 降级：向量计算失败时静默回退到纯规则排序
+      console.warn('[matching] Semantic rerank failed, fallback to keyword order:', e);
+    }
+  }
+
+  return result;
 }
