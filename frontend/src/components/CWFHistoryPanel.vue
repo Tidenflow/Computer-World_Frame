@@ -1,37 +1,45 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Compass, Crosshair, Trash2 } from 'lucide-vue-next';
+import { Compass, Undo2, RotateCcw } from 'lucide-vue-next';
 import { useProgressStore } from '../store/progress.store';
 import { useMapStore } from '../store/map.store';
 
 const progressStore = useProgressStore();
 const mapStore = useMapStore();
 
-const latestEntries = computed(() => {
-  if (!mapStore.frameMap) return [];
-
-  return progressStore.latestInputEntries
-    .map((entry: any) => {
-      const node = mapStore.frameMap?.document.nodes.find((candidate: any) => candidate.id === entry.nodeId);
-      if (!node) return null;
-
-      return {
-        nodeId: entry.nodeId,
-        matchedTerm: entry.matchedTerm,
-        unlockedAt: entry.unlockedAt,
-        label: node.title,
-        category: node.domain || 'default'
-      };
-    })
-    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+// 左侧列表：仅展示最近一次点亮的节点（undoStack 栈顶）
+const lastEntry = computed(() => {
+  if (!mapStore.frameMap || !progressStore.lastActivatedEntry) return null;
+  const node = mapStore.frameMap.document.nodes.find(n => n.id === progressStore.lastActivatedEntry!.nodeId);
+  if (!node) return null;
+  return {
+    nodeId: node.id,
+    label: node.title,
+    domain: node.domain,
+    unlockedAt: progressStore.lastActivatedEntry.unlockedAt
+  };
 });
 
-const hasStrictEmptyState = computed(() =>
-  progressStore.hasLatestInput && latestEntries.value.length === 0
-);
+function handleUndo(): void {
+  const stack = progressStore.undoStack;
+  if (stack.length === 0) return;
 
-function handleClear(): Promise<void> {
-  return progressStore.resetLocalProgress();
+  // 弹出栈顶
+  const popped = stack.pop();
+  if (!popped) return;
+
+  // 从 unlocked 中移除该节点
+  delete progressStore.progress.unlocked[popped.nodeId];
+  progressStore.persistUndoStack();
+
+  // 如果栈空了，清空 latestInput
+  if (stack.length === 0) {
+    progressStore.clearLatestInputResult();
+  }
+}
+
+function handleReset(): void {
+  void progressStore.resetLocalProgress();
 }
 
 function focusEntry(nodeId: string): void {
@@ -45,48 +53,62 @@ function getTimeText(timestamp: number): string {
   if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`;
   return new Date(timestamp).toLocaleDateString();
 }
+
+const undoCount = computed(() => progressStore.undoCount);
+const hasContent = computed(() => lastEntry.value !== null);
 </script>
 
 <template>
-  <div v-if="progressStore.hasLatestInput" class="history-panel glass-panel">
+  <div class="history-panel glass-panel">
     <div class="panel-header">
       <div class="title-group">
         <Compass :size="18" class="icon-muted" />
         <div class="title-stack">
-          <h3>最近一次输入结果</h3>
-          <p class="panel-subtitle">{{ progressStore.latestInputText || '本轮输入' }}</p>
+          <h3>最近点亮</h3>
+          <p v-if="hasContent" class="panel-subtitle">{{ getTimeText(lastEntry!.unlockedAt) }}</p>
+          <p v-else class="panel-subtitle">还没有点亮任何节点</p>
         </div>
       </div>
-      <button class="clear-btn" @click="handleClear">
-        <Trash2 :size="14" />
-        <span>重置</span>
-      </button>
+      <div class="action-buttons">
+        <button
+          class="action-btn undo-btn"
+          :class="{ disabled: undoCount === 0 }"
+          :disabled="undoCount === 0"
+          :title="undoCount > 0 ? `撤销最近一次点亮（还有 ${undoCount} 条记录）` : '没有可撤销的记录'"
+          @click="handleUndo"
+        >
+          <Undo2 :size="14" />
+          <span v-if="undoCount > 0">撤销({{ undoCount }})</span>
+          <span v-else>撤销</span>
+        </button>
+        <button
+          class="action-btn reset-btn"
+          :disabled="undoCount === 0"
+          title="重置所有点亮记录"
+          @click="handleReset"
+        >
+          <RotateCcw :size="14" />
+          <span>重置</span>
+        </button>
+      </div>
     </div>
 
-    <div v-if="latestEntries.length > 0" class="entries-list custom-scroll">
-      <button
-        v-for="entry in latestEntries"
-        :key="entry.nodeId"
-        class="entry-item"
-        @click="focusEntry(entry.nodeId)"
-      >
-        <div class="entry-content">
-          <div class="entry-row">
-            <span class="entry-node">{{ entry.label }}</span>
-            <span class="entry-time">{{ getTimeText(entry.unlockedAt) }}</span>
-          </div>
-          <div class="entry-sub">匹配词: {{ entry.matchedTerm }}</div>
-        </div>
-        <div class="entry-side">
-          <div class="category-dot" :class="entry.category"></div>
-          <Crosshair :size="14" class="entry-focus-icon" />
-        </div>
-      </button>
+    <!-- 最近一次点亮的节点 -->
+    <div v-if="lastEntry" class="entry-card" @click="focusEntry(lastEntry.nodeId)">
+      <div class="entry-main">
+        <div class="entry-label">{{ lastEntry.label }}</div>
+        <div class="entry-domain-tag" :class="lastEntry.domain">{{ lastEntry.domain.toUpperCase() }}</div>
+      </div>
+      <div class="entry-meta">
+        <span class="entry-time">{{ getTimeText(lastEntry.unlockedAt) }}</span>
+        <span class="entry-hint">点击聚焦节点</span>
+      </div>
     </div>
 
-    <div v-else-if="hasStrictEmptyState" class="empty-state">
-      <div class="empty-title">本次输入没有点亮新的节点</div>
-      <div class="empty-text">图谱没有发生新的变化，因此这里不会回退显示旧结果。</div>
+    <!-- 空状态 -->
+    <div v-else class="empty-state">
+      <p>搜索框输入术语，点亮知识图谱中的节点</p>
+      <p class="empty-sub">点亮后会在这里显示，点撤销可回退</p>
     </div>
   </div>
 </template>
@@ -98,7 +120,7 @@ function getTimeText(timestamp: number): string {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 180px;
+  min-height: 160px;
 }
 
 .panel-header {
@@ -106,6 +128,7 @@ function getTimeText(timestamp: number): string {
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .title-group {
@@ -137,126 +160,131 @@ function getTimeText(timestamp: number): string {
   margin-top: 1px;
 }
 
-.clear-btn {
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.action-btn {
   background: transparent;
-  border: none;
-  color: var(--text-weak);
+  border: 1px solid var(--border-slate);
+  color: var(--text-muted);
   font-size: 12px;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: var(--transition-smooth);
-}
-
-.clear-btn:hover {
-  color: var(--error);
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.entries-list {
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-right: 4px;
-}
-
-.entry-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid transparent;
-  padding: 12px 16px;
-  border-radius: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  text-align: left;
-}
-
-.entry-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--border-highlight);
-  transform: translateX(4px);
-}
-
-.entry-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.entry-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.entry-node {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.entry-time {
-  font-size: 10px;
-  color: var(--text-weak);
   white-space: nowrap;
 }
 
-.entry-sub {
-  font-size: 11px;
-  color: var(--text-muted);
+.action-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  border-color: var(--border-highlight);
 }
 
-.entry-side {
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.undo-btn:hover:not(:disabled) {
+  border-color: var(--blue-400);
+  color: var(--blue-400);
+}
+
+.reset-btn:hover:not(:disabled) {
+  border-color: var(--error);
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* Entry card */
+.entry-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-slate);
+  padding: 16px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.entry-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--blue-400);
+  transform: translateX(3px);
+}
+
+.entry-main {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
-.entry-focus-icon {
-  color: var(--text-weak);
-}
-
-.empty-state {
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 2px;
-}
-
-.empty-title {
-  font-size: 14px;
-  font-weight: 700;
+.entry-label {
+  font-size: 16px;
+  font-weight: 800;
   color: var(--text-primary);
 }
 
-.empty-text {
-  font-size: 12px;
-  line-height: 1.6;
+.entry-domain-tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border-radius: 6px;
+  opacity: 0.75;
+}
+
+.entry-domain-tag.fundamentals { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+.entry-domain-tag.hardware { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.entry-domain-tag.os { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+.entry-domain-tag.network { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; }
+.entry-domain-tag.programming { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.entry-domain-tag.data { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.entry-domain-tag.application { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+
+.entry-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.entry-time {
+  font-size: 11px;
+  color: var(--text-weak);
+}
+
+.entry-hint {
+  font-size: 10px;
+  color: var(--text-weak);
+  opacity: 0.6;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 80px;
+  padding: 4px 2px;
+}
+
+.empty-state p {
+  font-size: 13px;
   color: var(--text-muted);
 }
 
-.category-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.empty-sub {
+  font-size: 11px !important;
+  color: var(--text-weak) !important;
+  opacity: 0.7;
 }
-
-.fundamentals { background: #60a5fa; }
-.hardware { background: #38bdf8; }
-.os { background: #a855f7; }
-.network { background: #0ea5e9; }
-.programming { background: #22c55e; }
-.data { background: #f59e0b; }
-.application { background: #f43f5e; }
-.default { background: #94a3b8; }
 </style>

@@ -11,22 +11,23 @@ export interface LatestUnlockEntry {
   unlockedAt: number;
 }
 
+export interface UndoEntry {
+  nodeId: string;
+  unlockedAt: number;
+}
+
 interface LatestInputSnapshot {
   inputText: string;
   entries: LatestUnlockEntry[];
 }
 
-/**
- * 用户进度仓库：负责加载/更新”点亮记录”（unlocked）。
- *
- * 注意：
- * - `progress` 是 reactive 对象，会被 actions 原地修改
- * - 与服务端同步目前使用覆盖式 `PUT`（写回 unlocked）
- */
 export const useProgressStore = defineStore('progress', () => {
   const userStore = useUserStore();
   const latestInputStorageKey = computed(
     () => `cwframe_latest_input_result_${userStore.userId || 'guest'}`
+  );
+  const undoStackStorageKey = computed(
+    () => `cwframe_undo_stack_${userStore.userId || 'guest'}`
   );
 
   const progress = reactive<UserProgressDocument>({
@@ -41,27 +42,40 @@ export const useProgressStore = defineStore('progress', () => {
   const latestInputText = ref<string>('');
   const hasLatestInput = ref<boolean>(false);
   const recentlyUnlockedIds = ref<string[]>([]);
+  const undoStack = ref<UndoEntry[]>([]);
+  const MAX_UNDO_STACK = 50;
 
   // Getters
-  /**
-   * 已解锁节点数量（用于 UI 统计）。
-   *
-   * @returns number
-   */
   const unlockedNodesCount = computed(() => Object.keys(progress.unlocked).length);
 
+  const lastActivatedEntry = computed<LatestUnlockEntry | null>(() => {
+    const stack = undoStack.value;
+    if (stack.length === 0) return null;
+    const last = stack[stack.length - 1];
+    return { nodeId: last.nodeId, matchedTerm: '', unlockedAt: last.unlockedAt };
+  });
+
+  const undoCount = computed(() => undoStack.value.length);
+
+  // Persistence helpers
   function persistLatestInputResult(): void {
     if (!hasLatestInput.value) {
       localStorage.removeItem(latestInputStorageKey.value);
       return;
     }
-
     const payload: LatestInputSnapshot = {
       inputText: latestInputText.value,
       entries: latestInputEntries.value
     };
-
     localStorage.setItem(latestInputStorageKey.value, JSON.stringify(payload));
+  }
+
+  function persistUndoStack(): void {
+    try {
+      localStorage.setItem(undoStackStorageKey.value, JSON.stringify(undoStack.value.slice(-MAX_UNDO_STACK)));
+    } catch {
+      // localStorage unavailable, silent ignore
+    }
   }
 
   function hydrateLatestInputResult(): void {
@@ -70,11 +84,9 @@ export const useProgressStore = defineStore('progress', () => {
       clearLatestInputResult(false);
       return;
     }
-
     try {
       const parsed = JSON.parse(raw) as Partial<LatestInputSnapshot>;
       const parsedEntries = Array.isArray(parsed.entries) ? parsed.entries : [];
-
       const validEntries = parsedEntries.filter(entry => {
         const unlockedInfo = progress.unlocked[entry.nodeId];
         return Boolean(
@@ -83,83 +95,79 @@ export const useProgressStore = defineStore('progress', () => {
           typeof entry.unlockedAt === 'number'
         );
       });
-
       if (!parsed.inputText || validEntries.length !== parsedEntries.length) {
         clearLatestInputResult();
         return;
       }
-
       hasLatestInput.value = true;
       latestInputText.value = parsed.inputText;
       latestInputEntries.value = validEntries;
       recentlyUnlockedIds.value = validEntries.map(entry => entry.nodeId);
-    } catch (error) {
-      console.error('恢复最近一次输入结果失败:', error);
+    } catch {
       clearLatestInputResult();
     }
   }
 
+  function hydrateUndoStack(): void {
+    try {
+      const raw = localStorage.getItem(undoStackStorageKey.value);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as UndoEntry[];
+      if (Array.isArray(parsed)) {
+        undoStack.value = parsed.slice(-MAX_UNDO_STACK);
+      }
+    } catch {
+      undoStack.value = [];
+    }
+  }
+
   // Actions
-  /**
-   * 从服务端加载当前用户进度，并写入到本地 `progress`。
-   *
-   * @returns Promise<void>（无返回值；失败时只会在控制台打印错误）
-   *
-   * @sideEffects
-   * - 会覆盖 `progress.unlocked`
-   * - 会设置 `isLoaded=true`
-   */
   async function loadProgress(): Promise<void> {
     if (!userStore.userId) return;
-
     try {
       const data = await api.fetchProgress(userStore.userId);
       progress.userId = data.userId;
       progress.mapId = data.mapId;
       progress.mapVersion = data.mapVersion;
-      // Reset and re-assign
       progress.unlocked = {};
       Object.assign(progress.unlocked, data.unlocked);
       hydrateLatestInputResult();
+      hydrateUndoStack();
       isLoaded.value = true;
     } catch (error) {
-      console.error('Failed to load progress from server:', error);
+      console.error('Failed to load progress:', error);
     }
   }
 
-  /**
-   * 解锁指定节点，并同步到服务端。
-   *
-   * @param node - 要解锁的节点
-   * @param matchedTerm - 可选：触发本次解锁的用户输入词，用于历史记录展示
-   * @returns 一个轻量结果对象，供 UI toast/提示使用
-   *
-   * @sideEffects
-   * - 会修改 `progress.unlocked`
-   * - 会发起网络请求写回服务端（失败时会返回 success:false）
-   */
   async function unlockNode(
     node: MapNodeDocument,
     matchedTerm?: string
   ): Promise<{ success: boolean; message: string; isNewlyUnlocked: boolean }> {
     const wasAlreadyUnlocked = Boolean(progress.unlocked[node.id]);
 
-    // 1. 本地更新
+    // 1. Local update
     localUnlockNode(progress, node);
 
-    // 2. 同步到服务端，确保下次刷新不会”复活”
+    // 2. Push to undo stack
+    undoStack.value.push({ nodeId: node.id, unlockedAt: Date.now() });
+    if (undoStack.value.length > MAX_UNDO_STACK) {
+      undoStack.value.shift();
+    }
+    persistUndoStack();
+
+    // 3. Sync to server
     try {
       if (userStore.userId && !wasAlreadyUnlocked) {
         await api.updateProgress(userStore.userId, progress);
       }
       return {
         success: true,
-        message: wasAlreadyUnlocked ? `已存在: ${node.title}` : `已点亮: ${node.title}`,
+        message: wasAlreadyUnlocked ? `Already unlocked: ${node.title}` : `Unlocked: ${node.title}`,
         isNewlyUnlocked: !wasAlreadyUnlocked
       };
     } catch (error) {
-      console.error('同步进度至服务端失败:', error);
-      return { success: false, message: '进度同步失败', isNewlyUnlocked: !wasAlreadyUnlocked };
+      console.error('Sync progress failed:', error);
+      return { success: false, message: 'Sync failed', isNewlyUnlocked: !wasAlreadyUnlocked };
     }
   }
 
@@ -176,25 +184,14 @@ export const useProgressStore = defineStore('progress', () => {
     latestInputText.value = '';
     latestInputEntries.value = [];
     recentlyUnlockedIds.value = [];
-
-    if (shouldPersist) {
-      persistLatestInputResult();
-    }
+    if (shouldPersist) persistLatestInputResult();
   }
 
-  /**
-   * 清空本地进度，并尝试同步清空服务端进度。
-   *
-   * @returns Promise<void>
-   *
-   * @sideEffects
-   * - 会重置 `progress.unlocked = {}`
-   * - 会调用服务端 `PUT /progress` 写回空对象（若 userId 存在）
-   */
   async function resetLocalProgress(): Promise<void> {
     progress.unlocked = {};
     clearLatestInputResult();
-    // 同步清空服务端进度
+    undoStack.value = [];
+    persistUndoStack();
     if (userStore.userId) {
       try {
         await api.updateProgress(userStore.userId, {
@@ -204,7 +201,7 @@ export const useProgressStore = defineStore('progress', () => {
           unlocked: {}
         });
       } catch (error) {
-        console.error('重置服务端进度失败:', error);
+        console.error('Reset progress failed:', error);
       }
     }
   }
@@ -217,6 +214,9 @@ export const useProgressStore = defineStore('progress', () => {
     latestInputText,
     hasLatestInput,
     recentlyUnlockedIds,
+    undoStack,
+    lastActivatedEntry,
+    undoCount,
     loadProgress,
     unlockNode,
     setLatestInputResult,
