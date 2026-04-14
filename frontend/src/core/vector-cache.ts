@@ -397,6 +397,49 @@ class VectorCache {
   }
 
   /**
+   * 纯语义搜索：给定 term，在全量节点中找语义最相关的候选
+   *
+   * 与 rerank 的区别：rerank 是对已有候选重排，search 是无候选时从零搜索。
+   *
+   * @param term - 用户输入词
+   * @param nodes - 全量节点列表（用于根据 nodeId 找到节点对象）
+   * @param topK - 返回最多 topK 个结果，默认 5
+   * @returns 按语义相似度降序排列的结果
+   */
+  async search(term: string, nodes: MapNodeDocument[], topK = 5): Promise<Array<{ node: MapNodeDocument; score: number }>> {
+    if (!this.initialized || nodes.length === 0) return [];
+
+    // 计算 term 的向量
+    let termEmbedding: Float32Array | null = null;
+    try {
+      termEmbedding = await computeEmbedding(term.trim().toLowerCase());
+    } catch {
+      console.warn('[vector-cache] Failed to embed query term for search');
+      return [];
+    }
+
+    // 计算所有节点的语义相似度
+    const scored: Array<{ node: MapNodeDocument; score: number }> = [];
+
+    for (const node of nodes) {
+      const embedding = this.cache.get(node.id);
+      if (!embedding) continue;
+
+      const score = cosineSimilarity(termEmbedding!, embedding);
+      // 余弦相似度通常在 [-1, 1]，归一化向量下基本 [0, 1]
+      // 阈值：只保留 score > 0.3 的（语义正相关且有意义的匹配）
+      if (score > 0.3) {
+        scored.push({ node, score });
+      }
+    }
+
+    // 按相似度降序，取 topK
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK);
+  }
+
+  /**
    * 重置缓存（地图切换时调用）
    */
   reset(): void {
