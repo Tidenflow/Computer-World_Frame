@@ -21,20 +21,9 @@ const lastEntry = computed(() => {
 });
 
 function handleUndo(): void {
-  const stack = progressStore.undoStack;
-  if (stack.length === 0) return;
-
-  // 弹出栈顶
-  const popped = stack.pop();
-  if (!popped) return;
-
-  // 从 unlocked 中移除该节点
-  delete progressStore.progress.unlocked[popped.nodeId];
-  progressStore.persistUndoStack();
-
-  // 如果栈空了，清空 latestInput
-  if (stack.length === 0) {
-    progressStore.clearLatestInputResult();
+  const { nodeId } = progressStore.undo();
+  if (nodeId) {
+    mapStore.focusNode(nodeId);
   }
 }
 

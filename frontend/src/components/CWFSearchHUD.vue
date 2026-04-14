@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { Search, Sparkles, CheckCircle2, XCircle, ChevronDown, RotateCcw, Undo2 } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
+import { Search, Sparkles, CheckCircle2, XCircle } from 'lucide-vue-next';
 import { useMapStore } from '../store/map.store';
 import { useProgressStore } from '../store/progress.store';
 import { extractTerms, matchNodeByTerm, matchNodeByTermAsync } from '../core/matching';
-import type { MatchResult, MatchCandidate } from '../core/matching';
-import type { MapNodeDocument } from '@shared/contract';
+import type { MatchCandidate } from '../core/matching';
 
 const mapStore = useMapStore();
 const progressStore = useProgressStore();
@@ -23,51 +22,24 @@ const showCandidates = ref(false);
 const selectedCandidateIndex = ref(0);
 const candidates = ref<MatchCandidate[]>([]);
 
-// 撤销/重置状态
-const undoStack = ref<MapNodeDocument[]>([]);
-
-// 最近一次点亮的节点（用于左侧列表展示）
-const lastActivatedNode = ref<MapNodeDocument | null>(null);
-
-// 是否可以撤销
-const canUndo = computed(() => undoStack.value.length > 0);
-
-// 用户选择了某个候选后，点亮该节点
+/**
+ * 点亮一个候选节点
+ *
+ * 调用 progressStore.unlockNode（内部会维护 undoStack + lastActivatedEntry）
+ * 成功后聚焦节点并关闭候选列表
+ */
 async function activateCandidate(candidate: MatchCandidate): Promise<void> {
   if (!candidate.node) return;
-
-  // 撤销栈：记录前一个激活节点（用于撤销）
-  const prevNode = lastActivatedNode.value;
-  if (prevNode) {
-    undoStack.value.push(prevNode);
-  }
-
-  const unlockResult = await progressStore.unlockNode(candidate.node, inputValue.value.trim());
+  const unlockResult = await progressStore.unlockNode(
+    candidate.node,
+    inputValue.value.trim()
+  );
   if (unlockResult.isNewlyUnlocked) {
     mapStore.focusNode(candidate.node.id);
-    lastActivatedNode.value = candidate.node;
   }
   showCandidates.value = false;
   candidates.value = [];
   inputValue.value = '';
-}
-
-// 撤销：回到上一个节点
-async function undoActivation(): Promise<void> {
-  if (undoStack.value.length === 0) return;
-  const prevNode = undoStack.value.pop()!;
-  lastActivatedNode.value = prevNode;
-  mapStore.focusNode(prevNode.id);
-}
-
-// 重置：清空所有状态
-function resetAll(): void {
-  lastActivatedNode.value = null;
-  undoStack.value = [];
-  candidates.value = [];
-  showCandidates.value = false;
-  inputValue.value = '';
-  result.value = null;
 }
 
 // 用户按回车时的处理逻辑
@@ -103,20 +75,12 @@ async function handleEnter(): Promise<void> {
     }
 
     if (matchResult.autoSelect && matchResult.candidates[0].node) {
-      // 单候选自动点亮
+      // 单候选自动点亮（unlockNode 内部维护 undoStack + lastActivatedEntry）
       const node = matchResult.candidates[0].node;
       hasMatchedNode = true;
-
-      // 撤销栈：记录前一个激活节点
-      const prevNode = lastActivatedNode.value;
-      if (prevNode) {
-        undoStack.value.push(prevNode);
-      }
-
       const unlockResult = await progressStore.unlockNode(node, term);
       if (unlockResult.isNewlyUnlocked) {
         latestEntries.push({ nodeId: node.id, matchedTerm: term, unlockedAt: Date.now() });
-        lastActivatedNode.value = node;
       }
     } else {
       // 多候选 → 展开候选列表
@@ -190,11 +154,6 @@ function handleKeydown(e: KeyboardEvent): void {
   }
 }
 
-function selectSuggestion(s: string): void {
-  inputValue.value = s;
-  void handleEnter();
-}
-
 function clearResult(): void {
   setTimeout(() => { result.value = null; }, 4000);
 }
@@ -219,8 +178,6 @@ const matchTypeColor: Record<string, string> = {
   suggestion: 'type-suggestion',
   'non-tech': 'type-nontech'
 };
-
-const exampleTerms = ['Python', 'CPU', '显卡', '操作系统', '算法', '神经网络', 'React', 'Linux', '数据库'];
 </script>
 
 <template>
@@ -250,32 +207,6 @@ const exampleTerms = ['Python', 'CPU', '显卡', '操作系统', '算法', '神�
 
       <!-- Search bar -->
     <div class="search-bar-wrapper">
-      <!-- Undo / Reset actions -->
-      <div v-if="lastActivatedNode || canUndo" class="action-bar">
-        <button
-          class="action-btn undo-btn"
-          :disabled="!canUndo"
-          @click="undoActivation"
-          title="撤销 (Undo)"
-        >
-          <Undo2 :size="14" />
-          <span v-if="canUndo">撤销({{ undoStack.length }})</span>
-        </button>
-        <button
-          class="action-btn reset-btn"
-          @click="resetAll"
-          title="重置会话"
-        >
-          <RotateCcw :size="14" />
-          <span>重置</span>
-        </button>
-        <!-- Last activated node display -->
-        <div v-if="lastActivatedNode" class="last-activated-tag">
-          <span class="last-activated-dot"></span>
-          <span class="last-activated-name">{{ lastActivatedNode.title }}</span>
-        </div>
-      </div>
-
       <div class="search-bar glass-panel" :class="{ active: showCandidates }">
         <Search :size="20" class="search-icon" />
         <input
@@ -340,21 +271,6 @@ const exampleTerms = ['Python', 'CPU', '显卡', '操作系统', '算法', '神�
       </Transition>
 
       <!-- Example terms (shown when input is empty and no candidates) -->
-      <Transition name="dropdown">
-        <div v-if="!showCandidates && !inputValue" class="suggestions-dropdown glass-panel">
-          <div class="suggest-title">热门搜索关键词：</div>
-          <div class="suggest-grid">
-            <button
-              v-for="term in exampleTerms"
-              :key="term"
-              @click="selectSuggestion(term)"
-              class="suggest-tag"
-            >
-              {{ term }}
-            </button>
-          </div>
-        </div>
-      </Transition>
     </div>
   </div>
 </template>
@@ -372,84 +288,6 @@ const exampleTerms = ['Python', 'CPU', '显卡', '操作系统', '算法', '神�
   max-width: 560px;
   position: relative;
   z-index: 200;
-}
-
-/* Action bar: undo/reset */
-.action-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding: 0 4px;
-}
-
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border-slate);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.action-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-primary);
-  border-color: var(--border-slate);
-}
-
-.action-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.undo-btn:hover:not(:disabled) {
-  border-color: var(--warning, #f59e0b);
-  color: var(--warning, #f59e0b);
-}
-
-.reset-btn:hover {
-  border-color: var(--error);
-  color: var(--error);
-}
-
-/* Last activated node tag */
-.last-activated-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 8px;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-left: auto;
-}
-
-.last-activated-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--success, #22c55e);
-  box-shadow: 0 0 6px var(--success, #22c55e);
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-
-.last-activated-name {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(0.85); }
 }
 
 .search-bar {
@@ -644,49 +482,6 @@ const exampleTerms = ['Python', 'CPU', '显卡', '操作系统', '算法', '神�
   font-size: 12px;
   color: var(--text-muted);
   font-style: italic;
-}
-
-/* Suggestions (example terms) */
-.suggestions-dropdown {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 0;
-  right: 0;
-  padding: 18px;
-  border-radius: 16px;
-  z-index: 100;
-}
-
-.suggest-title {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-weak);
-  margin-bottom: 12px;
-  letter-spacing: 0.1em;
-}
-
-.suggest-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.suggest-tag {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-slate);
-  color: var(--text-muted);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.suggest-tag:hover {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border-color: var(--blue-400);
 }
 
 /* Toast */

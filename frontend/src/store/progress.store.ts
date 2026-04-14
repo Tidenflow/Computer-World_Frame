@@ -45,15 +45,17 @@ export const useProgressStore = defineStore('progress', () => {
   const undoStack = ref<UndoEntry[]>([]);
   const MAX_UNDO_STACK = 50;
 
+  /**
+   * 最近一次点亮成功的节点（用于 HUD 撤销/重置状态判断）
+   * 注意：这是独立于 undoStack 的"当前激活节点"状态
+   * - 点亮节点时更新为此节点
+   * - 撤销时回退到 undoStack 栈顶
+   * - 重置时置为 null
+   */
+  const lastActivatedEntry = ref<LatestUnlockEntry | null>(null);
+
   // Getters
   const unlockedNodesCount = computed(() => Object.keys(progress.unlocked).length);
-
-  const lastActivatedEntry = computed<LatestUnlockEntry | null>(() => {
-    const stack = undoStack.value;
-    if (stack.length === 0) return null;
-    const last = stack[stack.length - 1];
-    return { nodeId: last.nodeId, matchedTerm: '', unlockedAt: last.unlockedAt };
-  });
 
   const undoCount = computed(() => undoStack.value.length);
 
@@ -103,6 +105,11 @@ export const useProgressStore = defineStore('progress', () => {
       latestInputText.value = parsed.inputText;
       latestInputEntries.value = validEntries;
       recentlyUnlockedIds.value = validEntries.map(entry => entry.nodeId);
+      // 恢复最近激活节点（栈顶）
+      if (validEntries.length > 0) {
+        const last = validEntries[validEntries.length - 1];
+        lastActivatedEntry.value = last;
+      }
     } catch {
       clearLatestInputResult();
     }
@@ -149,10 +156,19 @@ export const useProgressStore = defineStore('progress', () => {
     localUnlockNode(progress, node);
 
     // 2. Push to undo stack
-    undoStack.value.push({ nodeId: node.id, unlockedAt: Date.now() });
+    const entry: UndoEntry = { nodeId: node.id, unlockedAt: Date.now() };
+    undoStack.value.push(entry);
     if (undoStack.value.length > MAX_UNDO_STACK) {
       undoStack.value.shift();
     }
+
+    // 3. 更新最近激活节点
+    lastActivatedEntry.value = {
+      nodeId: node.id,
+      matchedTerm: matchedTerm || '',
+      unlockedAt: entry.unlockedAt
+    };
+
     persistUndoStack();
 
     // 3. Sync to server
@@ -191,6 +207,7 @@ export const useProgressStore = defineStore('progress', () => {
     progress.unlocked = {};
     clearLatestInputResult();
     undoStack.value = [];
+    lastActivatedEntry.value = null;
     persistUndoStack();
     if (userStore.userId) {
       try {
@@ -204,6 +221,36 @@ export const useProgressStore = defineStore('progress', () => {
         console.error('Reset progress failed:', error);
       }
     }
+  }
+
+  /**
+   * 撤销最近一次点亮（将栈顶弹出并从 unlocked 中移除）
+   *
+   * @sideEffects 会将 lastActivatedEntry 回退到新的栈顶
+   */
+  function undo(): { nodeId: string | null } {
+    if (undoStack.value.length === 0) return { nodeId: null };
+
+    const popped = undoStack.value.pop()!;
+    delete progress.unlocked[popped.nodeId];
+    persistUndoStack();
+
+    // 清空 latestInput（幂等）
+    if (undoStack.value.length === 0) {
+      clearLatestInputResult();
+      lastActivatedEntry.value = null;
+    } else {
+      // 栈非空：回退到新的栈顶
+      const newTop = undoStack.value[undoStack.value.length - 1];
+      lastActivatedEntry.value = {
+        nodeId: newTop.nodeId,
+        matchedTerm: '',
+        unlockedAt: newTop.unlockedAt
+      };
+    }
+
+    // 返回被撤销的节点 ID（供 HUD 聚焦用）
+    return { nodeId: popped.nodeId };
   }
 
   return {
@@ -221,6 +268,7 @@ export const useProgressStore = defineStore('progress', () => {
     unlockNode,
     setLatestInputResult,
     clearLatestInputResult,
-    resetLocalProgress
+    resetLocalProgress,
+    undo
   };
 });
