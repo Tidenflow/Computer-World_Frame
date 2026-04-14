@@ -137,7 +137,7 @@ let _embeddingPipeline: Awaited<ReturnType<typeof pipeline>> | null = null;
 async function getEmbeddingPipeline() {
   if (_embeddingPipeline) return _embeddingPipeline;
 
-  _embeddingPipeline = pipeline(
+  _embeddingPipeline = await pipeline(
     'feature-extraction',
     MODEL_NAME,
     {
@@ -157,6 +157,9 @@ async function getEmbeddingPipeline() {
  */
 async function computeEmbedding(text: string): Promise<Float32Array> {
   const extractor = await getEmbeddingPipeline();
+  if (!extractor) {
+    throw new Error('[vector-cache] Failed to initialize embedding pipeline');
+  }
 
   const output = await extractor(text, {
     pooling: 'mean',

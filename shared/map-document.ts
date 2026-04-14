@@ -12,6 +12,7 @@ export interface MapNodeDocument {
   deps: string[];
   aliases?: string[];
   tags?: string[];
+  description?: string;
 }
 
 export interface MapDocument {
