@@ -132,9 +132,22 @@ async function pruneOldCache(keepVersion: string): Promise<void> {
  * Transformers.js 会自动选择最佳后端：WebGPU > WASM > WebAssembly
  * 首次调用时懒加载模型，之后复用同一个 pipeline 实例
  */
-let _embeddingPipeline: Awaited<ReturnType<typeof pipeline>> | null = null;
+type EmbeddingTensor = {
+  data: ArrayLike<number>;
+};
 
-async function getEmbeddingPipeline() {
+type EmbeddingPipeline = (
+  text: string | string[],
+  options?: {
+    pooling?: 'none' | 'mean' | 'cls' | 'first_token' | 'eos' | 'last_token';
+    normalize?: boolean;
+    quantize?: boolean;
+    precision?: 'binary' | 'ubinary';
+  }
+) => Promise<EmbeddingTensor>;
+let _embeddingPipeline: EmbeddingPipeline | null = null;
+
+async function getEmbeddingPipeline(): Promise<EmbeddingPipeline> {
   if (_embeddingPipeline) return _embeddingPipeline;
 
   _embeddingPipeline = await pipeline(
@@ -144,7 +157,7 @@ async function getEmbeddingPipeline() {
       device: 'wasm', // 浏览器环境使用 WebAssembly（兼容性好）
       // progress_callback 用于追踪模型下载进度
     }
-  );
+  ) as EmbeddingPipeline;
 
   return _embeddingPipeline;
 }
