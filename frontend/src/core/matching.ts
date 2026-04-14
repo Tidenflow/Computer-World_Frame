@@ -18,7 +18,7 @@ import { vectorCache } from './vector-cache';
 /**
  * 匹配类型：标识候选节点是如何被命中的
  */
-export type MatchType = 'exact' | 'alias' | 'partial' | 'fuzzy' | 'suggestion' | 'non-tech';
+export type MatchType = 'exact' | 'alias' | 'partial' | 'fuzzy' | 'semantic' | 'suggestion' | 'non-tech';
 
 /**
  * 单个匹配候选
@@ -86,22 +86,31 @@ export function matchNodeByTerm(
   }
 
   // 阶段 1：关键词精确匹配（exact → alias → partial）
-  let candidates = keywordMatch(normalizedTerm, nodes);
+  const candidates = keywordMatch(normalizedTerm, nodes);
 
-  // 阶段 2：无匹配时进入动态兜底（字符串相似度）
+  // 阶段 2：精确匹配无结果时，进入模糊匹配（由 matchNodeByTermAsync 统一调度）
+  // 注意：matchNodeByTerm 是纯同步函数，不调用语义 transformer，
+  //      fuzzyFallback 仅作为最后的字符串级兜底。
   if (candidates.length === 0) {
-    candidates = fuzzyFallback(normalizedTerm, nodes);
+    const fuzzy = fuzzyFallback(normalizedTerm, nodes);
+    return {
+      candidates: fuzzy,
+      autoSelect: fuzzy.length === 1 && fuzzy[0].node !== null
+    };
   }
 
   // 阶段 3：截断 + 确定 autoSelect
   return {
     candidates: candidates.slice(0, 5),
-    autoSelect: candidates.length === 1 && candidates[0].node !== null
+    autoSelect: candidates.length === 1
   };
 }
 
 /**
- * 关键词精确匹配：title 精确、别名精确、部分包含
+ * 关键词精确匹配：title 精确、别名精确
+ *
+ * 只做高置信度匹配，不做模糊子串（避免 "c" → "Binary Basics" 这类误匹配）。
+ * 模糊匹配统一由 fuzzyFallback 处理。
  */
 function keywordMatch(
   term: string,
@@ -132,18 +141,19 @@ function keywordMatch(
         contextHints: hints,
         score: 0.9
       });
-      continue;
     }
 
-    // 3. 部分匹配（双向包含）
-    if (titleLower.includes(term) || term.includes(titleLower)) {
-      const score = titleLower.includes(term) ? 0.8 : 0.7;
-      results.push({
-        node,
-        matchType: 'partial',
-        contextHints: hints,
-        score
-      });
+    // 3. 部分匹配（双向子串包含，term 长度 >= 3 才做，避免单字符误匹配）
+    if (term.length >= 3) {
+      if (titleLower.includes(term) || term.includes(titleLower)) {
+        const score = titleLower.includes(term) ? 0.8 : 0.7;
+        results.push({
+          node,
+          matchType: 'partial',
+          contextHints: hints,
+          score
+        });
+      }
     }
   }
 
@@ -151,22 +161,24 @@ function keywordMatch(
 }
 
 /**
- * 动态兜底匹配：基于字符串相似度的模糊匹配
+ * 模糊兜底匹配：基于字符串相似度的模糊匹配
  *
- * 触发条件：关键词匹配返回空集
- * 策略：
- *   a) 意图黑名单过滤：非计算机话题返回友好提示
- *   b) 字符串相似度计算：取 TOP-K 作为候选
- *
- * 注意：此函数的结果完全依赖当前地图数据，无需维护外部词典
+ * 触发条件：关键词精确匹配（keywordMatch）返回空集。
+ * 仅对有效长度的 term 进行模糊搜索，避免极短输入误匹配。
  */
 function fuzzyFallback(
   term: string,
   nodes: MapNodeDocument[]
 ): MatchCandidate[] {
-  // 此函数仅在 keywordMatch 返回空集时被调用
-  // 意图判断已在外层 matchNodeByTerm 中优先完成
-  // 此处直接计算字符串相似度兜底
+  // term 长度 < 3：太短，无法做有效模糊匹配，直接返回空
+  if (term.length < 3) {
+    return [{
+      node: null,
+      matchType: 'non-tech',
+      contextHints: [`"${term}" 太短，请输入更完整的术语（如 "css"、"http"）`],
+      score: 0
+    }];
+  }
 
   // 计算所有节点的字符串相似度
   const scored = nodes
@@ -174,10 +186,9 @@ function fuzzyFallback(
       node,
       score: computeSimilarity(term, node)
     }))
-    .filter(item => item.score > 0);
+    .filter(item => item.score >= 0.5); // 仅保留有效候选
 
   if (scored.length === 0) {
-    // 连模糊匹配都没有 → 返回空结果 + 友好提示
     return [{
       node: null,
       matchType: 'non-tech',
@@ -187,71 +198,71 @@ function fuzzyFallback(
   }
 
   // 取 TOP 5，按 score 降序
-  const top5 = scored
+  return scored
     .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
-
-  return top5.map(({ node, score }) => ({
-    node,
-    matchType: 'fuzzy',
-    contextHints: [
-      `未找到精确匹配，以下节点可能与 "${term}" 相关：`,
-      ...generateContextHints(node)
-    ],
-    score
-  }));
+    .slice(0, 5)
+    .map(({ node, score }) => ({
+      node,
+      matchType: 'fuzzy',
+      contextHints: [
+        `未找到精确匹配，以下节点可能与 "${term}" 相关：`,
+        ...generateContextHints(node)
+      ],
+      score
+    }));
 }
 
 /**
- * 字符串相似度计算（组合策略）
+ * 字符串相似度计算（仅供 fuzzyFallback 调用）
  *
- * 规则优先级：
- *  1. 双向子串包含（标题包含输入词 / 输入词包含标题）
- *  2. 别名匹配 + 编辑距离容错
- *  3. 编辑距离容错（直接对标题）
+ * 分为两层，优先级递减：
+ *  1. 子串包含（高置信度）：term >= 3, title/alias >= 3
+ *  2. 拼写纠错（低置信度）：term >= 4, title/alias >= 4, ld <= 2
  *
- * 返回值范围：[0.3, 1.0]，0 表示无相似度
+ * 返回值范围：[0.5, 0.8]，低于 0.5 的不返回（已在 fuzzyFallback 过滤）
  */
 function computeSimilarity(term: string, node: MapNodeDocument): number {
   const termLower = term.toLowerCase();
   const titleLower = node.title.toLowerCase();
 
-  // 策略 1：双向子串包含
-  if (titleLower.includes(termLower)) {
-    return 0.8;
-  }
-  if (termLower.includes(titleLower)) {
-    return 0.7;
-  }
-  // 输入词是标题的前缀或包含部分
-  if (titleLower.includes(termLower.slice(0, Math.floor(termLower.length / 2)))) {
-    return 0.5;
+  // ── 层 1：子串包含（高置信度）──────────────────────────────
+  // 条件：term >= 3 且 title >= 3
+  if (termLower.length >= 3 && titleLower.length >= 3) {
+    if (titleLower.includes(termLower)) return 0.8;  // title 包含 term（如 "http" 在 "HTTPS" 中）
+    if (termLower.includes(titleLower)) return 0.7;  // term 包含 title（如 "hypertext" 包含 "http"）
   }
 
-  // 策略 2：别名匹配 + 编辑距离
+  // 别名子串包含
   if (node.aliases) {
     for (const alias of node.aliases) {
       const aliasLower = alias.toLowerCase();
-
-      if (aliasLower.includes(termLower)) {
-        return 0.75;
-      }
-      if (termLower.includes(aliasLower)) {
-        return 0.65;
-      }
-
-      // 编辑距离容错（容 2 个字符错误）
-      const ld = levenshtein(termLower, aliasLower);
-      if (ld <= 2) {
-        return Math.max(0.6 - ld * 0.1, 0.4);
+      if (termLower.length >= 3 && aliasLower.length >= 3) {
+        if (aliasLower.includes(termLower)) return 0.75; // alias 包含 term
+        if (termLower.includes(aliasLower)) return 0.65; // term 包含 alias
       }
     }
   }
 
-  // 策略 3：标题直接编辑距离容错
-  const ld = levenshtein(termLower, titleLower);
-  if (ld <= 2) {
-    return Math.max(0.5 - ld * 0.1, 0.3);
+  // ── 层 2：拼写纠错（低置信度）──────────────────────────────
+  // 条件：term >= 4 且 title/alias >= 4，编辑距离 ld <= 2
+  if (termLower.length >= 4 && titleLower.length >= 4) {
+    const ld = levenshtein(termLower, titleLower);
+    if (ld <= 2) {
+      return ld === 1 ? 0.6 : 0.5;
+    }
+  }
+
+  // 别名拼写纠错
+  if (node.aliases) {
+    for (const alias of node.aliases) {
+      const aliasLower = alias.toLowerCase();
+      if (termLower.length >= 4 && aliasLower.length >= 4) {
+        const ld = levenshtein(termLower, aliasLower);
+        if (ld <= 2) {
+          return ld === 1 ? 0.6 : 0.55;
+        }
+      }
+    }
   }
 
   return 0;
@@ -398,19 +409,43 @@ export async function matchNodeByTermAsync(
   mapVersion: string,
   onVectorProgress?: (done: number, total: number) => void
 ): Promise<MatchResult> {
-  // 阶段 1：关键词匹配（同步，纯规则）
+  // 阶段 1：关键词精确匹配（同步，纯规则）
   const result = matchNodeByTerm(term, nodes);
 
-  // 阶段 2：候选 ≥ 3 → 语义重排
+  if (result.candidates.length === 0) {
+    // 阶段 2：精确匹配失败 → 调用语义 transformer
+    try {
+      await vectorCache.init(nodes, mapVersion, onVectorProgress);
+      const semanticResults = await vectorCache.search(term, nodes);
+
+      if (semanticResults.length > 0) {
+        // 语义有结果：转为候选并确定 autoSelect
+        const candidates: MatchCandidate[] = semanticResults.slice(0, 5).map(item => ({
+          node: item.node,
+          matchType: 'semantic' as const,
+          contextHints: [],
+          score: item.score
+        }));
+
+        return {
+          candidates,
+          autoSelect: candidates.length === 1
+        };
+      }
+    } catch (e) {
+      console.warn('[matching] Semantic search failed, fallback to fuzzy:', e);
+    }
+
+    // 阶段 3：语义也没有 → 字符串级 fuzzy 兜底
+    return matchNodeByTerm(term, nodes); // 触发 fuzzyFallback
+  }
+
+  // 精确匹配 ≥ 1 个候选 → 候选 ≥ 3 时语义重排
   if (result.candidates.length >= 3) {
     try {
-      // 初始化向量缓存（命中 IndexedDB 则跳过计算）
       await vectorCache.init(nodes, mapVersion, onVectorProgress);
-
-      // 对候选列表按语义相关性重排
       await vectorCache.rerank(result.candidates, term);
     } catch (e) {
-      // 降级：向量计算失败时静默回退到纯规则排序
       console.warn('[matching] Semantic rerank failed, fallback to keyword order:', e);
     }
   }
