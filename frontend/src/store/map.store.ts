@@ -26,6 +26,12 @@ export const useMapStore = defineStore('map', () => {
   /** 向量预计算进度（0-100），用于 UI 显示加载状态 */
   const vectorProgress = ref<{ done: number; total: number } | null>(null);
 
+  /** 选中的领域（domain）集合，空集合表示显示所有领域 */
+  const selectedDomains = ref<Set<string>>(new Set());
+
+  /** 当前 3D 布局类型 */
+  const layoutType = ref<'original' | 'sphere' | 'galaxy' | 'wave' | 'helix' | 'torus'>('original');
+
   const visibilityMap = computed(() => {
     if (!frameMap.value) return {};
     return buildVisibilityMap(frameMap.value, progressStore.progress);
@@ -93,6 +99,42 @@ export const useMapStore = defineStore('map', () => {
     focusRequest.value = { nodeId: id, requestedAt: Date.now() };
   }
 
+  /**
+   * 切换领域的选中状态。
+   * @param domainId - 领域 id
+   */
+  function toggleDomain(domainId: string): void {
+    const newSet = new Set(selectedDomains.value);
+    if (newSet.has(domainId)) {
+      newSet.delete(domainId);
+    } else {
+      newSet.add(domainId);
+    }
+    selectedDomains.value = newSet;
+  }
+
+  /**
+   * 选中所有领域。
+   */
+  function selectAllDomains(): void {
+    selectedDomains.value = new Set();
+  }
+
+  /**
+   * 清除所有领域选中（显示所有）。
+   */
+  function clearAllDomains(): void {
+    selectedDomains.value = new Set();
+  }
+
+  /**
+   * 设置布局类型。
+   * @param type - 布局类型
+   */
+  function setLayoutType(type: 'original' | 'sphere' | 'galaxy' | 'wave' | 'helix' | 'torus'): void {
+    layoutType.value = type;
+  }
+
   return {
     frameMap,
     selectedNodeId,
@@ -100,9 +142,15 @@ export const useMapStore = defineStore('map', () => {
     vectorProgress,
     visibilityMap,
     selectedNode,
+    selectedDomains,
+    layoutType,
     loadMap,
     selectNode,
     openNode,
-    focusNode
+    focusNode,
+    toggleDomain,
+    selectAllDomains,
+    clearAllDomains,
+    setLayoutType
   };
 });

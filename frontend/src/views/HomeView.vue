@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import CWFrameGraph from '../components/CWFrameGraph.vue';
+import CWFGraph3D from '../components/CWFGraph3D.vue';
 import CWFHeader from '../components/CWFHeader.vue';
 import CWFHistoryPanel from '../components/CWFHistoryPanel.vue';
+import CWFDomainFilter from '../components/CWFDomainFilter.vue';
 import CWFNodeSidebar from '../components/CWFNodeSidebar.vue';
 import CWFSearchHUD from '../components/CWFSearchHUD.vue';
 import { useMapStore } from '../store/map.store';
@@ -14,6 +16,7 @@ const progressStore = useProgressStore();
 const userStore = useUserStore();
 const errorMessage = ref<string | null>(null);
 const isSidebarCollapsed = ref(true);
+const viewMode = ref<'2d' | '3d'>('3d');
 
 const profileTitle = computed(() => userStore.username || 'Explorer');
 const unlockedRatio = computed(() => {
@@ -78,15 +81,7 @@ onMounted(async (): Promise<void> => {
 
             <CWFHistoryPanel />
 
-            <div class="legend-box glass-panel">
-              <h4 class="legend-title">Node Categories</h4>
-              <div class="legend-items">
-                <div class="legend-item"><span class="dot hw"></span> Hardware</div>
-                <div class="legend-item"><span class="dot sw"></span> Software</div>
-                <div class="legend-item"><span class="dot th"></span> Theory</div>
-                <div class="legend-item"><span class="dot net"></span> Networking</div>
-              </div>
-            </div>
+            <CWFDomainFilter />
 
             <div class="tips-box glass-panel">
               <h4 class="legend-title">Tips</h4>
@@ -100,7 +95,26 @@ onMounted(async (): Promise<void> => {
 
         <section class="visualization-area">
           <div class="graph-wrapper glass-panel">
-            <CWFrameGraph />
+            <!-- 视图切换按钮 -->
+            <div class="view-toggle">
+              <button
+                class="toggle-btn"
+                :class="{ active: viewMode === '3d' }"
+                @click="viewMode = '3d'"
+              >
+                3D
+              </button>
+              <button
+                class="toggle-btn"
+                :class="{ active: viewMode === '2d' }"
+                @click="viewMode = '2d'"
+              >
+                2D
+              </button>
+            </div>
+
+            <CWFGraph3D v-if="viewMode === '3d'" />
+            <CWFrameGraph v-else />
 
             <div class="progress-stats glass-panel">
               <span class="stats-label">Unlocked</span>
@@ -336,6 +350,44 @@ onMounted(async (): Promise<void> => {
 .stats-label { font-size: 12px; color: var(--text-weak); }
 .stats-value { font-size: 18px; color: var(--blue-400); }
 .stats-total { font-size: 12px; color: var(--text-weak); }
+
+/* 视图切换 */
+.view-toggle {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 2px;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.toggle-btn {
+  padding: 6px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+}
+
+.toggle-btn.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
 
 .loading-screen {
   position: fixed;
