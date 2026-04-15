@@ -46,6 +46,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// 请求日志中间件
+app.use((req, _res, next) => {
+  const timestamp = new Date().toLocaleTimeString('zh-CN');
+  console.log(`[${timestamp}] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 app.use('/api/auth', authRouter);
 app.use('/api/maps', mapRouter);
 app.use('/api/users', authMiddleware, progressRouter);
