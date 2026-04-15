@@ -1,24 +1,37 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Compass, Undo2, RotateCcw } from 'lucide-vue-next';
-import { useProgressStore } from '../store/progress.store';
+import { useProgressStore, type LatestUnlockEntry } from '../store/progress.store';
 import { useMapStore } from '../store/map.store';
 
 const progressStore = useProgressStore();
 const mapStore = useMapStore();
 
-// 左侧列表：仅展示最近一次点亮的节点（undoStack 栈顶）
-const lastEntry = computed(() => {
-  if (!mapStore.frameMap || !progressStore.lastActivatedEntry) return null;
-  const node = mapStore.frameMap.document.nodes.find(n => n.id === progressStore.lastActivatedEntry!.nodeId);
-  if (!node) return null;
-  return {
-    nodeId: node.id,
-    label: node.title,
-    domain: node.domain,
-    unlockedAt: progressStore.lastActivatedEntry.unlockedAt
-  };
+/**
+ * 当前仍在 undoStack 中的最新搜索节点
+ * 撤销某个节点后，该节点自动从列表中消失（保持同步）
+ */
+const lastSearchEntries = computed((): Array<LatestUnlockEntry & { node: { id: string; title: string; domain: string } }> => {
+  if (!mapStore.frameMap) return [];
+  const currentNodeIds = new Set(progressStore.undoStack.map(e => e.nodeId));
+  return progressStore.latestInputEntries
+    .filter(entry => currentNodeIds.has(entry.nodeId))
+    .map(entry => {
+      const node = mapStore.frameMap!.document.nodes.find(n => n.id === entry.nodeId);
+      return node ? { ...entry, node } : null;
+    })
+    .filter(Boolean) as Array<LatestUnlockEntry & { node: { id: string; title: string; domain: string } }>;
 });
+
+/**
+ * 当前 undoStack 顶部的 entry（用于时间戳显示）
+ */
+const latestEntryTimestamp = computed(() => {
+  if (progressStore.undoStack.length === 0) return null;
+  return progressStore.undoStack[progressStore.undoStack.length - 1].unlockedAt;
+});
+
+const hasContent = computed(() => lastSearchEntries.value.length > 0);
 
 function handleUndo(): void {
   const { nodeId } = progressStore.undo();
@@ -44,7 +57,6 @@ function getTimeText(timestamp: number): string {
 }
 
 const undoCount = computed(() => progressStore.undoCount);
-const hasContent = computed(() => lastEntry.value !== null);
 </script>
 
 <template>
@@ -54,7 +66,7 @@ const hasContent = computed(() => lastEntry.value !== null);
         <Compass :size="18" class="icon-muted" />
         <div class="title-stack">
           <h3>最近点亮</h3>
-          <p v-if="hasContent" class="panel-subtitle">{{ getTimeText(lastEntry!.unlockedAt) }}</p>
+          <p v-if="hasContent" class="panel-subtitle">{{ getTimeText(latestEntryTimestamp!) }}</p>
           <p v-else class="panel-subtitle">还没有点亮任何节点</p>
         </div>
       </div>
@@ -82,15 +94,23 @@ const hasContent = computed(() => lastEntry.value !== null);
       </div>
     </div>
 
-    <!-- 最近一次点亮的节点 -->
-    <div v-if="lastEntry" class="entry-card" @click="focusEntry(lastEntry.nodeId)">
-      <div class="entry-main">
-        <div class="entry-label">{{ lastEntry.label }}</div>
-        <div class="entry-domain-tag" :class="lastEntry.domain">{{ lastEntry.domain.toUpperCase() }}</div>
-      </div>
-      <div class="entry-meta">
-        <span class="entry-time">{{ getTimeText(lastEntry.unlockedAt) }}</span>
-        <span class="entry-hint">点击聚焦节点</span>
+    <!-- 最近一次搜索点亮的节点列表 -->
+    <div v-if="hasContent" class="entries-list">
+      <div
+        v-for="(entry, idx) in lastSearchEntries"
+        :key="entry.node.id"
+        class="entry-card"
+        @click="focusEntry(entry.node.id)"
+      >
+        <div class="entry-main">
+          <span class="entry-index">{{ idx + 1 }}</span>
+          <div class="entry-label">{{ entry.node.title }}</div>
+          <div class="entry-domain-tag" :class="entry.node.domain">{{ entry.node.domain.toUpperCase() }}</div>
+        </div>
+        <div class="entry-meta">
+          <span class="entry-term">"{{ entry.matchedTerm }}"</span>
+          <span class="entry-hint">点击聚焦</span>
+        </div>
       </div>
     </div>
 
@@ -109,7 +129,6 @@ const hasContent = computed(() => lastEntry.value !== null);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 160px;
 }
 
 .panel-header {
@@ -193,14 +212,28 @@ const hasContent = computed(() => lastEntry.value !== null);
   background: rgba(239, 68, 68, 0.08);
 }
 
+/* Entries list */
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entries-list::-webkit-scrollbar { width: 4px; }
+.entries-list::-webkit-scrollbar-track { background: transparent; }
+.entries-list::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 4px; }
+.entries-list { scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.3) transparent; }
+
 /* Entry card */
 .entry-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-slate);
-  padding: 16px 18px;
-  border-radius: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
   cursor: pointer;
   transition: var(--transition-smooth);
+  overflow: hidden;
+  min-width: 0;
 }
 
 .entry-card:hover {
@@ -209,17 +242,46 @@ const hasContent = computed(() => lastEntry.value !== null);
   transform: translateX(3px);
 }
 
+.entry-card .tags {
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
 .entry-main {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.entry-index {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .entry-label {
-  font-size: 16px;
-  font-weight: 800;
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .entry-domain-tag {
@@ -229,6 +291,8 @@ const hasContent = computed(() => lastEntry.value !== null);
   padding: 2px 7px;
   border-radius: 6px;
   opacity: 0.75;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .entry-domain-tag.fundamentals { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
@@ -243,17 +307,32 @@ const hasContent = computed(() => lastEntry.value !== null);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  min-width: 0;
 }
 
-.entry-time {
+.entry-term {
   font-size: 11px;
-  color: var(--text-weak);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+  min-width: 0;
 }
 
 .entry-hint {
   font-size: 10px;
   color: var(--text-weak);
   opacity: 0.6;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Empty state */

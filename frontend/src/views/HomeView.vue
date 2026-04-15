@@ -190,7 +190,9 @@ onMounted(async (): Promise<void> => {
   flex-direction: column;
   gap: 24px;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 8px;
+  min-height: 0;
 }
 
 .legend-box,
@@ -198,6 +200,7 @@ onMounted(async (): Promise<void> => {
 .profile-brief {
   padding: 20px;
   border-radius: 16px;
+  overflow: hidden;
 }
 
 .profile-brief {
