@@ -53,46 +53,34 @@ const filteredNodes = computed(() => {
 });
 
 // 构建 Plotly traces
+// 3D 图谱配色规则（与 2D 一致）：
+//   - Unlocked: 节点发光 + domain 色
+//   - Outlined: 灰白描边，无填充
+//   - Dimmed: 浅灰小点，低透明度（保持探索感）
+// 全部混在一起，不按 domain 分组
 const plotTraces = computed((): any[] => {
-  const groups = groupByDomain(filteredNodes.value);
-  const selectedDomains = mapStore.selectedDomains;
+  if (filteredNodes.value.length === 0) return [];
 
-  const domainsToShow = selectedDomains.size === 0
-    ? Array.from(groups.keys())
-    : Array.from(selectedDomains).filter(d => groups.has(d));
+  const unlocked = filteredNodes.value.filter(n => n.visibility === 'Unlocked');
+  const outlined = filteredNodes.value.filter(n => n.visibility === 'Outlined');
+  const dimmed = filteredNodes.value.filter(n => n.visibility === 'Dimmed');
 
-  return domainsToShow.map(domainId => {
-    const domainNodes = groups.get(domainId) ?? [];
-    if (domainNodes.length === 0) return null;
+  const traces: any[] = [];
 
-    // 采样
-    let sampledNodes = domainNodes;
-    if (densityPercent.value < 100) {
-      const targetCount = Math.ceil((domainNodes.length * densityPercent.value) / 100);
-      sampledNodes = domainNodes
-        .sort((a, b) => a.id.localeCompare(b.id))
-        .filter((_, idx, arr) => {
-          const step = arr.length / targetCount;
-          return idx % Math.ceil(step) === 0;
-        })
-        .slice(0, targetCount);
-    }
-
-    const isDomainSelected = selectedDomains.size === 0 || selectedDomains.has(domainId);
-
-    return {
-      x: sampledNodes.map(n => n.x),
-      y: sampledNodes.map(n => n.y),
-      z: sampledNodes.map(n => n.z),
+  // Unlocked 节点 — 每个 domain 一种颜色
+  const domainGroups = groupByDomain(unlocked);
+  for (const [domainId, nodes] of domainGroups) {
+    if (nodes.length === 0) continue;
+    traces.push({
+      x: nodes.map(n => n.x),
+      y: nodes.map(n => n.y),
+      z: nodes.map(n => n.z),
       mode: 'markers' as const,
       type: 'scatter3d' as const,
       name: getDomainName(domainId),
-      hovertemplate: sampledNodes.map(n => {
-        const stageText = `Stage ${n.stage}`;
-        const visibilityText = n.visibility === 'Unlocked' ? '✓ Unlocked' :
-          n.visibility === 'Outlined' ? '~ Adjacent' : '○ Locked';
-        return `<b>${n.title}</b><br>${getDomainName(domainId)} | ${stageText}<br>${visibilityText}<extra></extra>`;
-      }),
+      hovertemplate: nodes.map(n =>
+        `<b>${n.title}</b><br>${getDomainName(domainId)} | Stage ${n.stage}<br>✓ Unlocked<extra></extra>`
+      ),
       hoverlabel: {
         bgcolor: '#1f2937',
         font: { size: 12, color: '#f9fafb' },
@@ -100,17 +88,72 @@ const plotTraces = computed((): any[] => {
         namelength: -1
       },
       marker: {
-        color: isDomainSelected ? getDomainColor(domainId) : DIMMED_COLOR,
-        size: isDomainSelected ? 6 : 4,
-        opacity: isDomainSelected ? 0.85 : 0.35,
-        line: {
-          color: '#374151',
-          width: 0.3
-        }
+        color: getDomainColor(domainId),
+        size: 7,
+        opacity: 0.9,
+        line: { color: 'rgba(255,255,255,0.2)', width: 1 }
       },
-      customdata: sampledNodes.map(n => [n.id, domainId])
-    };
-  }).filter((t): t is any => t !== null);
+      customdata: nodes.map(n => n.id)
+    });
+  }
+
+  // Outlined 节点 — 灰白描边
+  if (outlined.length > 0) {
+    traces.push({
+      x: outlined.map(n => n.x),
+      y: outlined.map(n => n.y),
+      z: outlined.map(n => n.z),
+      mode: 'markers' as const,
+      type: 'scatter3d' as const,
+      name: 'Adjacent',
+      hovertemplate: outlined.map(n =>
+        `<b>${n.title}</b><br>~ Adjacent<extra></extra>`
+      ),
+      hoverlabel: {
+        bgcolor: '#1f2937',
+        font: { size: 12, color: '#f9fafb' },
+        align: 'left' as const,
+        namelength: -1
+      },
+      marker: {
+        color: 'rgba(255,255,255,0.02)',
+        size: 6,
+        opacity: 0.6,
+        line: { color: 'rgba(226,232,240,0.45)', width: 1.5 }
+      },
+      customdata: outlined.map(n => n.id)
+    });
+  }
+
+  // Dimmed 节点 — 浅灰小点，暗示存在
+  if (dimmed.length > 0) {
+    traces.push({
+      x: dimmed.map(n => n.x),
+      y: dimmed.map(n => n.y),
+      z: dimmed.map(n => n.z),
+      mode: 'markers' as const,
+      type: 'scatter3d' as const,
+      name: 'Locked',
+      hovertemplate: dimmed.map(n =>
+        `<b>${n.title}</b><br>○ Locked<extra></extra>`
+      ),
+      hoverlabel: {
+        bgcolor: '#1f2937',
+        font: { size: 12, color: '#94a3b8' },
+        align: 'left' as const,
+        namelength: -1
+      },
+      marker: {
+        color: DIMMED_COLOR,
+        size: 4,
+        opacity: 0.3,
+        line: { color: 'rgba(148,163,184,0.1)', width: 0.5 }
+      },
+      customdata: dimmed.map(n => n.id)
+    });
+  }
+
+  return traces;
 });
 
 // 场景标注
@@ -276,8 +319,8 @@ function initPlot(): void {
     plotElement.on('plotly_click', (eventData: any) => {
       if (!eventData.points || eventData.points.length === 0) return;
       const point = eventData.points[0];
-      if (!point.customdata) return;
-      const [nodeId] = point.customdata;
+      const nodeId: string = Array.isArray(point.customdata) ? point.customdata[0] : point.customdata;
+      if (!nodeId) return;
       const node = filteredNodes.value.find(n => n.id === nodeId);
       if (!node) return;
       if (node.visibility === 'Unlocked') {
