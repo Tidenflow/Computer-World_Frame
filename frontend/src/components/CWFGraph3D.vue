@@ -63,8 +63,8 @@ const graphNodes = computed((): Graph3DNode[] => {
 // 根据选中 domain 过滤节点
 const filteredNodes = computed(() => {
   const selectedDomains = mapStore.selectedDomains;
-  if (selectedDomains.size === 0) {
-    return [];
+  if (!selectedDomains || selectedDomains.size === 0) {
+    return graphNodes.value;
   }
   return graphNodes.value.filter(node => selectedDomains.has(node.domain));
 });

@@ -342,32 +342,86 @@ function isLikelyNonTech(term: string): boolean {
 /**
  * 生成上下文提示
  *
- * 从节点的 domain / deps / stage 提取可读信息
+ * 从节点的 domain / deps / stage / type / difficulty 提取可读信息
  */
 function generateContextHints(node: MapNodeDocument): string[] {
   const domainNames: Record<string, string> = {
-    fundamentals: "基础概念",
-    hardware: "硬件层",
-    os: "操作系统",
-    network: "网络层",
-    programming: "编程层",
-    data: "数据层"
+    fundamentals: '基础概念',
+    hardware: '硬件层',
+    os: '操作系统',
+    network: '网络层',
+    programming: '编程层',
+    data: '数据层',
+    frontend: '前端',
+    backend: '后端',
+    devops: 'DevOps',
+    ai: 'AI/ML',
+    core: '核心基础',
+    frameworks: '框架生态',
+    tooling: '构建工具',
+    deployment: '部署方案',
+    mobile: '移动开发',
+    runtimes: '运行时',
+    databases: '数据库',
+    api: 'API 设计',
+    architecture: '架构模式',
+    cloud: '云服务',
+    containers: '容器化',
+    orchestration: '编排自动化',
+    'ci-cd': 'CI/CD',
+    observability: '可观测性',
+    'ml-fundamentals': '机器学习基础',
+    'deep-learning': '深度学习',
+    nlp: '自然语言处理',
+    cv: '计算机视觉',
+    llm: '大语言模型',
+    mlops: 'MLOps',
+  };
+
+  const typeNames: Record<string, string> = {
+    concept: '概念',
+    primitive: '基础元素',
+    language: '编程语言',
+    runtime: '运行时',
+    framework: '框架',
+    tool: '工具',
+    protocol: '协议',
+    hardware: '硬件',
+    spec: '规范标准',
+    service: '云服务',
+  };
+
+  const difficultyNames: Record<number, string> = {
+    1: '入门',
+    2: '基础',
+    3: '进阶',
+    4: '深入',
+    5: '专家',
   };
 
   const hints: string[] = [];
 
-  // domain 领域
+  if (node.type) {
+    hints.push(`类型: ${typeNames[node.type] ?? node.type}`);
+  }
+
   hints.push(domainNames[node.domain] || node.domain);
 
-  // deps 前置依赖（最多展示 2 个，避免过长）
   if (node.deps && node.deps.length > 0) {
     const depsPreview = node.deps.slice(0, 2).join(', ');
     const more = node.deps.length > 2 ? ` 等${node.deps.length}个` : '';
-    hints.push(`前置依赖: ${depsPreview}${more}`);
+    hints.push(`前置: ${depsPreview}${more}`);
   }
 
-  // stage 学习阶段
   hints.push(`Stage ${node.stage}`);
+
+  if (node.difficulty) {
+    hints.push(`难度: ${difficultyNames[node.difficulty] ?? `Lv.${node.difficulty}`}`);
+  }
+
+  if (node.targetMap) {
+    hints.push(`可进入子图: ${node.targetMap}`);
+  }
 
   return hints;
 }

@@ -12,6 +12,7 @@ import type {
   UserProgressDocument,
   LoginRequest,
   RegisterRequest,
+  MapListItem,
 } from '@shared/contract';
 
 /**
@@ -218,6 +219,27 @@ export async function fetchDefaultMap(): Promise<CWFrameMapPayload> {
  */
 export async function fetchProgress(userId: number): Promise<UserProgressDocument> {
   return requestJson<UserProgressDocument>(`/api/users/${userId}/progress`);
+}
+
+/**
+ * 获取所有可用地图列表。
+ *
+ * @returns 地图列表
+ * @throws 后端返回失败时抛出 Error
+ */
+export async function fetchMapList(): Promise<MapListItem[]> {
+  return requestJson<MapListItem[]>('/api/maps/list');
+}
+
+/**
+ * 获取指定地图。
+ *
+ * @param mapId - 地图 ID
+ * @returns 地图数据（含 document 和 projection）
+ * @throws 后端返回失败时抛出 Error
+ */
+export async function fetchMapById(mapId: string): Promise<CWFrameMapPayload> {
+  return requestJson<CWFrameMapPayload>(`/api/maps/${mapId}`);
 }
 
 /**

@@ -43,7 +43,9 @@ export const DOMAIN_CONFIG: Record<string, { name: string; color: string }> = {
   data: { name: 'Data', color: '#EAB308' },
   application: { name: 'Application', color: '#EF4444' },
   frontend: { name: 'Frontend', color: '#06B6D4' },
+  backend: { name: 'Backend', color: '#A78BFA' },
   devops: { name: 'DevOps', color: '#14B8A6' },
+  ai: { name: 'AI / ML', color: '#F472B6' },
   default: { name: 'Other', color: '#94A3B8' }
 };
 

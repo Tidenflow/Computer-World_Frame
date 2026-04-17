@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { layoutGraphTree } from '../core/cwframe.layout';
 import { useMapStore } from '../store/map.store';
 import { useProgressStore } from '../store/progress.store';
+import type { NodeType } from '@shared/contract';
 
 const VIEWBOX_WIDTH = 1200;
 const VIEWBOX_HEIGHT = 840;
@@ -16,7 +17,21 @@ const progressStore = useProgressStore();
 
 const svgRef = ref<SVGSVGElement | null>(null);
 
-const categoryColors: Record<string, string> = {
+const NODE_TYPE_COLORS: Record<string, string> = {
+  concept: '#60a5fa',
+  primitive: '#38bdf8',
+  language: '#22c55e',
+  runtime: '#10b981',
+  framework: '#f59e0b',
+  tool: '#8b5cf6',
+  protocol: '#06b6d4',
+  hardware: '#ef4444',
+  spec: '#a3e635',
+  service: '#ec4899',
+  default: '#94a3b8',
+};
+
+const DOMAIN_COLORS: Record<string, string> = {
   fundamentals: '#60a5fa',
   hardware: '#38bdf8',
   os: '#a855f7',
@@ -24,7 +39,7 @@ const categoryColors: Record<string, string> = {
   programming: '#22c55e',
   data: '#f59e0b',
   application: '#f43f5e',
-  default: '#94a3b8'
+  default: '#94a3b8',
 };
 const RECENT_HIGHLIGHT_COLOR = '#facc15';
 
@@ -43,14 +58,22 @@ const dragState = reactive({
   pointerId: null as number | null
 });
 
-const getCategoryColor = (cat: string): string => categoryColors[cat] || categoryColors.default;
-const getDisplayColor = (nodeId: string, category: string): string =>
-  recentNodeIds.value.has(nodeId) ? RECENT_HIGHLIGHT_COLOR : getCategoryColor(category);
+const getNodeTypeColor = (type?: string): string => {
+  if (type && type in NODE_TYPE_COLORS) return (NODE_TYPE_COLORS as Record<string, string>)[type];
+  return NODE_TYPE_COLORS['default'];
+};
+
+const getDomainColor = (cat: string): string => DOMAIN_COLORS[cat] || DOMAIN_COLORS['default'];
+
+const getDisplayColor = (nodeId: string, type?: string, domain?: string): string =>
+  recentNodeIds.value.has(nodeId)
+    ? RECENT_HIGHLIGHT_COLOR
+    : (getNodeTypeColor(type) || getDomainColor(domain || ''));
 
 const visibilityMap = computed(() => mapStore.visibilityMap);
 const recentNodeIds = computed(() => new Set(progressStore.recentlyUnlockedIds));
 const renderableNodeIds = computed(() => {
-  if (mapStore.selectedDomains.size === 0) {
+  if (!mapStore.selectedDomains || mapStore.selectedDomains.size === 0) {
     return undefined; // 空过滤条件 = 显示全部
   }
   return new Set(
@@ -86,13 +109,27 @@ const treeLayout = computed(() => {
   });
 });
 
-const nodesWithPositions = computed(() =>
-  treeLayout.value.instances.map(node => ({
-    ...node,
-    radius: getNodeRadius((node as any).weight ?? 1),
-    visibility: visibilityMap.value[node.sourceNodeId] ?? 'Dimmed'
-  }))
-);
+const nodesWithPositions = computed(() => {
+  const nodeMap = new Map(
+    (treeLayout.value.instances as any[]).map(node => [node.sourceNodeId, node])
+  );
+  return treeLayout.value.instances.map(node => {
+    const sourceNode = mapStore.frameMap?.document.nodes.find(n => n.id === node.sourceNodeId);
+    const hasPresetPosition = !!sourceNode?.position;
+    const x = sourceNode?.position?.x ?? (node as any).x;
+    const y = sourceNode?.position?.y ?? (node as any).y;
+    return {
+      ...node,
+      x,
+      y,
+      radius: getNodeRadius((node as any).weight ?? 1),
+      visibility: visibilityMap.value[node.sourceNodeId] ?? 'Dimmed',
+      nodeType: (sourceNode as any)?.type,
+      domain: (sourceNode as any)?.domain,
+      hasPresetPosition,
+    };
+  });
+});
 const visibleNodes = computed(() => {
   const minWeight = getDensityThreshold(viewport.scale);
 
@@ -370,7 +407,7 @@ watch(
               :cx="node.x"
               :cy="node.y"
               :r="node.radius + 11"
-              :fill="getDisplayColor(node.sourceNodeId, node.domain)"
+              :fill="getDisplayColor(node.sourceNodeId, node.nodeType, node.domain)"
               class="breathe-halo"
             />
 
@@ -379,8 +416,8 @@ watch(
               :cx="node.x"
               :cy="node.y"
               :r="node.radius"
-              :fill="getDisplayColor(node.sourceNodeId, node.domain)"
-              :stroke="getDisplayColor(node.sourceNodeId, node.domain)"
+              :fill="getDisplayColor(node.sourceNodeId, node.nodeType, node.domain)"
+              :stroke="getDisplayColor(node.sourceNodeId, node.nodeType, node.domain)"
               stroke-width="2"
               class="main-circle"
             />
@@ -390,7 +427,7 @@ watch(
               :cx="node.x + node.radius * 0.6"
               :cy="node.y - node.radius * 0.6"
               r="4.5"
-              :fill="getDisplayColor(node.sourceNodeId, node.domain)"
+              :fill="getDisplayColor(node.sourceNodeId, node.nodeType, node.domain)"
               class="cat-dot"
             />
 

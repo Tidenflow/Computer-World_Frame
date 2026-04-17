@@ -226,13 +226,19 @@ async function computeNodeEmbeddings(
 /**
  * 构建节点的嵌入文本
  *
- * 格式：title (aliases.join(', '))
- * 例如：Docker (docker, Docker, 容器虚拟化)
+ * 格式：title (aliases.join(', ')) — type — tags — description
+ * 例如：Docker — docker, Docker, 容器虚拟化 — tool — containerization, image, registry, dockerfile — 轻量级容器化工具
  */
 function buildNodeText(node: MapNodeDocument): string {
   const parts: string[] = [node.title];
   if (node.aliases && node.aliases.length > 0) {
     parts.push(node.aliases.join(', '));
+  }
+  if (node.type) {
+    parts.push(node.type);
+  }
+  if (node.tags && node.tags.length > 0) {
+    parts.push(node.tags.join(', '));
   }
   if (node.description) {
     parts.push(node.description);

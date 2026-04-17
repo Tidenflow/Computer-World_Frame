@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { CWFrameMapPayload, MapNodeDocument } from '@shared/contract';
+import type { CWFrameMapPayload, MapNodeDocument, MapListItem } from '@shared/contract';
 import * as loader from '../core/cwframe.loader';
 import { buildVisibilityMap } from '../core/cwframe.visibility';
 import { useProgressStore } from './progress.store';
 import { vectorCache } from '../core/vector-cache';
+import { fetchMapList } from '../core/cwframe.api';
 
 /**
- * 地图（知识图谱）仓库：负责加载地图、维护选中节点，以及根据 progress 计算节点状态。
+ * 地图（知识图谱）仓库：负责加载地图、维护选中节点、地图切换，以及根据 progress 计算节点状态。
  */
 export const useMapStore = defineStore('map', () => {
   const progressStore = useProgressStore();
@@ -16,6 +17,16 @@ export const useMapStore = defineStore('map', () => {
    * 当前加载的知识图谱（未加载时为 null）。
    */
   const frameMap = ref<CWFrameMapPayload | null>(null);
+
+  /**
+   * 当前地图 ID（如 'computer-world'、'frontend' 等）。
+   */
+  const currentMapId = ref<string>('computer-world');
+
+  /**
+   * 可用地图列表（从后端获取）。
+   */
+  const availableMaps = ref<MapListItem[]>([]);
 
   /**
    * 当前选中的节点 id（未选中时为 null）。
@@ -39,8 +50,6 @@ export const useMapStore = defineStore('map', () => {
 
   /**
    * 当前选中的节点对象（由 `selectedNodeId` 反查 `frameMap.document.nodes`）。
-   *
-   * @returns MapNodeDocument | null
    */
   const selectedNode = computed<MapNodeDocument | null>(() => {
     if (!frameMap.value || selectedNodeId.value === null) return null;
@@ -48,10 +57,30 @@ export const useMapStore = defineStore('map', () => {
   });
 
   /**
+   * 当前地图标题（用于 UI 展示）。
+   */
+  const currentMapTitle = computed(() => {
+    const found = availableMaps.value.find(m => m.mapId === currentMapId.value);
+    return found?.title ?? currentMapId.value;
+  });
+
+  /**
+   * 加载地图列表（从后端获取）。
+   */
+  async function loadMapList(): Promise<void> {
+    try {
+      const list = await fetchMapList();
+      availableMaps.value = list;
+    } catch (err) {
+      console.warn('[mapStore] Failed to load map list:', err);
+    }
+  }
+
+  /**
    * 加载默认地图（从服务端拉取）。
    *
    * @returns Promise<CWFrameMapPayload> 加载到的地图对象
-   * @throws loader.loadFrameMap 失败时会抛出异常（上层可 catch 展示错误 UI）
+   * @throws loader.loadFrameMap 失败时会抛出异常
    *
    * @sideEffects 会写入 `frameMap.value`，并在后台启动向量缓存预计算
    */
@@ -59,12 +88,11 @@ export const useMapStore = defineStore('map', () => {
     try {
       const map = await loader.loadFrameMap();
       frameMap.value = map;
+      currentMapId.value = map.document.mapId;
 
-      // 默认选中所有领域
       const allIds = new Set(map.document.nodes.map(n => n.domain || 'default'));
       selectedDomains.value = allIds;
 
-      // 后台预计算所有节点向量（不阻塞主流程）
       if (map.document.version) {
         vectorCache.init(
           map.document.nodes,
@@ -84,12 +112,44 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
+   * 切换到指定地图。
+   *
+   * @param mapId - 目标地图 ID
+   * @returns 切换后的地图对象
+   *
+   * @sideEffects 会重置 vectorCache、selectedNodeId、selectedDomains，并重新 init 向量缓存
+   */
+  async function switchMap(mapId: string): Promise<CWFrameMapPayload> {
+    if (mapId === currentMapId.value && frameMap.value) {
+      return frameMap.value;
+    }
+
+    const map = await loader.loadMapById(mapId);
+    frameMap.value = map;
+    currentMapId.value = map.document.mapId;
+    selectedNodeId.value = null;
+    focusRequest.value = null;
+
+    const allIds = new Set(map.document.nodes.map(n => n.domain || 'default'));
+    selectedDomains.value = allIds;
+
+    vectorCache.reset();
+    if (map.document.version) {
+      vectorCache.init(
+        map.document.nodes,
+        map.document.version,
+        (done, total) => {
+          vectorProgress.value = { done, total };
+          if (done === total) vectorProgress.value = null;
+        }
+      );
+    }
+
+    return map;
+  }
+
+  /**
    * 切换选中节点（重复点击同一节点会取消选中）。
-   *
-   * @param id - 目标节点 id；传 null 表示清空选中
-   * @returns void
-   *
-   * @sideEffects 会修改 `selectedNodeId.value`
    */
   function selectNode(id: string | null): void {
     selectedNodeId.value = selectedNodeId.value === id ? null : id;
@@ -105,7 +165,6 @@ export const useMapStore = defineStore('map', () => {
 
   /**
    * 切换领域的选中状态。
-   * @param domainId - 领域 id
    */
   function toggleDomain(domainId: string): void {
     const newSet = new Set(selectedDomains.value);
@@ -117,46 +176,40 @@ export const useMapStore = defineStore('map', () => {
     selectedDomains.value = newSet;
   }
 
-  /**
-   * 选中所有领域（把每个领域 id 都加入 Set，效果等同于显示全部）。
-   */
   function selectAllDomains(): void {
     if (!frameMap.value) return;
     const allIds = new Set(frameMap.value.document.nodes.map(n => n.domain || 'default'));
     selectedDomains.value = allIds;
   }
 
-  /**
-   * 清除所有领域选中（清空 Set，取消过滤，显示所有）。
-   */
   function clearAllDomains(): void {
     selectedDomains.value = new Set();
   }
 
-  /**
-   * 设置布局类型。
-   * @param type - 布局类型
-   */
   function setLayoutType(type: 'original' | 'sphere' | 'galaxy'): void {
     layoutType.value = type;
   }
 
   return {
     frameMap,
+    currentMapId,
+    availableMaps,
     selectedNodeId,
     focusRequest,
     vectorProgress,
     visibilityMap,
     selectedNode,
-    selectedDomains,
+    currentMapTitle,
     layoutType,
+    loadMapList,
     loadMap,
+    switchMap,
     selectNode,
     openNode,
     focusNode,
     toggleDomain,
     selectAllDomains,
     clearAllDomains,
-    setLayoutType
+    setLayoutType,
   };
 });

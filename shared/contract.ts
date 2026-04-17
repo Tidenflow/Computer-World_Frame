@@ -2,11 +2,13 @@ import type {
   MapDocument,
   MapNodeDocument,
   MapProjection,
-  UserProgressDocument
+  UserProgressDocument,
+  NodeType,
+  MapDomain,
 } from './map-document';
 
 // Re-export types for frontend use
-export type { MapDocument, MapNodeDocument, MapProjection, UserProgressDocument };
+export type { MapDocument, MapNodeDocument, MapProjection, UserProgressDocument, NodeType, MapDomain };
 
 export interface User {
   id: number;
@@ -61,3 +63,12 @@ export interface AuthData {
 
 export type GetMapResponse = ApiResponse<CWFrameMapPayload>;
 export type GetProgressResponse = ApiResponse<CWFrameProgressDocument>;
+
+export interface MapListItem {
+  mapId: string;
+  title: string;
+  nodeCount: number;
+  parentMapId?: string;
+}
+
+export type GetMapListResponse = ApiResponse<MapListItem[]>;

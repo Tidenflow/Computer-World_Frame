@@ -7,6 +7,7 @@ import CWFHistoryPanel from '../components/CWFHistoryPanel.vue';
 import CWFDomainFilter from '../components/CWFDomainFilter.vue';
 import CWFNodeSidebar from '../components/CWFNodeSidebar.vue';
 import CWFSearchHUD from '../components/CWFSearchHUD.vue';
+import CWFMapSwitcher from '../components/CWFMapSwitcher.vue';
 import { useMapStore } from '../store/map.store';
 import { useProgressStore } from '../store/progress.store';
 import { useUserStore } from '../store/user.store';
@@ -24,9 +25,8 @@ const unlockedRatio = computed(() => {
   return `${progressStore.unlockedNodesCount}/${total}`;
 });
 
-// 探索进度环
 const RING_RADIUS = 30;
-const circumference = 2 * Math.PI * RING_RADIUS; // ≈ 188.5
+const circumference = 2 * Math.PI * RING_RADIUS;
 const strokeOffset = computed(() => {
   const total = mapStore.frameMap?.document.nodes.length ?? 0;
   if (total === 0) return circumference;
@@ -39,6 +39,8 @@ function toggleSidebar(): void {
 
 onMounted(async (): Promise<void> => {
   try {
+    await mapStore.loadMapList();
+
     if (!mapStore.frameMap) {
       await mapStore.loadMap();
     }
@@ -121,6 +123,8 @@ onMounted(async (): Promise<void> => {
                 2D
               </button>
             </div>
+
+            <CWFMapSwitcher />
 
             <CWFGraph3D v-if="viewMode === '3d'" />
             <CWFrameGraph v-else />
