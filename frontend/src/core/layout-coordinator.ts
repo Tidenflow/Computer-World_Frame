@@ -5,12 +5,16 @@
  * - 2D 渲染器：接收归一化坐标 × viewBox
  * - 3D 渲染器：接收归一化坐标 → 各布局变换
  * 
+ * 缓存支持：
+ * - 使用 LayoutCache 缓存布局结果，避免重复计算
+ * 
  * 这样可以确保 2D/3D original 布局完全对齐
  */
 
 import type { MapNodeDocument } from '@shared/contract';
 import type { GraphTreeInstance, TreeLayoutResult } from './cwframe.layout';
 import { layoutGraphTree } from './cwframe.layout';
+import { getLayoutCache, LayoutCache } from './layout-cache';
 
 // ============================================================
 // 视图配置
@@ -152,6 +156,8 @@ export interface UnifiedLayoutOutput {
 /**
  * 统一布局引擎入口
  * 同时输出物理像素坐标和归一化世界坐标
+ * 
+ * 使用缓存优化：相同节点集合的布局结果会被缓存
  */
 export function computeUnifiedLayout(input: UnifiedLayoutInput): UnifiedLayoutOutput {
   const { nodes, activeNodeIds } = input;
@@ -165,8 +171,11 @@ export function computeUnifiedLayout(input: UnifiedLayoutInput): UnifiedLayoutOu
     };
   }
 
-  // 计算树形布局（使用物理像素）
-  const treeResult = layoutGraphTree(nodes, {
+  // 获取缓存实例
+  const cache = getLayoutCache();
+
+  // 使用缓存计算树形布局
+  const treeResult = cache.computeIfAbsent(nodes, {
     activeNodeIds: activeNodeIds ?? undefined,
     width: VIEWBOX_WIDTH,
     height: VIEWBOX_HEIGHT
