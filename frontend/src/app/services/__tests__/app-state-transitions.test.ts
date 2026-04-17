@@ -4,11 +4,18 @@ import type { Domain, Node } from '../../types'
 import {
   autoUnlockNodeOnSelect,
   closeSelectedNode,
+  createAllDomainSelection,
   toggleDomainSelection,
   toggleNodeLock,
 } from '../app-state-transitions'
 
 describe('app state transitions', () => {
+  test('creates a default selection that includes all domains', () => {
+    expect(createAllDomainSelection()).toEqual(
+      new Set(['hardware', 'software', 'programming', 'theory', 'ai', 'network']),
+    )
+  })
+
   test('toggles domain selection without mutating the previous set', () => {
     const selectedDomains = new Set<Domain>(['hardware'])
 

@@ -1,5 +1,11 @@
 import type { Domain, Node } from '../types'
 
+const ALL_DOMAINS: Domain[] = ['hardware', 'software', 'programming', 'theory', 'ai', 'network']
+
+export function createAllDomainSelection(): Set<Domain> {
+  return new Set(ALL_DOMAINS)
+}
+
 export function toggleDomainSelection(
   selectedDomains: Set<Domain>,
   domain: Domain,

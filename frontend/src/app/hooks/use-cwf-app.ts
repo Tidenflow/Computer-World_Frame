@@ -12,6 +12,7 @@ import {
 import {
   autoUnlockNodeOnSelect,
   closeSelectedNode,
+  createAllDomainSelection,
   toggleDomainSelection,
   toggleNodeLock,
 } from '../services/app-state-transitions'
@@ -23,7 +24,7 @@ type ViewMode = '2d' | '3d'
 
 export function useCwfApp() {
   const [viewMode, setViewMode] = useState<ViewMode>('2d')
-  const [selectedDomains, setSelectedDomains] = useState<Set<Domain>>(new Set())
+  const [selectedDomains, setSelectedDomains] = useState<Set<Domain>>(() => createAllDomainSelection())
   const [currentMapId, setCurrentMapId] = useState('root')
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
 
