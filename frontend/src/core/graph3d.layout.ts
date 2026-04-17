@@ -1,22 +1,19 @@
 /**
  * 3D 布局算法
  * 将 2D 树形布局映射到 3D 空间，并支持多种布局变换
+ * 
+ * 架构：
+ * - 使用 layout-coordinator.ts 提供的统一布局引擎
+ * - 接收归一化世界坐标，确保 2D/3D original 布局完全对齐
  */
 
 import type { MapNodeDocument } from '@shared/contract';
 import type { Graph3DNode, GraphLayoutType, Point3D } from '../types/domain-filter';
-import { layoutGraphTree } from './cwframe.layout';
-
-const VIEWBOX_WIDTH = 1200;
-const VIEWBOX_HEIGHT = 840;
-
-/** 边界框 */
-interface Bounds {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-}
+import {
+  computeUnifiedLayout,
+  type WorldCoord,
+  type WorldBounds
+} from './layout-coordinator';
 
 /** 变换配置 */
 interface TransformConfig {
@@ -40,47 +37,32 @@ export function compute3DPositions(
   const domains = [...new Set(nodes.map(n => n.domain || 'default'))];
   const domainIndexMap = new Map(domains.map((d, i) => [d, i]));
 
-  // 计算 2D 树形布局
-  const treeLayout = layoutGraphTree(nodes, {
-    activeNodeIds: new Set(nodes.map(n => n.id)),
-    width: VIEWBOX_WIDTH,
-    height: VIEWBOX_HEIGHT
+  // 使用统一布局引擎获取归一化坐标
+  const unified = computeUnifiedLayout({
+    nodes,
+    activeNodeIds: new Set(nodes.map(n => n.id))
   });
 
-  // 创建节点实例映射
-  const instanceMap = new Map<string, typeof treeLayout.instances[0] & { instanceKey: string }>();
-  for (const instance of treeLayout.instances) {
-    instanceMap.set((instance as any).instanceKey, instance);
-  }
-
-  // 计算边界
-  const bounds: Bounds = {
-    minX: Math.min(...treeLayout.instances.map(i => (i as any).x)),
-    maxX: Math.max(...treeLayout.instances.map(i => (i as any).x)),
-    minY: Math.min(...treeLayout.instances.map(i => (i as any).y)),
-    maxY: Math.max(...treeLayout.instances.map(i => (i as any).y))
-  };
-
   // 生成 Graph3DNode 数组
-  const graphNodes: Graph3DNode[] = treeLayout.instances.map((instance, idx) => {
-    const node = nodes.find(n => n.id === (instance as any).sourceNodeId)!;
-    const point: Point3D = { x: (instance as any).x, y: (instance as any).y, z: 0 };
-
+  const graphNodes: Graph3DNode[] = unified.worldCoords.map((worldCoord, idx) => {
+    const node = nodes.find(n => n.id === worldCoord.nodeId)!;
+    // original 模式下直接使用归一化坐标（乘以固定系数映射到 3D 空间）
+    const scale = 100; // 归一化 0-1 映射到 3D 空间的缩放系数
     return {
       id: node.id,
       title: node.title,
       domain: node.domain || 'default',
       stage: node.stage,
-      x: point.x,
-      y: point.y,
-      z: point.z,
+      x: worldCoord.x * scale,
+      y: worldCoord.y * scale,
+      z: 0, // original 模式 z=0
       visibility: visibilityMap[node.id] ?? 'Dimmed'
     };
   });
 
   // 应用布局变换
   if (layoutType !== 'original') {
-    return applyLayoutTransform(graphNodes, layoutType, domains, domainIndexMap, bounds);
+    return applyLayoutTransform(graphNodes, layoutType, domains, domainIndexMap, unified.bounds);
   }
 
   return graphNodes;
@@ -94,7 +76,7 @@ function applyLayoutTransform(
   layoutType: GraphLayoutType,
   domains: string[],
   domainIndexMap: Map<string, number>,
-  bounds: Bounds
+  bounds: WorldBounds
 ): Graph3DNode[] {
   const totalDomains = domains.length;
 
@@ -126,15 +108,18 @@ function applyLayoutTransform(
 
 /**
  * 球面布局：将节点分布到球面上
+ * 
+ * 输入的 x, y 已经是归一化坐标 (0-1)，变换后映射到球面
  */
 function sphereTransform(
   node: Graph3DNode,
   config: TransformConfig,
-  bounds: Bounds
+  bounds: WorldBounds
 ): Point3D {
-  // 归一化坐标到 0-1
-  const u = (node.x - bounds.minX) / (bounds.maxX - bounds.minX || 1);
-  const v = (node.y - bounds.minY) / (bounds.maxY - bounds.minY || 1);
+  // node.x, node.y 在 original 模式下已经是 0-100 范围的缩放值
+  // 需要重新归一化到 0-1
+  const u = node.x / 100;
+  const v = node.y / 100;
 
   // 使用 Fibonacci 球面分布分配扇区
   const goldenAngle = Math.PI * (3 - Math.sqrt(5));
@@ -157,14 +142,18 @@ function sphereTransform(
 
 /**
  * 星系布局：创建螺旋星系形状
+ * 
+ * 输入的 x, y 已经是归一化坐标 (0-1)，变换后映射到螺旋星系
  */
 function galaxyTransform(
   node: Graph3DNode,
   config: TransformConfig,
-  bounds: Bounds
+  bounds: WorldBounds
 ): Point3D {
-  const normalizedX = (node.x - bounds.minX) / (bounds.maxX - bounds.minX || 1);
-  const normalizedY = (node.y - bounds.minY) / (bounds.maxY - bounds.minY || 1);
+  // node.x, node.y 在 original 模式下已经是 0-100 范围的缩放值
+  // 需要重新归一化到 0-1
+  const normalizedX = node.x / 100;
+  const normalizedY = node.y / 100;
 
   // 螺旋臂数量
   const armCount = Math.min(6, Math.max(3, config.totalDomains));

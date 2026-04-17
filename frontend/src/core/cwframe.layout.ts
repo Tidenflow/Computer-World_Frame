@@ -42,6 +42,8 @@ interface TreeLayoutResult {
   links: GraphTreeLink[];
 }
 
+export type { TreeLayoutResult };
+
 const DEFAULT_WIDTH = 1200;
 const DEFAULT_HEIGHT = 840;
 const DEFAULT_PADDING_X = 150;
