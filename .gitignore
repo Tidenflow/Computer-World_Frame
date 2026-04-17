@@ -44,3 +44,6 @@ pnpm-debug.log*
 
 # Project-local scratch/output folders
 explainationAI/
+
+
+docs/
