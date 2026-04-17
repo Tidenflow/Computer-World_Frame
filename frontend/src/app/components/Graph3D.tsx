@@ -222,7 +222,7 @@ export const Graph3D = ({
       const node = nodes.find((n) => n.id === nodeId);
       if (!node) return;
 
-      const isVisible = selectedDomains.size === 0 || selectedDomains.has(node.domain);
+      const isVisible = selectedDomains.has(node.domain);
       mesh.visible = isVisible;
     });
   }, [selectedDomains, nodes]);

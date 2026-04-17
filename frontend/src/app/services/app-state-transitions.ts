@@ -6,6 +6,10 @@ export function createAllDomainSelection(): Set<Domain> {
   return new Set(ALL_DOMAINS)
 }
 
+export function createEmptyDomainSelection(): Set<Domain> {
+  return new Set()
+}
+
 export function toggleDomainSelection(
   selectedDomains: Set<Domain>,
   domain: Domain,

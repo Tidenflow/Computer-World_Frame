@@ -1,13 +1,15 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Separator } from './ui/separator';
-import { DOMAIN_COLORS, DOMAIN_NAMES, Domain } from '../types';
 import { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+import { DOMAIN_COLORS, DOMAIN_NAMES, Domain } from '../types';
+import { Button } from './ui/button';
+import { Separator } from './ui/separator';
 
 interface SidebarProps {
   selectedDomains: Set<Domain>;
   onDomainToggle: (domain: Domain) => void;
+  onSelectAllDomains: () => void;
+  onClearDomains: () => void;
   totalNodes: number;
   unlockedCount: number;
   currentMap: string;
@@ -17,6 +19,8 @@ interface SidebarProps {
 export const Sidebar = ({
   selectedDomains,
   onDomainToggle,
+  onSelectAllDomains,
+  onClearDomains,
   totalNodes,
   unlockedCount,
   currentMap,
@@ -27,7 +31,7 @@ export const Sidebar = ({
   const domains: Domain[] = ['hardware', 'software', 'programming', 'theory', 'ai', 'network'];
 
   const maps = [
-    { id: 'root', name: '主地图' },
+    { id: 'root', name: '总览地图' },
     { id: 'software', name: '软件系统' },
     { id: 'programming', name: '程序开发' },
     { id: 'ai', name: 'AI 人工智能' },
@@ -52,7 +56,7 @@ export const Sidebar = ({
   return (
     <aside className="w-60 border-r border-[#E5E7EB] bg-white flex flex-col">
       <div className="p-4 flex justify-between items-center">
-        <span className="font-medium text-[#111827]">过滤器</span>
+        <span className="font-medium text-[#111827]">控制面板</span>
         <Button
           variant="ghost"
           size="sm"
@@ -66,7 +70,7 @@ export const Sidebar = ({
       <Separator />
 
       <div className="p-4 space-y-3">
-        <div className="text-sm font-medium text-[#111827]">地图选择</div>
+        <div className="text-sm font-medium text-[#111827]">地图切换</div>
         <div className="space-y-1">
           {maps.map((map) => (
             <button
@@ -87,7 +91,27 @@ export const Sidebar = ({
       <Separator />
 
       <div className="p-4 space-y-3 flex-1">
-        <div className="text-sm font-medium text-[#111827]">分类过滤</div>
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-sm font-medium text-[#111827]">分类过滤</div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSelectAllDomains}
+              className="h-7 px-2 text-xs"
+            >
+              All
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearDomains}
+              className="h-7 px-2 text-xs"
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
         <div className="space-y-2">
           {domains.map((domain) => {
             const isSelected = selectedDomains.has(domain);
@@ -115,7 +139,7 @@ export const Sidebar = ({
       <Separator />
 
       <div className="p-4 space-y-2">
-        <div className="text-xs text-[#6B7280]">解锁进度</div>
+        <div className="text-xs text-[#6B7280]">节点解锁进度</div>
         <div className="flex items-baseline gap-1">
           <span className="text-2xl font-semibold text-[#111827]">{unlockedCount}</span>
           <span className="text-sm text-[#6B7280]">/ {totalNodes}</span>

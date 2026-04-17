@@ -13,6 +13,7 @@ import {
   autoUnlockNodeOnSelect,
   closeSelectedNode,
   createAllDomainSelection,
+  createEmptyDomainSelection,
   toggleDomainSelection,
   toggleNodeLock,
 } from '../services/app-state-transitions'
@@ -100,6 +101,12 @@ export function useCwfApp() {
     handleToggleLock,
     handleNodeDoubleClick,
     handleNavigateToMap,
+    selectAllDomains() {
+      setSelectedDomains(createAllDomainSelection())
+    },
+    clearDomains() {
+      setSelectedDomains(createEmptyDomainSelection())
+    },
     closeDetailPanel() {
       setSelectedNode(closeSelectedNode())
     },

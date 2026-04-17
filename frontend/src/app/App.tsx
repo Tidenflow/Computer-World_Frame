@@ -28,6 +28,8 @@ function App() {
     handleToggleLock,
     handleNodeDoubleClick,
     handleNavigateToMap,
+    selectAllDomains,
+    clearDomains,
     closeDetailPanel,
   } = useCwfApp()
 
@@ -55,6 +57,8 @@ function App() {
         <Sidebar
           selectedDomains={selectedDomains}
           onDomainToggle={handleDomainToggle}
+          onSelectAllDomains={selectAllDomains}
+          onClearDomains={clearDomains}
           totalNodes={currentMap.nodes.length}
           unlockedCount={currentMap.nodes.filter((node) => unlockedNodes.has(node.id)).length}
           currentMap={currentMapId}

@@ -5,6 +5,7 @@ import {
   autoUnlockNodeOnSelect,
   closeSelectedNode,
   createAllDomainSelection,
+  createEmptyDomainSelection,
   toggleDomainSelection,
   toggleNodeLock,
 } from '../app-state-transitions'
@@ -14,6 +15,10 @@ describe('app state transitions', () => {
     expect(createAllDomainSelection()).toEqual(
       new Set(['hardware', 'software', 'programming', 'theory', 'ai', 'network']),
     )
+  })
+
+  test('creates an empty domain selection for clear filters', () => {
+    expect(createEmptyDomainSelection()).toEqual(new Set())
   })
 
   test('toggles domain selection without mutating the previous set', () => {

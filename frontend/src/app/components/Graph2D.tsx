@@ -171,7 +171,7 @@ export const Graph2D = ({
 
     // Filter nodes by selected domains
     const visibleNodes = positions.filter(
-      (node) => selectedDomains.size === 0 || selectedDomains.has(node.domain)
+      (node) => selectedDomains.has(node.domain)
     );
 
     // Draw connections
