@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Node, DOMAIN_COLORS, Domain } from '../types';
 import { ContextMenu } from './ContextMenu';
+import { panViewport, zoomAtPoint } from '../services/graph-viewport';
 
 interface Graph2DProps {
   nodes: Node[];
@@ -19,6 +20,11 @@ interface NodePosition extends Node {
   radius: number;
 }
 
+interface PointerPosition {
+  x: number;
+  y: number;
+}
+
 export const Graph2D = ({
   nodes,
   selectedNode,
@@ -32,10 +38,12 @@ export const Graph2D = ({
   const [positions, setPositions] = useState<NodePosition[]>([]);
   const [hoveredNode, setHoveredNode] = useState<NodePosition | null>(null);
   const [draggedNode, setDraggedNode] = useState<NodePosition | null>(null);
+  const [panDragStart, setPanDragStart] = useState<PointerPosition | null>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [contextMenu, setContextMenu] = useState<{ node: Node; x: number; y: number } | null>(null);
   const animationRef = useRef<number>();
+  const didDragViewportRef = useRef(false);
 
   // Initialize node positions
   useEffect(() => {
@@ -260,6 +268,10 @@ export const Graph2D = ({
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
+    const pointer = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
     const x = (e.clientX - rect.left - offset.x) / scale;
     const y = (e.clientY - rect.top - offset.y) / scale;
 
@@ -273,6 +285,20 @@ export const Graph2D = ({
       return;
     }
 
+    if (panDragStart) {
+      const delta = {
+        x: pointer.x - panDragStart.x,
+        y: pointer.y - panDragStart.y,
+      };
+
+      if (delta.x !== 0 || delta.y !== 0) {
+        didDragViewportRef.current = true;
+        setOffset((previousOffset) => panViewport({ offset: previousOffset, delta }));
+        setPanDragStart(pointer);
+      }
+      return;
+    }
+
     const hovered = positions.find((node) => {
       const dx = node.x - x;
       const dy = node.y - y;
@@ -283,16 +309,36 @@ export const Graph2D = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const pointer = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+
     if (hoveredNode) {
       setDraggedNode(hoveredNode);
+      return;
     }
+
+    didDragViewportRef.current = false;
+    setPanDragStart(pointer);
   };
 
   const handleMouseUp = () => {
     setDraggedNode(null);
+    setPanDragStart(null);
   };
 
   const handleClick = () => {
+    if (didDragViewportRef.current) {
+      didDragViewportRef.current = false;
+      setContextMenu(null);
+      return;
+    }
+
     if (hoveredNode && !draggedNode) {
       onNodeClick(hoveredNode);
     }
@@ -318,8 +364,31 @@ export const Graph2D = ({
 
   const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setScale((prev) => Math.max(0.5, Math.min(2, prev * delta)));
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+    const nextViewport = zoomAtPoint({
+      offset,
+      scale,
+      cursor: {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      },
+      zoomFactor,
+      minScale: 0.5,
+      maxScale: 2,
+    });
+
+    setOffset(nextViewport.offset);
+    setScale(nextViewport.scale);
+  };
+
+  const handleMouseLeave = () => {
+    setDraggedNode(null);
+    setPanDragStart(null);
+    setHoveredNode(null);
   };
 
   useEffect(() => {
@@ -349,11 +418,12 @@ export const Graph2D = ({
         onMouseMove={handleMouseMove}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
         onWheel={handleWheel}
-        className="w-full h-full cursor-pointer"
+        className={`w-full h-full ${draggedNode || panDragStart ? 'cursor-grabbing' : hoveredNode ? 'cursor-pointer' : 'cursor-grab'}`}
       />
       {contextMenu && onToggleLock && (
         <ContextMenu
