@@ -9,7 +9,7 @@
 
 import type { MapNodeDocument } from '@shared/contract';
 import type { TreeLayoutResult } from './cwframe.layout';
-import { layoutGraphTree } from './cwframe.layout';
+import { layoutGraphTree, layoutGraphTreeWithOverlap, resolveHorizontalOverlap } from './cwframe.layout';
 import { VIEWBOX_WIDTH, VIEWBOX_HEIGHT } from './layout-coordinator';
 
 export interface LayoutCacheKey {
@@ -89,6 +89,7 @@ export class LayoutCache {
 
   /**
    * 计算布局结果，如果缓存存在则直接返回
+   * 使用带重叠解决的布局算法
    */
   computeIfAbsent(
     nodes: MapNodeDocument[],
@@ -108,8 +109,8 @@ export class LayoutCache {
       return this.filterByActiveNodes(cached, options?.activeNodeIds);
     }
     
-    // 缓存未命中：计算布局
-    const result = layoutGraphTree(nodes, {
+    // 缓存未命中：计算布局（带重叠解决）
+    const result = layoutGraphTreeWithOverlap(nodes, {
       activeNodeIds: options?.activeNodeIds,
       width: options?.width ?? VIEWBOX_WIDTH,
       height: options?.height ?? VIEWBOX_HEIGHT

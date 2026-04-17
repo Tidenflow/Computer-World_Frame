@@ -316,3 +316,76 @@ function getMaxDepth(node: TreeProjectionNode): number {
   if (node.children.length === 0) return node.depth;
   return Math.max(...node.children.map(child => getMaxDepth(child)));
 }
+
+/**
+ * 节点重叠检测与解决
+ * 检测同层节点的水平重叠，用迭代推开算法解决
+ * 
+ * @param instances 布局实例数组（会被原地修改）
+ * @param minGap 节点之间的最小间距
+ */
+export function resolveHorizontalOverlap(
+  instances: GraphTreeInstance[],
+  minGap: number = 12
+): void {
+  // 按深度分组
+  const byDepth = new Map<number, GraphTreeInstance[]>();
+  for (const inst of instances) {
+    if (!byDepth.has(inst.depth)) {
+      byDepth.set(inst.depth, []);
+    }
+    byDepth.get(inst.depth)!.push(inst);
+  }
+
+  // 对每一层进行处理
+  for (const [, nodes] of byDepth) {
+    if (nodes.length < 2) continue;
+
+    // 按 Y 坐标排序
+    nodes.sort((a, b) => a.y - b.y);
+
+    // 获取节点半径（从 weight 属性获取，默认 11）
+    const getRadius = (inst: GraphTreeInstance): number => {
+      return 11 + ((inst as any).weight ?? 1 - 1) * 1.15;
+    };
+
+    // 迭代推开重叠节点（多次迭代确保稳定）
+    const maxIterations = 5;
+    for (let iter = 0; iter < maxIterations; iter++) {
+      let moved = false;
+
+      for (let i = 1; i < nodes.length; i++) {
+        const prev = nodes[i - 1];
+        const curr = nodes[i];
+        const prevRadius = getRadius(prev);
+        const currRadius = getRadius(curr);
+        const idealGap = (prevRadius + currRadius) / 2 + minGap;
+        const actualGap = curr.y - prev.y;
+
+        if (actualGap < idealGap) {
+          const push = (idealGap - actualGap) / 2;
+          // 推挤：当前节点向下，相邻节点向上
+          curr.y += push;
+          prev.y -= push;
+          moved = true;
+        }
+      }
+
+      // 如果没有节点移动，提前结束
+      if (!moved) break;
+    }
+  }
+}
+
+/**
+ * 完整布局计算（带重叠解决）
+ * 这是 layoutGraphTree 的增强版本，自动调用重叠解决
+ */
+export function layoutGraphTreeWithOverlap(
+  nodes: MapNodeDocument[],
+  options: LayoutOptions = {}
+): TreeLayoutResult {
+  const result = layoutGraphTree(nodes, options);
+  resolveHorizontalOverlap(result.instances);
+  return result;
+}
