@@ -66,7 +66,7 @@ const graphNodes = computed((): Graph3DNode[] => {
 const filteredNodes = computed(() => {
   const selectedDomains = mapStore.selectedDomains;
   if (selectedDomains.size === 0) {
-    return graphNodes.value;
+    return [];
   }
   return graphNodes.value.filter(node => selectedDomains.has(node.domain));
 });
@@ -145,6 +145,9 @@ const plotTraces = computed((): any[] => {
   return traces;
 });
 
+// 是否有数据（用于判断是否渲染 3D 图谱）
+const hasData = computed(() => filteredNodes.value.length > 0);
+
 // 场景标注
 const sceneAnnotations = computed((): any[] => {
   if (!showLabels.value) return [];
@@ -156,9 +159,6 @@ const sceneAnnotations = computed((): any[] => {
   for (const [domainId, nodes] of groups) {
     const centroid = getDomainCentroid(nodes);
     if (!centroid) continue;
-
-    const isSelected = mapStore.selectedDomains.size === 0 || mapStore.selectedDomains.has(domainId);
-    if (!isSelected) continue;
 
     annotations.push({
       x: centroid.x,
@@ -563,6 +563,12 @@ watch(() => progressStore.lastActivatedEntry, async (entry) => {
       :class="{ loaded: isLoaded }"
     />
 
+    <!-- Clear 状态占位符 -->
+    <div v-if="!hasData" class="empty-placeholder">
+      <span class="empty-icon">⊘</span>
+      <p class="empty-text">Select at least one category</p>
+    </div>
+
     <!-- 节点统计 -->
     <div class="stats-overlay">
       <span class="stat">
@@ -761,6 +767,31 @@ watch(() => progressStore.lastActivatedEntry, async (entry) => {
 
 .stat svg {
   color: #60a5fa;
+}
+
+/* Clear 状态占位符 */
+.empty-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: #334155;
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  font-size: 14px;
+  color: #475569;
+  margin: 0;
+  font-weight: 500;
 }
 
 /* Domain 图例 */

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Layers, ChevronLeft, ChevronRight, Shuffle } from 'lucide-vue-next';
+import { Layers, ChevronLeft, ChevronRight, Sparkles } from 'lucide-vue-next';
 import { useMapStore } from '../store/map.store';
 import type { DomainInfo } from '../types/domain-filter';
 import { getDomainName, getDomainColor, DIMMED_COLOR } from '../types/domain-filter';
@@ -27,7 +27,7 @@ const domains = computed((): DomainInfo[] => {
       name: getDomainName(id),
       color: getDomainColor(id),
       count,
-      visible: selectedDomains.size === 0 || selectedDomains.has(id)
+      visible: selectedDomains.size === 0 ? false : selectedDomains.has(id)
     }))
     .sort((a, b) => b.count - a.count);
 });
@@ -97,7 +97,7 @@ function selectRandom(): void {
         <button class="ctrl-btn" @click="selectAll">All</button>
         <button class="ctrl-btn" @click="clearAll">Clear</button>
         <button class="ctrl-btn" @click="selectRandom" title="Random select">
-          <Shuffle :size="12" />
+          <Sparkles :size="12" />
         </button>
       </div>
 
