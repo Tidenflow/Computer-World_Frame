@@ -121,12 +121,14 @@ const links = computed(() => {
         return null;
       }
 
-      const variant = 'partial';
+      const isDirectChild = source.depth === target.depth - 1;
+      const opacity = computeLinkOpacity(source.depth, target.depth);
 
       return {
         key: link.key,
-        path: buildLinkPath(source.x, source.y, target.x, target.y),
-        variant
+        path: buildOrthogonalPath(source.x, source.y, target.x, target.y),
+        opacity,
+        isDirectChild
       };
     })
     .filter((value): value is NonNullable<typeof value> => value !== null);
@@ -193,13 +195,44 @@ function handleWheel(event: WheelEvent): void {
   viewport.translateY = pointer.y - worldY * nextScale;
 }
 
-function buildLinkPath(x1: number, y1: number, x2: number, y2: number): string {
-  const deltaX = x2 - x1;
-  const controlOffsetX = Math.max(Math.abs(deltaX) * 0.45, 40);
-  const controlX1 = x1 + controlOffsetX;
-  const controlX2 = x2 - controlOffsetX;
+/**
+ * 正交路由边线 (h-v-h 模式)
+ * 替代贝塞尔曲线，消除边线交叉问题
+ */
+function buildOrthogonalPath(x1: number, y1: number, x2: number, y2: number): string {
+  const GAP = 30; // 最小拐点距离
 
-  return `M ${x1} ${y1} C ${controlX1} ${y1}, ${controlX2} ${y2}, ${x2} ${y2}`;
+  // h-v-h 正交路由：水平 → 拐点 → 垂直 → 拐点 → 水平
+  if (Math.abs(x2 - x1) > GAP * 2) {
+    const midX = (x1 + x2) / 2;
+    return `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`;
+  }
+  // 短边用简单垂直线
+  return `M ${x1} ${y1} V ${y2}`;
+}
+
+/**
+ * 根据缩放级别和边类型计算透明度
+ * - 父子边（直接依赖）：高透明度
+ * - 跨层边：低透明度
+ * - 缩放级别越低，透明度越低
+ */
+function computeLinkOpacity(sourceDepth: number, targetDepth: number): number {
+  const isDirectChild = sourceDepth === targetDepth - 1;
+
+  // 根据缩放级别确定基础透明度
+  let baseOpacity: number;
+  if (viewport.scale < 0.6) {
+    baseOpacity = isDirectChild ? 0.2 : 0.08;
+  } else if (viewport.scale < 0.8) {
+    baseOpacity = isDirectChild ? 0.3 : 0.12;
+  } else if (viewport.scale < 1.0) {
+    baseOpacity = isDirectChild ? 0.45 : 0.2;
+  } else {
+    baseOpacity = isDirectChild ? 0.55 : 0.28;
+  }
+
+  return baseOpacity;
 }
 
 function getDensityAdjustment(densityScore: number): number {
@@ -312,7 +345,8 @@ watch(
             v-for="link in links"
             :key="link.key"
             :d="link.path"
-            :class="['link-line', link.variant]"
+            :class="['link-line', link.isDirectChild ? 'direct' : 'indirect']"
+            :style="{ opacity: link.opacity }"
             fill="none"
           />
         </g>
@@ -407,16 +441,16 @@ watch(
 }
 
 .link-line {
-  transition: all 0.35s ease;
+  transition: opacity 0.35s ease;
   stroke-linecap: round;
 }
 
-.link-line.full {
+.link-line.direct {
   stroke: rgba(96, 165, 250, 0.62);
   stroke-width: 2.35;
 }
 
-.link-line.partial {
+.link-line.indirect {
   stroke: rgba(148, 163, 184, 0.34);
   stroke-width: 1.65;
 }
