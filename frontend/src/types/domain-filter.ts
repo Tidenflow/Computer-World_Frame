@@ -21,7 +21,7 @@ export interface Graph3DNode {
   x: number;
   y: number;
   z: number;
-  visibility: 'Hidden' | 'Dimmed' | 'Outlined' | 'Unlocked';
+  visibility: 'Dimmed' | 'Unlocked';
 }
 
 /** 领域（domain）信息 */
@@ -69,7 +69,7 @@ export const DIMMED_COLOR = '#94A3B8';
 
 /** 根据节点可见性获取实际颜色 */
 export function getNodeColor(domain: string, visibility: Graph3DNode['visibility']): string {
-  if (visibility === 'Dimmed' || visibility === 'Hidden') {
+  if (visibility === 'Dimmed') {
     return DIMMED_COLOR;
   }
   return getDomainColor(domain);

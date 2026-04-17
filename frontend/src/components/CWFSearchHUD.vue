@@ -218,3 +218,4 @@ function clearResult(): void {
   opacity: 0;
 }
 </style>
+

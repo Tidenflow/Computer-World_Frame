@@ -89,40 +89,13 @@ const nodesWithPositions = computed(() =>
   treeLayout.value.instances.map(node => ({
     ...node,
     radius: getNodeRadius((node as any).weight ?? 1),
-    visibility: visibilityMap.value[node.sourceNodeId] ?? 'Hidden'
+    visibility: visibilityMap.value[node.sourceNodeId] ?? 'Dimmed'
   }))
 );
-const outlinedLabelInstanceKeys = computed(() => {
-  const instanceMap = new Map(nodesWithPositions.value.map(node => [node.instanceKey, node]));
-  const directOutlinedKeys = new Set<string>();
-
-  for (const link of treeLayout.value.links) {
-    const source = instanceMap.get(link.sourceInstanceKey);
-    const target = instanceMap.get(link.targetInstanceKey);
-    if (!source || !target) continue;
-
-    if (source.visibility === 'Unlocked' && target.visibility === 'Outlined') {
-      directOutlinedKeys.add(target.instanceKey);
-    }
-
-    if (target.visibility === 'Unlocked' && source.visibility === 'Outlined') {
-      directOutlinedKeys.add(source.instanceKey);
-    }
-  }
-
-  return directOutlinedKeys;
-});
-
 const visibleNodes = computed(() => {
   const minWeight = getDensityThreshold(viewport.scale);
 
   return nodesWithPositions.value.filter(node => {
-    if (node.visibility === 'Hidden') return false;
-
-    if (node.visibility === 'Outlined') {
-      return true;
-    }
-
     const weight = (node as any).weight ?? 1;
     return weight >= minWeight || viewport.scale >= 1.02 || recentNodeIds.value.has(node.sourceNodeId);
   });
@@ -147,10 +120,7 @@ const links = computed(() => {
         return null;
       }
 
-      const variant =
-        source.visibility === 'Unlocked' && target.visibility === 'Unlocked'
-          ? 'full'
-          : 'partial';
+      const variant = 'partial';
 
       return {
         key: link.key,
@@ -257,19 +227,18 @@ function computeFocusZoom(nodeId: string): number {
   }
 
   let unlockedNeighbors = 0;
-  let outlinedNeighbors = 0;
   let visibleEdges = 0;
 
   for (const adjacentId of adjacentIds) {
     const visibility = visibilityMap.value[adjacentId];
-    if (visibility === 'Unlocked') unlockedNeighbors += 1;
-    if (visibility === 'Outlined') outlinedNeighbors += 1;
-    if (visibility && visibility !== 'Hidden') visibleEdges += 1;
+    if (visibility === 'Unlocked') {
+      unlockedNeighbors += 1;
+      visibleEdges += 1;
+    }
   }
 
   const densityScore =
     unlockedNeighbors * 1.0 +
-    outlinedNeighbors * 0.45 +
     visibleEdges * 0.25;
 
   const weight = (targetNode as any).weight ?? 1;
@@ -382,17 +351,6 @@ watch(
             />
 
             <circle
-              v-if="node.visibility === 'Outlined'"
-              :cx="node.x"
-              :cy="node.y"
-              :r="Math.max(node.radius - 4, 8)"
-              fill="rgba(255,255,255,0.02)"
-              stroke="rgba(226, 232, 240, 0.42)"
-              stroke-width="1.5"
-              class="outline-circle"
-            />
-
-            <circle
               v-if="node.visibility === 'Unlocked'"
               :cx="node.x + node.radius * 0.6"
               :cy="node.y - node.radius * 0.6"
@@ -408,21 +366,6 @@ watch(
               text-anchor="middle"
               class="node-label"
               fill="#f8fafc"
-            >
-              {{ node.title }}
-            </text>
-
-            <text
-              v-if="
-                node.visibility === 'Outlined' &&
-                viewport.scale >= 0.92 &&
-                outlinedLabelInstanceKeys.has(node.instanceKey)
-              "
-              :x="node.x"
-              :y="node.y + node.radius + 22"
-              text-anchor="middle"
-              class="node-label node-label-outlined"
-              fill="rgba(226, 232, 240, 0.76)"
             >
               {{ node.title }}
             </text>
@@ -492,10 +435,6 @@ watch(
   filter: brightness(1.12);
 }
 
-.node-unit.outlined {
-  cursor: default;
-}
-
 .node-unit.selected {
   transform: scale(1.08);
 }
@@ -506,10 +445,6 @@ watch(
   pointer-events: none;
   user-select: none;
   letter-spacing: 0.05em;
-}
-
-.node-label-outlined {
-  font-weight: 700;
 }
 
 .breathe-halo {

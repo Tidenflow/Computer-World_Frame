@@ -31,7 +31,7 @@ interface TransformConfig {
  */
 export function compute3DPositions(
   nodes: MapNodeDocument[],
-  visibilityMap: Record<string, 'Hidden' | 'Dimmed' | 'Outlined' | 'Unlocked'>,
+  visibilityMap: Record<string, 'Dimmed' | 'Unlocked'>,
   layoutType: GraphLayoutType = 'original'
 ): Graph3DNode[] {
   if (nodes.length === 0) return [];

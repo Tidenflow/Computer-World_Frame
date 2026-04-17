@@ -114,14 +114,16 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * 选中所有领域。
+   * 选中所有领域（把每个领域 id 都加入 Set，效果等同于显示全部）。
    */
   function selectAllDomains(): void {
-    selectedDomains.value = new Set();
+    if (!frameMap.value) return;
+    const allIds = new Set(frameMap.value.document.nodes.map(n => n.domain || 'default'));
+    selectedDomains.value = allIds;
   }
 
   /**
-   * 清除所有领域选中（显示所有）。
+   * 清除所有领域选中（清空 Set，取消过滤，显示所有）。
    */
   function clearAllDomains(): void {
     selectedDomains.value = new Set();

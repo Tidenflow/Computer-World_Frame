@@ -24,6 +24,15 @@ const unlockedRatio = computed(() => {
   return `${progressStore.unlockedNodesCount}/${total}`;
 });
 
+// 探索进度环
+const RING_RADIUS = 30;
+const circumference = 2 * Math.PI * RING_RADIUS; // ≈ 188.5
+const strokeOffset = computed(() => {
+  const total = mapStore.frameMap?.document.nodes.length ?? 0;
+  if (total === 0) return circumference;
+  return circumference - (progressStore.unlockedNodesCount / total) * circumference;
+});
+
 function toggleSidebar(): void {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
 }
@@ -120,6 +129,25 @@ onMounted(async (): Promise<void> => {
               <span class="stats-label">Unlocked</span>
               <span class="stats-value">{{ progressStore.unlockedNodesCount }}</span>
               <span class="stats-total"> / {{ mapStore.frameMap?.document.nodes.length || 0 }}</span>
+            </div>
+
+            <!-- 探索进度环 -->
+            <div class="progress-ring-wrapper" :title="`${progressStore.unlockedNodesCount} / ${mapStore.frameMap?.document.nodes.length || 0} concepts unlocked`">
+              <svg class="progress-ring" viewBox="0 0 72 72">
+                <circle class="ring-bg" cx="36" cy="36" r="30" />
+                <circle
+                  class="ring-fill"
+                  cx="36" cy="36" r="30"
+                  :stroke-dasharray="circumference"
+                  :stroke-dashoffset="strokeOffset"
+                />
+                <text class="ring-count" x="36" y="33" text-anchor="middle">
+                  {{ progressStore.unlockedNodesCount }}
+                </text>
+                <text class="ring-total" x="36" y="46" text-anchor="middle">
+                  / {{ mapStore.frameMap?.document.nodes.length || 0 }}
+                </text>
+              </svg>
             </div>
           </div>
         </section>
@@ -350,6 +378,51 @@ onMounted(async (): Promise<void> => {
 .stats-label { font-size: 12px; color: var(--text-weak); }
 .stats-value { font-size: 18px; color: var(--blue-400); }
 .stats-total { font-size: 12px; color: var(--text-weak); }
+
+/* 探索进度环 */
+.progress-ring-wrapper {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 10;
+  cursor: default;
+}
+
+.progress-ring {
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+}
+
+.ring-bg {
+  fill: none;
+  stroke: rgba(148, 163, 184, 0.12);
+  stroke-width: 5;
+}
+
+.ring-fill {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 5;
+  stroke-linecap: round;
+  transform-origin: 36px 36px;
+  transform: rotate(-90deg);
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ring-count {
+  font-size: 13px;
+  font-weight: 700;
+  fill: #f8fafc;
+  font-family: inherit;
+}
+
+.ring-total {
+  font-size: 9px;
+  font-weight: 500;
+  fill: #64748b;
+  font-family: inherit;
+}
 
 /* 视图切换 */
 .view-toggle {
