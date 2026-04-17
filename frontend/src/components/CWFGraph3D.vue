@@ -11,8 +11,6 @@ import {
   Eye,
   Layers,
   Globe,
-  Waves,
-  Dna,
   CircleDot
 } from 'lucide-vue-next';
 
@@ -248,10 +246,7 @@ const plotConfig: any = {
 const layoutTypes: { id: GraphLayoutType; label: string; icon: any }[] = [
   { id: 'original', label: 'Original', icon: Layers },
   { id: 'sphere', label: 'Sphere', icon: Globe },
-  { id: 'galaxy', label: 'Galaxy', icon: CircleDot },
-  { id: 'wave', label: 'Wave', icon: Waves },
-  { id: 'helix', label: 'Helix', icon: Dna },
-  { id: 'torus', label: 'Torus', icon: CircleDot }
+  { id: 'galaxy', label: 'Galaxy', icon: CircleDot }
 ];
 
 // 捕获当前相机位置

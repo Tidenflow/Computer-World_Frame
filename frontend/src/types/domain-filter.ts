@@ -3,7 +3,7 @@
  */
 
 /** 3D 布局类型 */
-export type GraphLayoutType = 'original' | 'sphere' | 'galaxy' | 'wave' | 'helix' | 'torus';
+export type GraphLayoutType = 'original' | 'sphere' | 'galaxy';
 
 /** 3D 空间中的点 */
 export interface Point3D {

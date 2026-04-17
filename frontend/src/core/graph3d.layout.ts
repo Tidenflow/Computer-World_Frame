@@ -116,15 +116,6 @@ function applyLayoutTransform(
       case 'galaxy':
         transformed = galaxyTransform(node, config, bounds);
         break;
-      case 'wave':
-        transformed = waveTransform(node, config);
-        break;
-      case 'helix':
-        transformed = helixTransform(node, config, bounds);
-        break;
-      case 'torus':
-        transformed = torusTransform(node, config, bounds);
-        break;
       default:
         transformed = { x: node.x, y: node.y, z: node.z };
     }
@@ -207,101 +198,6 @@ function galaxyTransform(
 }
 
 /**
- * 波浪布局：创建起伏的地形效果
- */
-function waveTransform(
-  node: Graph3DNode,
-  config: TransformConfig
-): Point3D {
-  const x = node.x / 20;
-  const y = node.y / 20;
-
-  // 波浪参数
-  const frequency = 0.15;
-  const amplitude = 15;
-
-  // 多个波叠加
-  const wave1 = Math.sin(x * frequency) * amplitude;
-  const wave2 = Math.cos(y * frequency) * amplitude;
-  const wave3 = Math.sin((x + y) * frequency * 0.7) * amplitude * 0.4;
-
-  // 按 domain 分层偏移
-  const domainOffset = (config.domainIndex / config.totalDomains) * 25 - 12;
-
-  const finalZ = wave1 + wave2 + wave3 + domainOffset;
-
-  return {
-    x: node.x - 600,
-    y: node.y - 420,
-    z: finalZ
-  };
-}
-
-/**
- * 螺旋布局：DNA 双螺旋形状
- */
-function helixTransform(
-  node: Graph3DNode,
-  config: TransformConfig,
-  bounds: Bounds
-): Point3D {
-  const normalizedX = (node.x - bounds.minX) / (bounds.maxX - bounds.minX || 1);
-
-  // 进度计算
-  const domainProgress = config.domainIndex / config.totalDomains;
-  const nodeProgress = config.nodeIndex / config.totalNodes;
-  const totalProgress = domainProgress + nodeProgress / config.totalDomains;
-
-  // 螺旋参数
-  const turns = 3;
-  const angle = totalProgress * turns * 2 * Math.PI;
-  const height = totalProgress * 200 - 100;
-
-  // 半径
-  const radiusBase = 35;
-  const radiusVariation = normalizedX * 12;
-  const radius = radiusBase + radiusVariation;
-
-  // 摆动
-  const wobble = Math.sin(angle * 2) * normalizedX * 4;
-
-  return {
-    x: (radius + wobble) * Math.cos(angle),
-    y: (radius + wobble) * Math.sin(angle),
-    z: height + node.stage * 2
-  };
-}
-
-/**
- * 圆环布局：甜甜圈形状
- */
-function torusTransform(
-  node: Graph3DNode,
-  config: TransformConfig,
-  bounds: Bounds
-): Point3D {
-  const u = (node.x - bounds.minX) / (bounds.maxX - bounds.minX || 1);
-  const v = (node.y - bounds.minY) / (bounds.maxY - bounds.minY || 1);
-
-  // 圆环参数
-  const majorRadius = 50;
-  const minorRadius = 22;
-
-  // 角度计算
-  const clusterAngleOffset = (config.domainIndex / config.totalDomains) * 2 * Math.PI;
-  const majorSectorSize = (2 * Math.PI) / Math.max(config.totalDomains, 1);
-  const theta = clusterAngleOffset + (u - 0.5) * majorSectorSize;
-
-  const phi = v * 2 * Math.PI;
-
-  return {
-    x: (majorRadius + minorRadius * Math.cos(phi)) * Math.cos(theta),
-    y: (majorRadius + minorRadius * Math.cos(phi)) * Math.sin(theta),
-    z: minorRadius * Math.sin(phi) + node.stage * 3
-  };
-}
-
-/**
  * 获取布局类型的默认相机位置
  */
 export function getDefaultCamera(layoutType: GraphLayoutType) {
@@ -310,12 +206,6 @@ export function getDefaultCamera(layoutType: GraphLayoutType) {
       return { eye: { x: 1.8, y: 1.8, z: 1.2 }, center: { x: 0, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 } };
     case 'galaxy':
       return { eye: { x: 0.2, y: 0.2, z: 2.2 }, center: { x: 0, y: 0, z: 0 }, up: { x: 0, y: 1, z: 0 } };
-    case 'wave':
-      return { eye: { x: 1.8, y: 0.8, z: 0.8 }, center: { x: 0, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 } };
-    case 'helix':
-      return { eye: { x: 1.2, y: 1.2, z: 0.8 }, center: { x: 0, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 } };
-    case 'torus':
-      return { eye: { x: 1.5, y: 1.5, z: 1 }, center: { x: 0, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 } };
     case 'original':
     default:
       return { eye: { x: 0.5, y: 0.5, z: 0.6 }, center: { x: 0, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 } };

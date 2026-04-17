@@ -53,7 +53,7 @@ export function layoutGraphTree(
   nodes: MapNodeDocument[],
   options: LayoutOptions = {}
 ): TreeLayoutResult {
-  const activeNodeIdSet = options.activeNodeIds
+  const activeNodeIdSet = options.activeNodeIds != null
     ? new Set(Array.from(options.activeNodeIds))
     : null;
   const visibleNodes = activeNodeIdSet

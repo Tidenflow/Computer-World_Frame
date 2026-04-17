@@ -19,7 +19,7 @@ const domains = computed((): DomainInfo[] => {
     domainMap.set(domainId, (domainMap.get(domainId) ?? 0) + 1);
   }
 
-  const selectedDomains = mapStore.selectedDomains;
+      const selectedDomains = mapStore.selectedDomains;
 
   return Array.from(domainMap.entries())
     .map(([id, count]) => ({
@@ -27,7 +27,7 @@ const domains = computed((): DomainInfo[] => {
       name: getDomainName(id),
       color: getDomainColor(id),
       count,
-      visible: selectedDomains.size === 0 ? false : selectedDomains.has(id)
+      visible: selectedDomains.has(id)
     }))
     .sort((a, b) => b.count - a.count);
 });
@@ -35,7 +35,6 @@ const domains = computed((): DomainInfo[] => {
 const totalNodes = computed(() => mapStore.frameMap?.document.nodes.length ?? 0);
 const visibleNodes = computed(() => {
   const selected = mapStore.selectedDomains;
-  if (selected.size === 0) return totalNodes.value;
   return Array.from(selected)
     .reduce((sum, domainId) => {
       const domain = domains.value.find(d => d.id === domainId);

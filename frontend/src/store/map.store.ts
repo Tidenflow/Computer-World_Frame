@@ -30,7 +30,7 @@ export const useMapStore = defineStore('map', () => {
   const selectedDomains = ref<Set<string>>(new Set());
 
   /** 当前 3D 布局类型 */
-  const layoutType = ref<'original' | 'sphere' | 'galaxy' | 'wave' | 'helix' | 'torus'>('original');
+  const layoutType = ref<'original' | 'sphere' | 'galaxy'>('original');
 
   const visibilityMap = computed(() => {
     if (!frameMap.value) return {};
@@ -59,6 +59,10 @@ export const useMapStore = defineStore('map', () => {
     try {
       const map = await loader.loadFrameMap();
       frameMap.value = map;
+
+      // 默认选中所有领域
+      const allIds = new Set(map.document.nodes.map(n => n.domain || 'default'));
+      selectedDomains.value = allIds;
 
       // 后台预计算所有节点向量（不阻塞主流程）
       if (map.document.version) {
@@ -133,7 +137,7 @@ export const useMapStore = defineStore('map', () => {
    * 设置布局类型。
    * @param type - 布局类型
    */
-  function setLayoutType(type: 'original' | 'sphere' | 'galaxy' | 'wave' | 'helix' | 'torus'): void {
+  function setLayoutType(type: 'original' | 'sphere' | 'galaxy'): void {
     layoutType.value = type;
   }
 

@@ -49,14 +49,15 @@ const getDisplayColor = (nodeId: string, category: string): string =>
 
 const visibilityMap = computed(() => mapStore.visibilityMap);
 const recentNodeIds = computed(() => new Set(progressStore.recentlyUnlockedIds));
-const renderableNodeIds = computed(
-  () =>
-    new Set(
-      Object.entries(visibilityMap.value)
-        .filter(([, visibility]) => visibility !== 'Hidden')
-        .map(([nodeId]) => nodeId)
-    )
-);
+const renderableNodeIds = computed(() => {
+  if (mapStore.selectedDomains.size === 0) {
+    return undefined; // 空过滤条件 = 显示全部
+  }
+  return new Set(
+    Object.entries(visibilityMap.value)
+      .map(([nodeId]) => nodeId)
+  );
+});
 
 function getNodeRadius(weight: number): number {
   return 11 + (weight - 1) * 1.15;
@@ -260,7 +261,7 @@ function focusNodeInGraph(nodeId: string): void {
 
       return leftDistance - rightDistance;
     })[0];
-  if (!targetNode || targetNode.visibility === 'Hidden') return;
+  if (!targetNode) return;
 
   const nextScale = computeFocusZoom(nodeId);
   viewport.scale = nextScale;
