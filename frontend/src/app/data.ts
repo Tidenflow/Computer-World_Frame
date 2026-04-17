@@ -1,7 +1,7 @@
-import { GraphData, Node } from './types';
+import { GraphData, NodeDefinition } from './types';
 
 // Level 0: Default map with 7 top-level nodes
-export const defaultMap: GraphData = {
+export const defaultMap: GraphData<NodeDefinition> = {
   id: 'root',
   title: '计算机世界全景',
   nodes: [
@@ -82,7 +82,7 @@ export const defaultMap: GraphData = {
 };
 
 // Level 1: Software subgraph
-export const softwareMap: GraphData = {
+export const softwareMap: GraphData<NodeDefinition> = {
   id: 'software',
   title: '软件系统',
   nodes: [
@@ -105,7 +105,7 @@ export const softwareMap: GraphData = {
 };
 
 // Level 1: Programming subgraph
-export const programmingMap: GraphData = {
+export const programmingMap: GraphData<NodeDefinition> = {
   id: 'programming',
   title: '程序开发',
   nodes: [
@@ -130,7 +130,7 @@ export const programmingMap: GraphData = {
 };
 
 // Level 1: AI subgraph
-export const aiMap: GraphData = {
+export const aiMap: GraphData<NodeDefinition> = {
   id: 'ai',
   title: 'AI 人工智能',
   nodes: [
@@ -152,7 +152,7 @@ export const aiMap: GraphData = {
 };
 
 // Level 1: Network subgraph
-export const networkMap: GraphData = {
+export const networkMap: GraphData<NodeDefinition> = {
   id: 'network',
   title: '网络通信',
   nodes: [
@@ -173,7 +173,7 @@ export const networkMap: GraphData = {
   ],
 };
 
-export const allMaps: Record<string, GraphData> = {
+export const allMaps: Record<string, GraphData<NodeDefinition>> = {
   root: defaultMap,
   software: softwareMap,
   programming: programmingMap,

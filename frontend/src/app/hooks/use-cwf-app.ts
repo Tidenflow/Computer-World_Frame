@@ -9,6 +9,12 @@ import {
   filterNodesByQuery,
   searchNodesAcrossMaps,
 } from '../services/app-services'
+import {
+  autoUnlockNodeOnSelect,
+  closeSelectedNode,
+  toggleDomainSelection,
+  toggleNodeLock,
+} from '../services/app-state-transitions'
 import type { Domain, Node } from '../types'
 import { useProgressState } from './use-progress-state'
 import { useSearchState } from './use-search-state'
@@ -47,40 +53,21 @@ export function useCwfApp() {
   )
 
   const handleDomainToggle = (domain: Domain) => {
-    setSelectedDomains((previousDomains) => {
-      const nextDomains = new Set(previousDomains)
-
-      if (nextDomains.has(domain)) {
-        nextDomains.delete(domain)
-      } else {
-        nextDomains.add(domain)
-      }
-
-      return nextDomains
-    })
+    setSelectedDomains((previousDomains) => toggleDomainSelection(previousDomains, domain))
   }
 
   const handleNodeClick = (node: Node) => {
     setSelectedNode(node)
     clearSearch()
 
-    if (!unlockedNodes.has(node.id)) {
-      const nextUnlockedNodes = new Set(unlockedNodes)
-      nextUnlockedNodes.add(node.id)
+    const nextUnlockedNodes = autoUnlockNodeOnSelect(unlockedNodes, node)
+    if (nextUnlockedNodes !== unlockedNodes) {
       saveUnlockedNodeSet(nextUnlockedNodes)
     }
   }
 
   const handleToggleLock = (nodeId: string) => {
-    const nextUnlockedNodes = new Set(unlockedNodes)
-
-    if (nextUnlockedNodes.has(nodeId)) {
-      nextUnlockedNodes.delete(nodeId)
-    } else {
-      nextUnlockedNodes.add(nodeId)
-    }
-
-    saveUnlockedNodeSet(nextUnlockedNodes)
+    saveUnlockedNodeSet(toggleNodeLock(unlockedNodes, nodeId))
   }
 
   const handleNodeDoubleClick = (node: Node) => {
@@ -113,7 +100,7 @@ export function useCwfApp() {
     handleNodeDoubleClick,
     handleNavigateToMap,
     closeDetailPanel() {
-      setSelectedNode(null)
+      setSelectedNode(closeSelectedNode())
     },
   }
 }

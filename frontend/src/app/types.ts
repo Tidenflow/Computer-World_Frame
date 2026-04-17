@@ -1,6 +1,11 @@
 export type Domain = 'hardware' | 'software' | 'programming' | 'theory' | 'ai' | 'network';
 
-export interface Node {
+export interface ResourceLink {
+  title: string;
+  url: string;
+}
+
+export interface NodeDefinition {
   id: string;
   title: string;
   domain: Domain;
@@ -9,15 +14,20 @@ export interface Node {
   tags?: string[];
   aliases?: string[];
   description?: string;
-  resources?: { title: string; url: string }[];
+  resources?: ResourceLink[];
   targetMap?: string; // if this node can expand into a subgraph
+}
+
+export interface NodeViewState {
   unlocked?: boolean; // runtime status, not in JSON
 }
 
-export interface GraphData {
+export type Node = NodeDefinition & NodeViewState;
+
+export interface GraphData<TNode = NodeDefinition> {
   id: string;
   title: string;
-  nodes: Node[];
+  nodes: TNode[];
 }
 
 export const DOMAIN_COLORS: Record<Domain, string> = {
