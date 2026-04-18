@@ -21,11 +21,13 @@ export const Sidebar = ({
 
   const maps = [
     { id: 'root', name: '计算机世界框架' },
+    { id: 'fundamentals', name: '计算机基础' },
+    { id: 'hardware', name: '硬件' },
     { id: 'software', name: '软件系统' },
-    { id: 'programming', name: '程序开发' },
     { id: 'programming-languages', name: '编程语言' },
-    { id: 'ai', name: 'AI 人工智能' },
+    { id: 'programming', name: '程序开发' },
     { id: 'network', name: '网络通信' },
+    { id: 'ai', name: 'AI 人工智能' },
   ]
 
   if (collapsed) {
@@ -89,7 +91,7 @@ export const Sidebar = ({
         <div className="h-2 overflow-hidden rounded-full bg-[#E5E7EB]">
           <div
             className="h-full bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] transition-all duration-500"
-            style={{ width: `${(unlockedCount / totalNodes) * 100}%` }}
+            style={{ width: totalNodes > 0 ? `${(unlockedCount / totalNodes) * 100}%` : '0%' }}
           />
         </div>
       </div>
