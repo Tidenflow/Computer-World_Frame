@@ -1,4 +1,5 @@
 import { DetailPanel } from './components/DetailPanel'
+import { GraphFilterBar } from './components/GraphFilterBar'
 import { Graph2D } from './components/Graph2D'
 import { Graph3D } from './components/Graph3D'
 import { Header } from './components/Header'
@@ -55,10 +56,6 @@ function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar
-          selectedCategories={selectedCategories}
-          onCategoryToggle={handleCategoryToggle}
-          onSelectAllCategories={selectAllCategories}
-          onClearCategories={clearCategories}
           totalNodes={currentMap.nodes.length}
           unlockedCount={currentMap.nodes.filter((node) => unlockedNodes.has(node.id)).length}
           currentMap={currentMapId}
@@ -66,6 +63,13 @@ function App() {
         />
 
         <main className="flex-1 relative">
+          <GraphFilterBar
+            selectedCategories={selectedCategories}
+            onCategoryToggle={handleCategoryToggle}
+            onSelectAllCategories={selectAllCategories}
+            onClearCategories={clearCategories}
+          />
+
           {viewMode === '2d' ? (
             <Graph2D
               nodes={filteredNodes}

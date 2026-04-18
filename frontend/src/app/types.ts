@@ -52,11 +52,11 @@ export const DOMAIN_COLORS: Record<Domain, string> = {
 
 export const DOMAIN_NAMES: Record<Domain, string> = {
   hardware: '硬件',
-  software: '软件',
+  software: '软件系统',
   programming: '程序开发',
-  theory: '基础理论',
-  ai: 'AI',
-  network: '网络',
+  theory: '计算机基础',
+  ai: 'AI 人工智能',
+  network: '网络通信',
 }
 
 export const NODE_CATEGORY_ORDER: NodeCategory[] = [
