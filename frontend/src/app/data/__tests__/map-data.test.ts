@@ -13,8 +13,10 @@ describe('map data entrypoint', () => {
   })
 
   test('preserves representative cross-map and dependency references', () => {
+    expect(allMaps.root.nodes.find((node) => node.id === 'hardware')?.parentId).toBe('cw-root')
+    expect(allMaps.root.nodes.find((node) => node.id === 'ai')?.parentId).toBe('cw-root')
     expect(allMaps.root.nodes.find((node) => node.id === 'software')?.targetMap).toBe('software')
-    expect(allMaps.root.nodes.find((node) => node.id === 'ai')?.deps).toEqual(['programming', 'data'])
+    expect(allMaps.root.nodes.find((node) => node.id === 'ai')?.deps).toEqual(['cw-root'])
     expect(allMaps.software.nodes.find((node) => node.id === 'operating-systems')?.parentId).toBe('software-root')
     expect(allMaps.software.nodes.find((node) => node.id === 'application-software')?.parentId).toBe('software-root')
     expect(allMaps.software.nodes.find((node) => node.id === 'development-software')?.parentId).toBe('application-software')

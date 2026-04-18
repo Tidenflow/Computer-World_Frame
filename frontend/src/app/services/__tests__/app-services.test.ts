@@ -191,6 +191,21 @@ describe('app services', () => {
     ])
   })
 
+  test('supports the same progressive tree expansion for the root map', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.root, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, null).map((node) => node.id)).toEqual([
+      'cw-root',
+      'fundamentals',
+      'hardware',
+      'software',
+      'programming',
+      'network',
+      'data',
+      'ai',
+    ])
+  })
+
   test('computes unlocked stats across all maps', () => {
     const stats = computeUnlockedStats(allMaps, unlockedNodes)
 

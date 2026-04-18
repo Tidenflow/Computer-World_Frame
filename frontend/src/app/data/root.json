@@ -3,11 +3,21 @@
   "title": "计算机世界全景",
   "nodes": [
     {
-      "id": "fundamentals",
-      "title": "计算机基础",
+      "id": "cw-root",
+      "title": "计算机世界",
       "domain": "theory",
       "stage": 1,
       "deps": [],
+      "description": "计算机世界总览图的根节点，用来承接基础理论、硬件、软件、开发、网络、数据与 AI。",
+      "tags": ["总览", "根节点", "计算机"]
+    },
+    {
+      "id": "fundamentals",
+      "title": "计算机基础",
+      "domain": "theory",
+      "stage": 2,
+      "parentId": "cw-root",
+      "deps": ["cw-root"],
       "description": "计算机科学的基础理论知识，包括数字逻辑、计算机组成原理等。这是一切计算机技术的起点。",
       "tags": ["理论", "基础", "入门"],
       "resources": [
@@ -21,8 +31,9 @@
       "id": "hardware",
       "title": "硬件",
       "domain": "hardware",
-      "stage": 1,
-      "deps": ["fundamentals"],
+      "stage": 2,
+      "parentId": "cw-root",
+      "deps": ["cw-root"],
       "description": "CPU、显卡、内存、主板等物理组件。理解硬件是理解计算机工作原理的关键。",
       "tags": ["硬件", "物理", "CPU"],
       "resources": [
@@ -37,7 +48,8 @@
       "title": "软件系统",
       "domain": "software",
       "stage": 2,
-      "deps": ["hardware"],
+      "parentId": "cw-root",
+      "deps": ["cw-root"],
       "targetMap": "software",
       "description": "操作系统、应用程序、游戏等软件。软件是运行在硬件之上的逻辑系统。",
       "tags": ["软件", "应用", "操作系统"]
@@ -47,27 +59,19 @@
       "title": "程序开发",
       "domain": "programming",
       "stage": 2,
-      "deps": ["fundamentals"],
+      "parentId": "cw-root",
+      "deps": ["cw-root"],
       "targetMap": "programming",
       "description": "Python、JavaScript、Git、IDE 等开发工具和语言。学习编程是创造软件的第一步。",
       "tags": ["编程", "开发", "语言"]
-    },
-    {
-      "id": "ai",
-      "title": "AI 人工智能",
-      "domain": "ai",
-      "stage": 3,
-      "deps": ["programming", "data"],
-      "targetMap": "ai",
-      "description": "ChatGPT、豆包、机器学习、深度学习等。AI 正在改变世界的每一个角落。",
-      "tags": ["AI", "机器学习", "深度学习"]
     },
     {
       "id": "network",
       "title": "网络通信",
       "domain": "network",
       "stage": 2,
-      "deps": ["hardware", "software"],
+      "parentId": "cw-root",
+      "deps": ["cw-root"],
       "targetMap": "network",
       "description": "浏览器、WiFi、HTTP、TCP/IP 等网络技术。网络连接了全世界的计算机。",
       "tags": ["网络", "通信", "互联网"]
@@ -77,9 +81,21 @@
       "title": "数据存储",
       "domain": "software",
       "stage": 2,
-      "deps": ["software"],
+      "parentId": "cw-root",
+      "deps": ["cw-root"],
       "description": "数据库、文件系统、云存储等数据管理技术。数据是信息时代最重要的资产。",
       "tags": ["数据", "存储", "数据库"]
+    },
+    {
+      "id": "ai",
+      "title": "AI 人工智能",
+      "domain": "ai",
+      "stage": 2,
+      "parentId": "cw-root",
+      "deps": ["cw-root"],
+      "targetMap": "ai",
+      "description": "ChatGPT、豆包、机器学习、深度学习等。AI 正在改变世界的每一个角落。",
+      "tags": ["AI", "机器学习", "深度学习"]
     }
   ]
 }
