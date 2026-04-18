@@ -67,7 +67,7 @@ export const Graph2D = ({
       x: containerRef.current.clientWidth / 2 - targetNode.x * scale,
       y: containerRef.current.clientHeight / 2 - targetNode.y * scale,
     });
-  }, [positions, scale, selectedNode]);
+  }, [positions, selectedNode]);
 
   const syncStableLayout = (nextNodes: Node[] = nodesRef.current) => {
     const width = containerRef.current?.clientWidth || 800;
