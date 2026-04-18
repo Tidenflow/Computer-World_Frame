@@ -88,6 +88,12 @@ export function useCwfApp() {
   }
 
   const handleToggleLock = (nodeId: string) => {
+    if (unlockedNodes.has(nodeId)) {
+      setRecentSearchMatches((previousMatches) =>
+        previousMatches.filter((match) => match.id !== nodeId),
+      )
+    }
+
     saveUnlockedNodeSet(toggleNodeLock(unlockedNodes, nodeId))
   }
 

@@ -50,6 +50,7 @@ function App() {
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar
           currentMap={currentMapId}
+          selectedNodeId={selectedNode?.id ?? null}
           recentSearchMatches={recentSearchMatches}
           onMapChange={handleNavigateToMap}
           onSelectRecentMatch={handleSelectRecentMatch}
@@ -90,6 +91,7 @@ function App() {
           <DetailPanel
             node={selectedNode}
             onClose={closeDetailPanel}
+            onToggleLock={handleToggleLock}
             onNavigateToMap={handleNavigateToMap}
           />
         )}

@@ -7,6 +7,7 @@ import { Separator } from './ui/separator'
 
 interface SidebarProps {
   currentMap: string
+  selectedNodeId: string | null
   recentSearchMatches: SearchMatch[]
   onMapChange: (mapId: string) => void
   onSelectRecentMatch: (match: SearchMatch) => void
@@ -14,6 +15,7 @@ interface SidebarProps {
 
 export const Sidebar = ({
   currentMap,
+  selectedNodeId,
   recentSearchMatches,
   onMapChange,
   onSelectRecentMatch,
@@ -91,14 +93,28 @@ export const Sidebar = ({
         {recentSearchMatches.length > 0 ? (
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
             {recentSearchMatches.map((match) => (
+              (() => {
+                const isSelected = currentMap === match.mapId && selectedNodeId === match.id
+
+                return (
               <button
                 key={`${match.mapId}:${match.id}`}
                 onClick={() => onSelectRecentMatch(match)}
-                className="w-full rounded-md border border-[#E5E7EB] px-3 py-2 text-left transition-colors hover:border-[#BFDBFE] hover:bg-[#F8FBFF]"
+                className={`w-full rounded-md border px-3 py-2 text-left transition-colors ${
+                  isSelected
+                    ? 'border-[#93C5FD] bg-[#EFF6FF]'
+                    : 'border-[#E5E7EB] hover:border-[#BFDBFE] hover:bg-[#F8FBFF]'
+                }`}
               >
-                <div className="text-sm font-medium text-[#111827]">{match.title}</div>
-                <div className="mt-1 text-xs text-[#6B7280]">{match.mapTitle}</div>
+                <div className={`text-sm font-medium ${isSelected ? 'text-[#1D4ED8]' : 'text-[#111827]'}`}>
+                  {match.title}
+                </div>
+                <div className={`mt-1 text-xs ${isSelected ? 'text-[#3B82F6]' : 'text-[#6B7280]'}`}>
+                  {match.mapTitle}
+                </div>
               </button>
+                )
+              })()
             ))}
           </div>
         ) : (
