@@ -13,8 +13,7 @@ export interface StableNodePosition extends Node {
 }
 
 interface SimulationNode extends StableNodePosition {
-  fx: number
-  fy: number
+  preferredX: number
 }
 
 export function createStableNodePositions({ nodes, width, height }: LayoutInput): StableNodePosition[] {
@@ -26,78 +25,113 @@ export function createStableNodePositions({ nodes, width, height }: LayoutInput)
   const canvasHeight = Math.max(height, 200)
   const margin = 50
   const centerX = canvasWidth / 2
-  const centerY = canvasHeight / 2
-  const baseRadius = Math.min(canvasWidth, canvasHeight) * 0.3
+  const stageValues = Array.from(new Set(nodes.map((node) => node.stage ?? 1))).sort((a, b) => a - b)
+  const stageToRow = new Map<number, number>(
+    stageValues.map((stage, index) => [stage, stageValues.length - index - 1]),
+  )
+  const rowGap =
+    stageValues.length === 1 ? 0 : (canvasHeight - margin * 2) / Math.max(stageValues.length - 1, 1)
 
-  const positionedNodes: SimulationNode[] = nodes.map((node, index) => {
-    const angle = (index / Math.max(nodes.length, 1)) * Math.PI * 2
-    const stageOffset = ((node.stage ?? 1) - 3) * 18
+  const positionsById = new Map<string, StableNodePosition>()
+  const layers = new Map<number, SimulationNode[]>()
 
-    return {
-      ...node,
-      x: centerX + Math.cos(angle) * (baseRadius + stageOffset),
-      y: centerY + Math.sin(angle) * (baseRadius + stageOffset),
-      radius: 12,
-      fx: 0,
-      fy: 0,
-    }
-  })
+  for (const stage of stageValues) {
+    const layerNodes = nodes
+      .filter((node) => (node.stage ?? 1) === stage)
+      .map((node) => ({
+        ...node,
+        x: centerX,
+        y: margin + (stageToRow.get(stage) ?? 0) * rowGap,
+        radius: 12,
+        preferredX: centerX,
+      }))
 
-  for (let iteration = 0; iteration < 220; iteration += 1) {
-    for (const node of positionedNodes) {
-      node.fx = 0
-      node.fy = 0
-    }
-
-    for (let index = 0; index < positionedNodes.length; index += 1) {
-      const nodeA = positionedNodes[index]
-
-      for (let otherIndex = index + 1; otherIndex < positionedNodes.length; otherIndex += 1) {
-        const nodeB = positionedNodes[otherIndex]
-        const dx = nodeB.x - nodeA.x
-        const dy = nodeB.y - nodeA.y
-        const distance = Math.sqrt(dx * dx + dy * dy) || 1
-
-        if (distance < 220) {
-          const repulsion = (nodeA.radius + nodeB.radius + 56) / distance
-          nodeA.fx -= (dx / distance) * repulsion * 1.8
-          nodeA.fy -= (dy / distance) * repulsion * 1.8
-          nodeB.fx += (dx / distance) * repulsion * 1.8
-          nodeB.fy += (dy / distance) * repulsion * 1.8
-        }
-      }
-
-      if (nodeA.deps) {
-        for (const depId of nodeA.deps) {
-          const depNode = positionedNodes.find((node) => node.id === depId)
-          if (!depNode) {
-            continue
-          }
-
-          const dx = depNode.x - nodeA.x
-          const dy = depNode.y - nodeA.y
-          const distance = Math.sqrt(dx * dx + dy * dy) || 1
-          const attraction = Math.max(distance - 120, 0) * 0.0035
-
-          nodeA.fx += (dx / distance) * attraction
-          nodeA.fy += (dy / distance) * attraction
-        }
-      }
-
-      const centerPull = 0.003
-      nodeA.fx += (centerX - nodeA.x) * centerPull
-      nodeA.fy += (centerY - nodeA.y) * centerPull
-    }
-
-    for (const node of positionedNodes) {
-      node.x = clamp(node.x + node.fx, margin, canvasWidth - margin)
-      node.y = clamp(node.y + node.fy, margin, canvasHeight - margin)
-    }
+    layers.set(stage, layerNodes)
   }
 
-  return positionedNodes.map(({ fx: _fx, fy: _fy, ...node }) => node)
+  for (const stage of stageValues) {
+    const layerNodes = layers.get(stage) ?? []
+
+    for (const node of layerNodes) {
+      const dependencyPositions = (node.deps ?? [])
+        .map((depId) => positionsById.get(depId))
+        .filter((position): position is StableNodePosition => Boolean(position))
+
+      node.preferredX =
+        dependencyPositions.length > 0
+          ? dependencyPositions.reduce((sum, position) => sum + position.x, 0) / dependencyPositions.length
+          : centerX + stableJitter(node.id) * 140
+    }
+
+    const orderedLayer = [...layerNodes].sort((left, right) => {
+      if (left.preferredX !== right.preferredX) {
+        return left.preferredX - right.preferredX
+      }
+
+      return left.id.localeCompare(right.id)
+    })
+
+    const slottedXs = createLayerSlots({
+      count: orderedLayer.length,
+      width: canvasWidth,
+      margin,
+    })
+
+    orderedLayer.forEach((node, index) => {
+      const positionedNode: StableNodePosition = {
+        ...node,
+        x: slottedXs[index],
+        y: node.y,
+        radius: node.radius,
+      }
+
+      positionsById.set(node.id, positionedNode)
+    })
+  }
+
+  return nodes.map((node) => positionsById.get(node.id) ?? createFallbackPosition(node, centerX, canvasHeight / 2))
 }
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
+}
+
+function createLayerSlots({
+  count,
+  width,
+  margin,
+}: {
+  count: number
+  width: number
+  margin: number
+}) {
+  if (count === 1) {
+    return [width / 2]
+  }
+
+  const availableWidth = Math.max(width - margin * 2, 120)
+  const spacing = Math.min(180, Math.max(110, availableWidth / count))
+  const totalWidth = spacing * (count - 1)
+  const startX = width / 2 - totalWidth / 2
+
+  return Array.from({ length: count }, (_, index) => clamp(startX + index * spacing, margin, width - margin))
+}
+
+function stableJitter(input: string) {
+  let hash = 0
+
+  for (let index = 0; index < input.length; index += 1) {
+    hash = (hash * 31 + input.charCodeAt(index)) >>> 0
+  }
+
+  return hash / 0xffffffff - 0.5
+}
+
+function createFallbackPosition(node: Node, x: number, y: number): StableNodePosition {
+  return {
+    ...node,
+    x,
+    y,
+    radius: 12,
+  }
 }
