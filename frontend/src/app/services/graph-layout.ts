@@ -23,6 +23,12 @@ interface SimulationNode extends StableNodePosition {
   preferredX: number
 }
 
+interface LayerGroup {
+  centerX: number
+  nodes: SimulationNode[]
+  width: number
+}
+
 export function createStableNodePositions({ nodes, width, height }: LayoutInput): StableNodePosition[] {
   if (nodes.length === 0) {
     return []
@@ -32,36 +38,42 @@ export function createStableNodePositions({ nodes, width, height }: LayoutInput)
   const canvasHeight = Math.max(height, 200)
   const margin = 50
   const centerX = canvasWidth / 2
-  const stageValues = Array.from(new Set(nodes.map((node) => node.stage ?? 1))).sort((a, b) => a - b)
-  const stageToRow = new Map<number, number>(
-    stageValues.map((stage, index) => [stage, stageValues.length - index - 1]),
+  const treeDepthById = createTreeDepthMap(nodes)
+  const usesTreeRows = nodes.some((node) => node.parentId)
+  const rowValues = usesTreeRows
+    ? Array.from(new Set(nodes.map((node) => treeDepthById.get(node.id) ?? 0))).sort((a, b) => a - b)
+    : Array.from(new Set(nodes.map((node) => node.stage ?? 1))).sort((a, b) => a - b)
+  const rowToIndex = new Map<number, number>(
+    rowValues.map((rowValue, index) => [rowValue, rowValues.length - index - 1]),
   )
   const availableHeight = Math.max(canvasHeight - margin * 2, 120)
   const idealRowGap =
-    stageValues.length === 1 ? 0 : availableHeight / Math.max(stageValues.length - 1, 1)
-  const rowGap = stageValues.length <= 2 ? Math.min(idealRowGap, 180) : Math.min(idealRowGap, 210)
-  const usedHeight = rowGap * Math.max(stageValues.length - 1, 0)
+    rowValues.length === 1 ? 0 : availableHeight / Math.max(rowValues.length - 1, 1)
+  const rowGap = rowValues.length <= 2 ? Math.min(idealRowGap, 180) : Math.min(idealRowGap, 210)
+  const usedHeight = rowGap * Math.max(rowValues.length - 1, 0)
   const topOffset = margin + (availableHeight - usedHeight) / 2
 
   const positionsById = new Map<string, StableNodePosition>()
   const layers = new Map<number, SimulationNode[]>()
 
-  for (const stage of stageValues) {
+  for (const rowValue of rowValues) {
     const layerNodes = nodes
-      .filter((node) => (node.stage ?? 1) === stage)
+      .filter((node) =>
+        usesTreeRows ? (treeDepthById.get(node.id) ?? 0) === rowValue : (node.stage ?? 1) === rowValue,
+      )
       .map((node) => ({
         ...node,
         x: centerX,
-        y: topOffset + (stageToRow.get(stage) ?? 0) * rowGap,
+        y: topOffset + (rowToIndex.get(rowValue) ?? 0) * rowGap,
         radius: 12,
         preferredX: centerX,
       }))
 
-    layers.set(stage, layerNodes)
+    layers.set(rowValue, layerNodes)
   }
 
-  for (const stage of stageValues) {
-    const layerNodes = layers.get(stage) ?? []
+  for (const rowValue of rowValues) {
+    const layerNodes = layers.get(rowValue) ?? []
 
     for (const node of layerNodes) {
       const dependencyPositions = (node.deps ?? [])
@@ -83,7 +95,7 @@ export function createStableNodePositions({ nodes, width, height }: LayoutInput)
     })
 
     const slottedXs = createLayerSlots({
-      count: orderedLayer.length,
+      nodes: orderedLayer,
       width: canvasWidth,
       margin,
     })
@@ -108,24 +120,125 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function createLayerSlots({
-  count,
+  nodes,
   width,
   margin,
 }: {
-  count: number
+  nodes: SimulationNode[]
   width: number
   margin: number
 }) {
+  const count = nodes.length
+
   if (count === 1) {
-    return [width / 2]
+    return [clamp(nodes[0]?.preferredX ?? width / 2, margin, width - margin)]
   }
 
   const availableWidth = Math.max(width - margin * 2, 120)
   const spacing = Math.min(180, Math.max(110, availableWidth / count))
-  const totalWidth = spacing * (count - 1)
-  const startX = width / 2 - totalWidth / 2
+  const hasTreeGroups = nodes.some((node) => node.parentId)
 
-  return Array.from({ length: count }, (_, index) => clamp(startX + index * spacing, margin, width - margin))
+  if (!hasTreeGroups) {
+    const totalWidth = spacing * (count - 1)
+    const startX = width / 2 - totalWidth / 2
+
+    return Array.from({ length: count }, (_, index) =>
+      clamp(startX + index * spacing, margin, width - margin),
+    )
+  }
+
+  const groups = createLayerGroups(nodes, spacing)
+  positionGroups(groups, spacing, width, margin)
+  const slotsById = new Map<string, number>()
+
+  for (const group of groups) {
+    group.nodes.forEach((node, index) => {
+      slotsById.set(
+        node.id,
+        clamp(group.centerX - group.width / 2 + index * spacing, margin, width - margin),
+      )
+    })
+  }
+
+  return nodes.map((node) => slotsById.get(node.id) ?? clamp(node.preferredX, margin, width - margin))
+}
+
+function createLayerGroups(nodes: SimulationNode[], spacing: number): LayerGroup[] {
+  const groupedNodes = new Map<string, SimulationNode[]>()
+
+  for (const node of nodes) {
+    const groupKey = node.parentId ?? `solo:${node.id}`
+    const group = groupedNodes.get(groupKey) ?? []
+    group.push(node)
+    groupedNodes.set(groupKey, group)
+  }
+
+  return Array.from(groupedNodes.values())
+    .map((groupNodes) => {
+      const orderedNodes = [...groupNodes].sort((left, right) => {
+        if (left.preferredX !== right.preferredX) {
+          return left.preferredX - right.preferredX
+        }
+
+        return left.id.localeCompare(right.id)
+      })
+
+      return {
+        centerX: orderedNodes.reduce((sum, node) => sum + node.preferredX, 0) / orderedNodes.length,
+        nodes: orderedNodes,
+        width: spacing * Math.max(orderedNodes.length - 1, 0),
+      }
+    })
+    .sort((left, right) => left.centerX - right.centerX)
+}
+
+function positionGroups(groups: LayerGroup[], spacing: number, width: number, margin: number) {
+  if (groups.length === 0) {
+    return
+  }
+
+  const minGap = Math.max(24, spacing * 0.35)
+  let previousRight = margin - minGap
+
+  for (const group of groups) {
+    const desiredLeft = group.centerX - group.width / 2
+    const minLeft = previousRight + minGap
+    const left = Math.max(desiredLeft, minLeft)
+    group.centerX = left + group.width / 2
+    previousRight = left + group.width
+  }
+
+  const maxRight = width - margin
+  const overflow = previousRight - maxRight
+
+  if (overflow <= 0) {
+    return
+  }
+
+  groups[groups.length - 1]!.centerX -= overflow
+
+  for (let index = groups.length - 2; index >= 0; index -= 1) {
+    const currentGroup = groups[index]!
+    const nextGroup = groups[index + 1]!
+    const currentRight = currentGroup.centerX + currentGroup.width / 2
+    const nextLeft = nextGroup.centerX - nextGroup.width / 2
+    const allowedRight = nextLeft - minGap
+
+    if (currentRight > allowedRight) {
+      currentGroup.centerX -= currentRight - allowedRight
+    }
+  }
+
+  const firstGroup = groups[0]!
+  const firstLeft = firstGroup.centerX - firstGroup.width / 2
+
+  if (firstLeft < margin) {
+    const correction = margin - firstLeft
+
+    for (const group of groups) {
+      group.centerX += correction
+    }
+  }
 }
 
 function stableJitter(input: string) {
@@ -136,6 +249,34 @@ function stableJitter(input: string) {
   }
 
   return hash / 0xffffffff - 0.5
+}
+
+function createTreeDepthMap(nodes: Node[]) {
+  const nodesById = new Map(nodes.map((node) => [node.id, node]))
+  const depthById = new Map<string, number>()
+
+  const resolveDepth = (node: Node): number => {
+    const cachedDepth = depthById.get(node.id)
+    if (cachedDepth !== undefined) {
+      return cachedDepth
+    }
+
+    if (!node.parentId) {
+      depthById.set(node.id, 0)
+      return 0
+    }
+
+    const parentNode = nodesById.get(node.parentId)
+    const depth = parentNode ? resolveDepth(parentNode) + 1 : 1
+    depthById.set(node.id, depth)
+    return depth
+  }
+
+  for (const node of nodes) {
+    resolveDepth(node)
+  }
+
+  return depthById
 }
 
 function createFallbackPosition(node: Node, x: number, y: number): StableNodePosition {
