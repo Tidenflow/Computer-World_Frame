@@ -97,6 +97,27 @@ describe('app services', () => {
     ])
   })
 
+  test('supports the same progressive tree expansion for the software map', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.software, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, null).map((node) => node.id)).toEqual([
+      'software-root',
+      'operating-systems',
+      'application-software',
+    ])
+
+    expect(buildVisibleGraphNodes(nodes, 'application-software').map((node) => node.id)).toEqual([
+      'software-root',
+      'operating-systems',
+      'application-software',
+      'office-software',
+      'development-software',
+      'industrial-software',
+      'communication-software',
+      'entertainment-software',
+    ])
+  })
+
   test('computes unlocked stats across all maps', () => {
     const stats = computeUnlockedStats(allMaps, unlockedNodes)
 

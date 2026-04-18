@@ -80,6 +80,27 @@ describe('graph layout', () => {
     expect(stageThreeY).toBeLessThan(stageTwoY)
     expect(stageTwoY).toBeLessThan(stageOneY)
   })
+
+  test('keeps two-level tree layouts compact instead of stretching across the full canvas height', () => {
+    const treeNodes: Node[] = [
+      { id: 'software-root', title: '软件系统', domain: 'software', stage: 1 },
+      { id: 'operating-systems', title: '操作系统', domain: 'software', stage: 2, parentId: 'software-root', deps: ['software-root'] },
+      { id: 'application-software', title: '应用软件', domain: 'software', stage: 2, parentId: 'software-root', deps: ['software-root'] },
+    ]
+
+    const positions = createStableNodePositions({
+      nodes: treeNodes,
+      width: 1200,
+      height: 900,
+    })
+
+    const root = positions.find((node) => node.id === 'software-root')
+    const child = positions.find((node) => node.id === 'operating-systems')
+
+    expect(root).toBeTruthy()
+    expect(child).toBeTruthy()
+    expect(Math.abs((root?.y ?? 0) - (child?.y ?? 0))).toBeLessThanOrEqual(220)
+  })
 })
 
 function averageYForStage(

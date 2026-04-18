@@ -29,8 +29,12 @@ export function createStableNodePositions({ nodes, width, height }: LayoutInput)
   const stageToRow = new Map<number, number>(
     stageValues.map((stage, index) => [stage, stageValues.length - index - 1]),
   )
-  const rowGap =
-    stageValues.length === 1 ? 0 : (canvasHeight - margin * 2) / Math.max(stageValues.length - 1, 1)
+  const availableHeight = Math.max(canvasHeight - margin * 2, 120)
+  const idealRowGap =
+    stageValues.length === 1 ? 0 : availableHeight / Math.max(stageValues.length - 1, 1)
+  const rowGap = stageValues.length <= 2 ? Math.min(idealRowGap, 180) : Math.min(idealRowGap, 210)
+  const usedHeight = rowGap * Math.max(stageValues.length - 1, 0)
+  const topOffset = margin + (availableHeight - usedHeight) / 2
 
   const positionsById = new Map<string, StableNodePosition>()
   const layers = new Map<number, SimulationNode[]>()
@@ -41,7 +45,7 @@ export function createStableNodePositions({ nodes, width, height }: LayoutInput)
       .map((node) => ({
         ...node,
         x: centerX,
-        y: margin + (stageToRow.get(stage) ?? 0) * rowGap,
+        y: topOffset + (stageToRow.get(stage) ?? 0) * rowGap,
         radius: 12,
         preferredX: centerX,
       }))

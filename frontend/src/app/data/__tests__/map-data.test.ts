@@ -15,6 +15,11 @@ describe('map data entrypoint', () => {
   test('preserves representative cross-map and dependency references', () => {
     expect(allMaps.root.nodes.find((node) => node.id === 'software')?.targetMap).toBe('software')
     expect(allMaps.root.nodes.find((node) => node.id === 'ai')?.deps).toEqual(['programming', 'data'])
+    expect(allMaps.software.nodes.find((node) => node.id === 'operating-systems')?.parentId).toBe('software-root')
+    expect(allMaps.software.nodes.find((node) => node.id === 'application-software')?.parentId).toBe('software-root')
+    expect(allMaps.software.nodes.find((node) => node.id === 'development-software')?.parentId).toBe('application-software')
+    expect(allMaps.software.nodes.find((node) => node.id === 'vscode')?.parentId).toBe('development-software')
+    expect(allMaps.software.nodes.find((node) => node.id === 'office-software')?.parentId).toBe('application-software')
     expect(allMaps.programming.nodes.find((node) => node.id === 'web-frontend')?.parentId).toBe('programming-root')
     expect(allMaps.programming.nodes.find((node) => node.id === 'frontend-frameworks')?.parentId).toBe('web-frontend')
     expect(allMaps.programming.nodes.find((node) => node.id === 'react')?.parentId).toBe('frontend-frameworks')
