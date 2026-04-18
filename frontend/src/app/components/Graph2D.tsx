@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Node, DOMAIN_COLORS, Domain } from '../types';
 import { ContextMenu } from './ContextMenu';
+import { createStableNodePositions, type StableNodePosition } from '../services/graph-layout';
 import { panViewport, zoomAtPoint } from '../services/graph-viewport';
 
 interface Graph2DProps {
@@ -10,14 +11,6 @@ interface Graph2DProps {
   onNodeDoubleClick: (node: Node) => void;
   selectedDomains: Set<Domain>;
   onToggleLock?: (nodeId: string) => void;
-}
-
-interface NodePosition extends Node {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  radius: number;
 }
 
 interface PointerPosition {
@@ -35,126 +28,30 @@ export const Graph2D = ({
 }: Graph2DProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [positions, setPositions] = useState<NodePosition[]>([]);
-  const [hoveredNode, setHoveredNode] = useState<NodePosition | null>(null);
-  const [draggedNode, setDraggedNode] = useState<NodePosition | null>(null);
+  const [positions, setPositions] = useState<StableNodePosition[]>([]);
+  const [hoveredNode, setHoveredNode] = useState<StableNodePosition | null>(null);
+  const [draggedNode, setDraggedNode] = useState<StableNodePosition | null>(null);
   const [panDragStart, setPanDragStart] = useState<PointerPosition | null>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [contextMenu, setContextMenu] = useState<{ node: Node; x: number; y: number } | null>(null);
-  const animationRef = useRef<number>();
   const didDragViewportRef = useRef(false);
+  const nodesRef = useRef(nodes);
 
-  // Initialize node positions
   useEffect(() => {
-    const width = containerRef.current?.clientWidth || 800;
-    const height = containerRef.current?.clientHeight || 600;
-    
-    const nodePositions: NodePosition[] = nodes.map((node, i) => {
-      const angle = (i / nodes.length) * Math.PI * 2;
-      const radius = Math.min(width, height) * 0.3;
-      return {
-        ...node,
-        x: width / 2 + Math.cos(angle) * radius,
-        y: height / 2 + Math.sin(angle) * radius,
-        vx: 0,
-        vy: 0,
-        radius: 12,
-      };
-    });
-    
-    setPositions(nodePositions);
+    nodesRef.current = nodes;
   }, [nodes]);
 
-  // Physics simulation
+  const syncStableLayout = (nextNodes: Node[] = nodesRef.current) => {
+    const width = containerRef.current?.clientWidth || 800;
+    const height = containerRef.current?.clientHeight || 600;
+
+    setPositions(createStableNodePositions({ nodes: nextNodes, width, height }));
+  };
+
   useEffect(() => {
-    if (positions.length === 0) return;
-
-    const simulate = () => {
-      setPositions((prev) => {
-        const next = prev.map((node) => ({ ...node }));
-        const width = containerRef.current?.clientWidth || 800;
-        const height = containerRef.current?.clientHeight || 600;
-
-        // Apply forces
-        for (let i = 0; i < next.length; i++) {
-          const nodeA = next[i];
-          
-          // Skip dragged node
-          if (draggedNode && nodeA.id === draggedNode.id) continue;
-
-          // Repulsion from other nodes
-          for (let j = i + 1; j < next.length; j++) {
-            const nodeB = next[j];
-            if (draggedNode && nodeB.id === draggedNode.id) continue;
-
-            const dx = nodeB.x - nodeA.x;
-            const dy = nodeB.y - nodeA.y;
-            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-            const force = (nodeA.radius + nodeB.radius + 50) / distance;
-
-            if (distance < 200) {
-              nodeA.vx -= (dx / distance) * force * 0.1;
-              nodeA.vy -= (dy / distance) * force * 0.1;
-              nodeB.vx += (dx / distance) * force * 0.1;
-              nodeB.vy += (dy / distance) * force * 0.1;
-            }
-          }
-
-          // Attraction to dependencies
-          if (nodeA.deps) {
-            for (const depId of nodeA.deps) {
-              const dep = next.find((n) => n.id === depId);
-              if (dep && !(draggedNode && dep.id === draggedNode.id)) {
-                const dx = dep.x - nodeA.x;
-                const dy = dep.y - nodeA.y;
-                const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-                const force = 0.01;
-
-                nodeA.vx += (dx / distance) * force;
-                nodeA.vy += (dy / distance) * force;
-              }
-            }
-          }
-
-          // Center attraction
-          const centerX = width / 2;
-          const centerY = height / 2;
-          const toCenterX = centerX - nodeA.x;
-          const toCenterY = centerY - nodeA.y;
-          nodeA.vx += toCenterX * 0.0005;
-          nodeA.vy += toCenterY * 0.0005;
-
-          // Damping
-          nodeA.vx *= 0.9;
-          nodeA.vy *= 0.9;
-
-          // Update position
-          nodeA.x += nodeA.vx;
-          nodeA.y += nodeA.vy;
-
-          // Boundary
-          const margin = 50;
-          if (nodeA.x < margin) nodeA.x = margin;
-          if (nodeA.x > width - margin) nodeA.x = width - margin;
-          if (nodeA.y < margin) nodeA.y = margin;
-          if (nodeA.y > height - margin) nodeA.y = height - margin;
-        }
-
-        return next;
-      });
-
-      animationRef.current = requestAnimationFrame(simulate);
-    };
-
-    animationRef.current = requestAnimationFrame(simulate);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [positions.length, draggedNode]);
+    syncStableLayout(nodes);
+  }, [nodes]);
 
   // Draw canvas
   useEffect(() => {
@@ -278,7 +175,7 @@ export const Graph2D = ({
     if (draggedNode) {
       setPositions((prev) =>
         prev.map((node) =>
-          node.id === draggedNode.id ? { ...node, x, y, vx: 0, vy: 0 } : node
+          node.id === draggedNode.id ? { ...node, x, y } : node
         )
       );
       setDraggedNode((prev) => (prev ? { ...prev, x, y } : null));
@@ -402,11 +299,14 @@ export const Graph2D = ({
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
       setOffset({ x: 0, y: 0 });
+      setScale(1);
+      syncStableLayout();
     });
 
     resizeObserver.observe(container);
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
+    syncStableLayout();
 
     return () => resizeObserver.disconnect();
   }, []);
