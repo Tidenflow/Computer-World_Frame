@@ -1,4 +1,10 @@
-import { getNodeCategoryColor, getNodeCategoryName, Node } from '../types';
+import {
+  getNodeCategoryColor,
+  getNodeCategoryName,
+  isRootNode,
+  Node,
+  ROOT_NODE_COLOR,
+} from '../types';
 import { Badge } from './ui/badge';
 import { motion } from 'motion/react';
 
@@ -31,16 +37,20 @@ export const SearchResults = ({ results, query, onSelectNode }: SearchResultsPro
             className="w-full px-4 py-3 text-left hover:bg-[#F9FAFB] transition-colors flex items-start gap-3"
           >
             <div
-              className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
+              className={`w-3 h-3 mt-1 flex-shrink-0 ${isRootNode(node) ? '' : 'rounded-full'}`}
               style={{
-                backgroundColor: node.unlocked ? getNodeCategoryColor(node) : '#D1D5DB',
+                backgroundColor: isRootNode(node)
+                  ? ROOT_NODE_COLOR
+                  : node.unlocked
+                    ? getNodeCategoryColor(node)
+                    : '#D1D5DB',
               }}
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-medium text-[#111827]">{node.title}</span>
                 <Badge variant="secondary" className="text-xs">
-                  {getNodeCategoryName(node)}
+                  {isRootNode(node) ? 'Root' : getNodeCategoryName(node)}
                 </Badge>
               </div>
               {node.description && (

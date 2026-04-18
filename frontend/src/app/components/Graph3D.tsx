@@ -1,6 +1,13 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { getNodeCategory, getNodeCategoryColor, Node, NodeCategory } from '../types';
+import {
+  getNodeCategory,
+  getNodeCategoryColor,
+  isRootNode,
+  Node,
+  NodeCategory,
+  ROOT_NODE_COLOR,
+} from '../types';
 
 interface Graph3DProps {
   nodes: Node[];
@@ -85,13 +92,21 @@ export const Graph3D = ({
       const y = radius * Math.sin(phi) * Math.sin(theta);
       const z = radius * Math.cos(phi);
 
-      const size = node.unlocked ? 5 : 4;
-      const geometry = new THREE.SphereGeometry(size, 16, 16);
-      const color = new THREE.Color(node.unlocked ? getNodeCategoryColor(node) : '#D1D5DB');
+      const size = isRootNode(node) ? 7 : node.unlocked ? 5 : 4;
+      const geometry = isRootNode(node)
+        ? new THREE.BoxGeometry(size * 2, size * 2, size * 2)
+        : new THREE.SphereGeometry(size, 16, 16);
+      const color = new THREE.Color(
+        isRootNode(node)
+          ? ROOT_NODE_COLOR
+          : node.unlocked
+            ? getNodeCategoryColor(node)
+            : '#D1D5DB',
+      );
       const material = new THREE.MeshPhongMaterial({
         color,
-        emissive: node.unlocked ? color : new THREE.Color(0x000000),
-        emissiveIntensity: node.unlocked ? 0.3 : 0,
+        emissive: node.unlocked || isRootNode(node) ? color : new THREE.Color(0x000000),
+        emissiveIntensity: node.unlocked || isRootNode(node) ? 0.3 : 0,
       });
 
       const mesh = new THREE.Mesh(geometry, material);
@@ -129,7 +144,8 @@ export const Graph3D = ({
       // Reset all nodes
       nodeObjects.forEach((mesh) => {
         const node = mesh.userData.node as Node;
-        (mesh.material as THREE.MeshPhongMaterial).emissiveIntensity = node.unlocked ? 0.3 : 0;
+        (mesh.material as THREE.MeshPhongMaterial).emissiveIntensity =
+          node.unlocked || isRootNode(node) ? 0.3 : 0;
       });
 
       // Highlight hovered
@@ -222,7 +238,7 @@ export const Graph3D = ({
       const node = nodes.find((n) => n.id === nodeId);
       if (!node) return;
 
-      const isVisible = selectedCategories.has(getNodeCategory(node));
+      const isVisible = isRootNode(node) || selectedCategories.has(getNodeCategory(node));
       mesh.visible = isVisible;
     });
   }, [selectedCategories, nodes]);
@@ -236,7 +252,8 @@ export const Graph3D = ({
       if (isSelected) {
         (mesh.material as THREE.MeshPhongMaterial).emissiveIntensity = 0.8;
       } else {
-        (mesh.material as THREE.MeshPhongMaterial).emissiveIntensity = node.unlocked ? 0.3 : 0;
+        (mesh.material as THREE.MeshPhongMaterial).emissiveIntensity =
+          node.unlocked || isRootNode(node) ? 0.3 : 0;
       }
     });
   }, [selectedNode]);

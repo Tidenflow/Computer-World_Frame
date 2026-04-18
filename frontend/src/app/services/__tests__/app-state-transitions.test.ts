@@ -33,7 +33,12 @@ describe('app state transitions', () => {
 
   test('auto unlocks a node when it is selected for the first time', () => {
     const unlockedNodes = new Set<string>(['fundamentals'])
-    const node = { id: 'python', title: 'Python', domain: 'programming' } as Node
+    const node = {
+      id: 'python',
+      title: 'Python',
+      domain: 'programming',
+      parentId: 'backend-python-stack',
+    } as Node
 
     const nextUnlockedNodes = autoUnlockNodeOnSelect(unlockedNodes, node)
 
@@ -44,6 +49,13 @@ describe('app state transitions', () => {
   test('keeps the same set reference when the selected node is already unlocked', () => {
     const unlockedNodes = new Set<string>(['fundamentals'])
     const node = { id: 'fundamentals', title: 'Fundamentals', domain: 'theory' } as Node
+
+    expect(autoUnlockNodeOnSelect(unlockedNodes, node)).toBe(unlockedNodes)
+  })
+
+  test('does not unlock root nodes when they are selected', () => {
+    const unlockedNodes = new Set<string>(['fundamentals'])
+    const node = { id: 'programming-root', title: '程序开发', domain: 'programming' } as Node
 
     expect(autoUnlockNodeOnSelect(unlockedNodes, node)).toBe(unlockedNodes)
   })

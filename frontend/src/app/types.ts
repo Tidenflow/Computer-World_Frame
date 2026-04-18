@@ -89,6 +89,8 @@ export const NODE_CATEGORY_NAMES: Record<NodeCategory, string> = {
   platform: '服务/平台',
 }
 
+export const ROOT_NODE_COLOR = '#D9FF3F'
+
 const DOMAIN_CATEGORY_FALLBACK: Record<Domain, NodeCategory> = {
   hardware: 'fundamentals',
   software: 'product',
@@ -100,6 +102,10 @@ const DOMAIN_CATEGORY_FALLBACK: Record<Domain, NodeCategory> = {
 
 export function getNodeCategory(node: Pick<NodeDefinition, 'category' | 'domain'>): NodeCategory {
   return node.category ?? DOMAIN_CATEGORY_FALLBACK[node.domain]
+}
+
+export function isRootNode(node: Pick<NodeDefinition, 'parentId'>): boolean {
+  return !node.parentId
 }
 
 export function getNodeCategoryColor(node: Pick<NodeDefinition, 'category' | 'domain'>): string {

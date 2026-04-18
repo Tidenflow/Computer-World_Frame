@@ -3,7 +3,13 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { motion } from 'motion/react';
-import { getNodeCategoryColor, getNodeCategoryName, Node } from '../types';
+import {
+  getNodeCategoryColor,
+  getNodeCategoryName,
+  isRootNode,
+  Node,
+  ROOT_NODE_COLOR,
+} from '../types';
 
 interface DetailPanelProps {
   node: Node | null;
@@ -26,14 +32,21 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <div
-              className="w-4 h-4 rounded-full"
+              className={isRootNode(node) ? 'w-4 h-4' : 'w-4 h-4 rounded-full'}
               style={{
-                backgroundColor: node.unlocked ? getNodeCategoryColor(node) : '#D1D5DB',
-                boxShadow: node.unlocked ? `0 0 8px ${getNodeCategoryColor(node)}40` : 'none',
+                backgroundColor: isRootNode(node)
+                  ? ROOT_NODE_COLOR
+                  : node.unlocked
+                    ? getNodeCategoryColor(node)
+                    : '#D1D5DB',
+                boxShadow:
+                  isRootNode(node) || node.unlocked
+                    ? `0 0 8px ${isRootNode(node) ? ROOT_NODE_COLOR : getNodeCategoryColor(node)}40`
+                    : 'none',
               }}
             />
             <Badge variant="secondary" className="text-xs">
-              {getNodeCategoryName(node)}
+              {isRootNode(node) ? 'Root' : getNodeCategoryName(node)}
             </Badge>
           </div>
           <h2 className="text-xl font-semibold text-[#111827]">{node.title}</h2>
@@ -75,7 +88,12 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
                   key={i}
                   className="h-2 flex-1 rounded-full"
                   style={{
-                    backgroundColor: i < node.stage! ? getNodeCategoryColor(node) : '#E5E7EB',
+                    backgroundColor:
+                      i < node.stage!
+                        ? isRootNode(node)
+                          ? ROOT_NODE_COLOR
+                          : getNodeCategoryColor(node)
+                        : '#E5E7EB',
                   }}
                 />
               ))}
@@ -126,7 +144,7 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
             <Button
               onClick={() => onNavigateToMap(node.targetMap!)}
               className="w-full"
-              style={{ backgroundColor: getNodeCategoryColor(node) }}
+              style={{ backgroundColor: isRootNode(node) ? ROOT_NODE_COLOR : getNodeCategoryColor(node) }}
             >
               进入 {node.title} 地图
               <ArrowRight className="w-4 h-4 ml-2" />

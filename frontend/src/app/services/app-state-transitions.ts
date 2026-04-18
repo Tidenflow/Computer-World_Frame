@@ -1,4 +1,4 @@
-import type { Node, NodeCategory } from '../types'
+import { isRootNode, type Node, type NodeCategory } from '../types'
 
 const ALL_CATEGORIES: NodeCategory[] = [
   'fundamentals',
@@ -34,7 +34,7 @@ export function toggleCategorySelection(
 }
 
 export function autoUnlockNodeOnSelect(unlockedNodes: Set<string>, node: Node): Set<string> {
-  if (unlockedNodes.has(node.id)) {
+  if (isRootNode(node) || unlockedNodes.has(node.id)) {
     return unlockedNodes
   }
 
