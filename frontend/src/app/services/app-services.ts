@@ -10,6 +10,54 @@ export function buildNodesWithUnlockedStatus(
   }))
 }
 
+export function buildVisibleGraphNodes(nodes: Node[], selectedNodeId: string | null): Node[] {
+  if (!nodes.some((node) => node.parentId)) {
+    return nodes
+  }
+
+  const childrenByParentId = new Map<string, Node[]>()
+
+  for (const node of nodes) {
+    if (!node.parentId) {
+      continue
+    }
+
+    const siblings = childrenByParentId.get(node.parentId) ?? []
+    siblings.push(node)
+    childrenByParentId.set(node.parentId, siblings)
+  }
+
+  const rootNodes = nodes.filter((node) => !node.parentId)
+  const visibleIds = new Set(rootNodes.map((node) => node.id))
+
+  for (const rootNode of rootNodes) {
+    for (const childNode of childrenByParentId.get(rootNode.id) ?? []) {
+      visibleIds.add(childNode.id)
+    }
+  }
+
+  if (!selectedNodeId) {
+    return nodes.filter((node) => visibleIds.has(node.id))
+  }
+
+  const nodesById = new Map(nodes.map((node) => [node.id, node]))
+  const lineage: Node[] = []
+  let cursor = nodesById.get(selectedNodeId) ?? null
+
+  while (cursor) {
+    lineage.unshift(cursor)
+    cursor = cursor.parentId ? nodesById.get(cursor.parentId) ?? null : null
+  }
+
+  for (const lineageNode of lineage) {
+    for (const childNode of childrenByParentId.get(lineageNode.id) ?? []) {
+      visibleIds.add(childNode.id)
+    }
+  }
+
+  return nodes.filter((node) => visibleIds.has(node.id))
+}
+
 export function filterNodesByQuery(nodes: Node[], query: string): Node[] {
   if (!query) {
     return nodes

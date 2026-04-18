@@ -5,6 +5,7 @@ import type { Node } from '../../types'
 import {
   buildBreadcrumbs,
   buildNodesWithUnlockedStatus,
+  buildVisibleGraphNodes,
   computeUnlockedStats,
   filterNodesByQuery,
   searchNodesAcrossMaps,
@@ -33,11 +34,67 @@ describe('app services', () => {
   })
 
   test('searches across maps and preserves unlocked status on results', () => {
-    const results = searchNodesAcrossMaps(allMaps, 'python', new Set<string>(['python']))
+    const results = searchNodesAcrossMaps(allMaps, 'frontend', new Set<string>(['web-frontend']))
 
     expect(results).toHaveLength(1)
-    expect(results[0]?.id).toBe('python')
+    expect(results[0]?.id).toBe('web-frontend')
     expect(results[0]?.unlocked).toBe(true)
+  })
+
+  test('shows only the root level before a tree branch is expanded', () => {
+    const visibleNodes = buildVisibleGraphNodes(
+      buildNodesWithUnlockedStatus(allMaps.programming, new Set<string>()),
+      null,
+    )
+
+    expect(visibleNodes.map((node) => node.id)).toEqual([
+      'programming-root',
+      'web-frontend',
+      'web-backend',
+      'desktop-development',
+      'development-tools',
+      'architecture-design',
+    ])
+  })
+
+  test('shows only the selected branch and its next level in tree mode', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.programming, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, 'web-frontend').map((node) => node.id)).toEqual([
+      'programming-root',
+      'web-frontend',
+      'frontend-languages',
+      'frontend-frameworks',
+      'web-backend',
+      'desktop-development',
+      'development-tools',
+      'architecture-design',
+    ])
+
+    expect(buildVisibleGraphNodes(nodes, 'frontend-frameworks').map((node) => node.id)).toEqual([
+      'programming-root',
+      'web-frontend',
+      'frontend-languages',
+      'frontend-frameworks',
+      'react',
+      'vue',
+      'web-backend',
+      'desktop-development',
+      'development-tools',
+      'architecture-design',
+    ])
+
+    expect(buildVisibleGraphNodes(nodes, 'web-backend').map((node) => node.id)).toEqual([
+      'programming-root',
+      'web-frontend',
+      'web-backend',
+      'backend-python-stack',
+      'backend-js-stack',
+      'backend-data-storage',
+      'desktop-development',
+      'development-tools',
+      'architecture-design',
+    ])
   })
 
   test('computes unlocked stats across all maps', () => {

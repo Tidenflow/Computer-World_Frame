@@ -10,6 +10,7 @@ export interface NodeDefinition {
   title: string;
   domain: Domain;
   stage?: number; // 1-5, for 3D depth positioning
+  parentId?: string;
   deps?: string[]; // dependency node IDs
   tags?: string[];
   aliases?: string[];

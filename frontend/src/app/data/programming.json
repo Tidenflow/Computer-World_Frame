@@ -2,22 +2,408 @@
   "id": "programming",
   "title": "程序开发",
   "nodes": [
-    { "id": "scratch", "title": "Scratch", "domain": "programming", "stage": 1, "deps": [], "tags": ["入门", "可视化"] },
-    { "id": "html", "title": "HTML", "domain": "programming", "stage": 1, "deps": [], "tags": ["网页", "标记语言"] },
-    { "id": "css", "title": "CSS", "domain": "programming", "stage": 2, "deps": ["html"], "tags": ["网页", "样式"] },
-    { "id": "javascript", "title": "JavaScript", "domain": "programming", "stage": 2, "deps": ["html"], "tags": ["网页", "编程语言"] },
-    { "id": "python", "title": "Python", "domain": "programming", "stage": 2, "deps": [], "tags": ["编程语言", "入门"] },
-    { "id": "git", "title": "Git", "domain": "programming", "stage": 2, "deps": [], "tags": ["版本控制"] },
-    { "id": "react", "title": "React", "domain": "programming", "stage": 3, "deps": ["javascript"], "tags": ["框架", "前端"] },
-    { "id": "vue", "title": "Vue", "domain": "programming", "stage": 3, "deps": ["javascript"], "tags": ["框架", "前端"] },
-    { "id": "nodejs", "title": "Node.js", "domain": "programming", "stage": 3, "deps": ["javascript"], "tags": ["后端", "运行时"] },
-    { "id": "typescript", "title": "TypeScript", "domain": "programming", "stage": 3, "deps": ["javascript"], "tags": ["编程语言", "类型"] },
-    { "id": "tailwind", "title": "Tailwind CSS", "domain": "programming", "stage": 3, "deps": ["css"], "tags": ["框架", "样式"] },
-    { "id": "django", "title": "Django", "domain": "programming", "stage": 3, "deps": ["python"], "tags": ["框架", "后端"] },
-    { "id": "flask", "title": "Flask", "domain": "programming", "stage": 3, "deps": ["python"], "tags": ["框架", "后端"] },
-    { "id": "numpy", "title": "NumPy", "domain": "programming", "stage": 3, "deps": ["python"], "tags": ["数据分析"] },
-    { "id": "nextjs", "title": "Next.js", "domain": "programming", "stage": 4, "deps": ["react"], "tags": ["框架", "全栈"] },
-    { "id": "github", "title": "GitHub", "domain": "programming", "stage": 4, "deps": ["git"], "tags": ["托管", "协作"] },
-    { "id": "docker", "title": "Docker", "domain": "programming", "stage": 4, "deps": ["nodejs"], "tags": ["容器", "部署"] }
+    {
+      "id": "programming-root",
+      "title": "程序开发",
+      "domain": "programming",
+      "stage": 1,
+      "deps": [],
+      "description": "程序开发总览图的根节点，用来承接前端、后端、桌面端、工具与架构设计等方向。",
+      "tags": ["总览", "根节点", "开发"]
+    },
+    {
+      "id": "web-frontend",
+      "title": "Web 前端",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "programming-root",
+      "deps": ["programming-root"],
+      "aliases": ["frontend", "web frontend"],
+      "description": "面向浏览器界面的开发方向，后续可继续拆分为编程语言、技术框架与样式方案。",
+      "tags": ["前端", "浏览器", "界面"]
+    },
+    {
+      "id": "frontend-languages",
+      "title": "编程语言",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-frontend",
+      "deps": ["web-frontend"],
+      "description": "Web 前端常见的基础语言层，负责页面结构、样式与交互能力。",
+      "tags": ["前端", "语言", "基础"]
+    },
+    {
+      "id": "frontend-frameworks",
+      "title": "技术框架",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-frontend",
+      "deps": ["web-frontend"],
+      "description": "Web 前端的主流框架生态，后续继续向具体框架与配套方案展开。",
+      "tags": ["前端", "框架", "生态"]
+    },
+    {
+      "id": "html",
+      "title": "HTML",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-languages",
+      "deps": ["frontend-languages"],
+      "description": "负责页面结构与语义化标记，是 Web 前端的基础组成。",
+      "tags": ["前端", "标记语言", "结构"]
+    },
+    {
+      "id": "css",
+      "title": "CSS",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-languages",
+      "deps": ["html"],
+      "description": "负责页面样式与布局表达，用于控制视觉表现。",
+      "tags": ["前端", "样式", "布局"]
+    },
+    {
+      "id": "javascript",
+      "title": "JavaScript",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-languages",
+      "deps": ["html"],
+      "description": "负责页面交互逻辑，是 Web 前端的核心脚本语言。",
+      "tags": ["前端", "脚本", "交互"]
+    },
+    {
+      "id": "typescript",
+      "title": "TypeScript",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-languages",
+      "deps": ["javascript"],
+      "description": "建立在 JavaScript 之上的类型化语言，适合工程化前端开发。",
+      "tags": ["前端", "类型系统", "工程化"]
+    },
+    {
+      "id": "react",
+      "title": "React",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-frameworks",
+      "deps": ["javascript"],
+      "description": "组件化前端框架生态的重要代表，适合构建交互式 UI。",
+      "tags": ["前端", "框架", "组件化"]
+    },
+    {
+      "id": "vue",
+      "title": "Vue",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-frameworks",
+      "deps": ["javascript"],
+      "description": "渐进式前端框架，强调易学与清晰的组织方式。",
+      "tags": ["前端", "框架", "渐进式"]
+    },
+    {
+      "id": "nextjs",
+      "title": "Next.js",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "react",
+      "deps": ["react"],
+      "description": "构建在 React 生态之上的全栈框架，常用于现代 Web 应用开发。",
+      "tags": ["前端", "React 生态", "全栈框架"]
+    },
+    {
+      "id": "pinia",
+      "title": "Pinia",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "vue",
+      "deps": ["vue"],
+      "description": "Vue 生态中的状态管理方案，用于组织应用共享状态。",
+      "tags": ["前端", "Vue 生态", "状态管理"]
+    },
+    {
+      "id": "vuex",
+      "title": "Vuex",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "vue",
+      "deps": ["vue"],
+      "description": "Vue 生态中的经典状态管理方案，适合理解集中式状态管理。",
+      "tags": ["前端", "Vue 生态", "状态管理"]
+    },
+    {
+      "id": "nuxt",
+      "title": "Nuxt",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "vue",
+      "deps": ["vue"],
+      "description": "建立在 Vue 生态之上的应用框架，常用于服务端渲染与工程化项目。",
+      "tags": ["前端", "Vue 生态", "应用框架"]
+    },
+    {
+      "id": "web-backend",
+      "title": "Web 后端",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "programming-root",
+      "deps": ["programming-root"],
+      "aliases": ["backend", "web backend"],
+      "description": "负责服务端逻辑、接口与数据处理的开发方向，后续可继续拆分为不同语言技术栈。",
+      "tags": ["后端", "服务端", "接口"]
+    },
+    {
+      "id": "backend-python-stack",
+      "title": "Python 技术栈",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-backend",
+      "deps": ["web-backend"],
+      "description": "以 Python 为核心的 Web 后端技术栈，适合快速构建服务端应用。",
+      "tags": ["后端", "Python", "技术栈"]
+    },
+    {
+      "id": "backend-js-stack",
+      "title": "JavaScript / TypeScript 技术栈",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-backend",
+      "deps": ["web-backend"],
+      "description": "以 Node.js 生态为核心的 Web 后端技术栈，适合前后端协同开发。",
+      "tags": ["后端", "Node.js", "技术栈"]
+    },
+    {
+      "id": "backend-data-storage",
+      "title": "数据存储",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-backend",
+      "deps": ["web-backend"],
+      "description": "服务端常见的数据存储层，支撑持久化、缓存与数据查询。",
+      "tags": ["后端", "数据", "存储"]
+    },
+    {
+      "id": "python",
+      "title": "Python",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "backend-python-stack",
+      "deps": ["backend-python-stack"],
+      "description": "后端开发中常见的编程语言，拥有成熟的 Web 框架生态。",
+      "tags": ["后端", "Python", "语言"]
+    },
+    {
+      "id": "django",
+      "title": "Django",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "python",
+      "deps": ["python"],
+      "description": "Python 生态中的全功能 Web 框架，适合快速搭建完整后端应用。",
+      "tags": ["后端", "Python 生态", "框架"]
+    },
+    {
+      "id": "flask",
+      "title": "Flask",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "python",
+      "deps": ["python"],
+      "description": "Python 生态中的轻量级 Web 框架，适合灵活组织后端服务。",
+      "tags": ["后端", "Python 生态", "框架"]
+    },
+    {
+      "id": "nodejs",
+      "title": "Node.js",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "backend-js-stack",
+      "deps": ["backend-js-stack"],
+      "description": "JavaScript / TypeScript 后端开发的运行时基础，构成 Node.js 服务生态。",
+      "tags": ["后端", "Node.js", "运行时"]
+    },
+    {
+      "id": "mysql",
+      "title": "MySQL",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "backend-data-storage",
+      "deps": ["backend-data-storage"],
+      "description": "常见的关系型数据库，用于服务端业务数据持久化。",
+      "tags": ["后端", "数据库", "关系型"]
+    },
+    {
+      "id": "redis",
+      "title": "Redis",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "backend-data-storage",
+      "deps": ["backend-data-storage"],
+      "description": "常见的内存型数据存储，用于缓存、队列与高频读写场景。",
+      "tags": ["后端", "缓存", "数据存储"]
+    },
+    {
+      "id": "desktop-development",
+      "title": "桌面端开发",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "programming-root",
+      "deps": ["programming-root"],
+      "aliases": ["desktop", "desktop development"],
+      "description": "面向桌面应用的开发方向，后续可继续补充 Qt、Electron 等技术栈。",
+      "tags": ["桌面端", "客户端", "应用"]
+    },
+    {
+      "id": "desktop-cpp-stack",
+      "title": "C++ 技术栈",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "desktop-development",
+      "deps": ["desktop-development"],
+      "description": "以 C++ 为核心的桌面端开发路线，适合构建高性能本地应用。",
+      "tags": ["桌面端", "C++", "技术栈"]
+    },
+    {
+      "id": "qt",
+      "title": "Qt",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "desktop-cpp-stack",
+      "deps": ["desktop-cpp-stack"],
+      "description": "常见的跨平台桌面应用开发框架，适合构建原生体验应用。",
+      "tags": ["桌面端", "框架", "跨平台"]
+    },
+    {
+      "id": "development-tools",
+      "title": "开发工具",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "programming-root",
+      "deps": ["programming-root"],
+      "aliases": ["tools", "dev tools"],
+      "description": "围绕开发流程的辅助能力，后续可继续拆分为版本控制、开发环境与工程化工具。",
+      "tags": ["工具", "工程化", "效率"]
+    },
+    {
+      "id": "version-control",
+      "title": "版本控制",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "development-tools",
+      "deps": ["development-tools"],
+      "description": "用于管理代码版本、协作与历史记录的基础工具能力。",
+      "tags": ["工具", "版本控制", "协作"]
+    },
+    {
+      "id": "dev-environment",
+      "title": "开发环境",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "development-tools",
+      "deps": ["development-tools"],
+      "description": "支撑日常编码、调试与编辑体验的开发环境工具。",
+      "tags": ["工具", "环境", "编辑器"]
+    },
+    {
+      "id": "engineering-tools",
+      "title": "工程化工具",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "development-tools",
+      "deps": ["development-tools"],
+      "description": "支撑构建、部署与一致性环境的工程化工具集合。",
+      "tags": ["工具", "工程化", "部署"]
+    },
+    {
+      "id": "git",
+      "title": "Git",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "version-control",
+      "deps": ["version-control"],
+      "description": "最常见的分布式版本控制工具，用于管理代码历史与协作流程。",
+      "tags": ["工具", "Git", "版本控制"]
+    },
+    {
+      "id": "github",
+      "title": "GitHub",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "git",
+      "deps": ["git"],
+      "description": "围绕 Git 的代码托管与协作平台，常用于开源协作与项目管理。",
+      "tags": ["工具", "Git 生态", "托管平台"]
+    },
+    {
+      "id": "vscode",
+      "title": "VS Code",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "dev-environment",
+      "deps": ["dev-environment"],
+      "description": "常见的现代代码编辑器，兼顾轻量性与丰富插件生态。",
+      "tags": ["工具", "编辑器", "开发环境"]
+    },
+    {
+      "id": "docker",
+      "title": "Docker",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "engineering-tools",
+      "deps": ["engineering-tools"],
+      "description": "常见的容器化工具，用于构建统一的开发与部署环境。",
+      "tags": ["工具", "容器", "工程化"]
+    },
+    {
+      "id": "architecture-design",
+      "title": "架构设计",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "programming-root",
+      "deps": ["programming-root"],
+      "description": "从系统组织与设计视角理解程序开发，后续可继续补充分层架构、设计模式与接口设计。",
+      "tags": ["架构", "设计", "系统"]
+    },
+    {
+      "id": "layered-architecture",
+      "title": "分层架构",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "architecture-design",
+      "deps": ["architecture-design"],
+      "description": "将系统拆分为职责清晰的层次结构，便于维护与协作。",
+      "tags": ["架构", "分层", "系统设计"]
+    },
+    {
+      "id": "design-patterns",
+      "title": "设计模式",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "architecture-design",
+      "deps": ["architecture-design"],
+      "description": "沉淀常见问题的经典设计经验，用于提升系统组织能力。",
+      "tags": ["架构", "设计模式", "抽象"]
+    },
+    {
+      "id": "frontend-backend-separation",
+      "title": "前后端分离",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "architecture-design",
+      "deps": ["architecture-design"],
+      "description": "将前端界面与后端服务解耦，提升协作效率与系统独立性。",
+      "tags": ["架构", "前后端", "协作"]
+    },
+    {
+      "id": "restful-api",
+      "title": "RESTful API",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "architecture-design",
+      "deps": ["architecture-design"],
+      "description": "围绕资源与接口约定组织后端服务，是常见的 Web API 设计方式。",
+      "tags": ["架构", "API", "接口设计"]
+    }
   ]
 }

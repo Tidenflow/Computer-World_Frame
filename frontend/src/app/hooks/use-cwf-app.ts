@@ -5,6 +5,7 @@ import { localStorageProgressRepository } from '../repositories/local-storage-pr
 import {
   buildBreadcrumbs,
   buildNodesWithUnlockedStatus,
+  buildVisibleGraphNodes,
   computeUnlockedStats,
   filterNodesByQuery,
   searchNodesAcrossMaps,
@@ -36,8 +37,12 @@ export function useCwfApp() {
 
   const filteredNodes = useMemo(() => {
     const nodesWithStatus = buildNodesWithUnlockedStatus(currentMap, unlockedNodes)
-    return filterNodesByQuery(nodesWithStatus, debouncedSearch)
-  }, [currentMap, debouncedSearch, unlockedNodes])
+    if (debouncedSearch) {
+      return filterNodesByQuery(nodesWithStatus, debouncedSearch)
+    }
+
+    return buildVisibleGraphNodes(nodesWithStatus, selectedNode?.id ?? null)
+  }, [currentMap, debouncedSearch, selectedNode?.id, unlockedNodes])
 
   const searchResults = useMemo(
     () => searchNodesAcrossMaps(allMaps, debouncedSearch, unlockedNodes),

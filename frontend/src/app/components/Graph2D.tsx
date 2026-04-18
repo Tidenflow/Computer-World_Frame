@@ -67,9 +67,7 @@ export const Graph2D = ({
     ctx.clearRect(0, 0, width, height);
 
     // Filter nodes by selected domains
-    const visibleNodes = positions.filter(
-      (node) => selectedDomains.has(node.domain)
-    );
+    const visibleNodes = positions.filter((node) => selectedDomains.has(node.domain));
 
     // Draw connections
     ctx.save();
@@ -77,33 +75,31 @@ export const Graph2D = ({
     ctx.scale(scale, scale);
 
     for (const node of visibleNodes) {
-      if (!node.deps) continue;
+      if (!node.parentId) continue;
 
-      for (const depId of node.deps) {
-        const dep = visibleNodes.find((n) => n.id === depId);
-        if (!dep) continue;
+      const parent = visibleNodes.find((candidate) => candidate.id === node.parentId);
+      if (!parent) continue;
 
-        const isHighlighted = selectedNode && (selectedNode.id === node.id || selectedNode.id === dep.id);
-        const color = DOMAIN_COLORS[node.domain];
+      const isHighlighted =
+        selectedNode && (selectedNode.id === node.id || selectedNode.id === parent.id);
+      const color = DOMAIN_COLORS[node.domain];
 
-        ctx.strokeStyle = isHighlighted ? color : `${color}66`;
-        ctx.lineWidth = isHighlighted ? 2 : 1;
-        ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = isHighlighted ? color : `${color}66`;
+      ctx.lineWidth = isHighlighted ? 2 : 1;
+      ctx.globalAlpha = 0.4;
 
-        // Bezier curve
-        const midX = (node.x + dep.x) / 2;
-        const midY = (node.y + dep.y) / 2;
-        const dx = dep.x - node.x;
-        const dy = dep.y - node.y;
-        const offset1 = 30;
-        const cpX = midX - dy * offset1 / 100;
-        const cpY = midY + dx * offset1 / 100;
+      const midX = (node.x + parent.x) / 2;
+      const midY = (node.y + parent.y) / 2;
+      const dx = parent.x - node.x;
+      const dy = parent.y - node.y;
+      const offset1 = 30;
+      const cpX = midX - dy * offset1 / 100;
+      const cpY = midY + dx * offset1 / 100;
 
-        ctx.beginPath();
-        ctx.moveTo(node.x, node.y);
-        ctx.quadraticCurveTo(cpX, cpY, dep.x, dep.y);
-        ctx.stroke();
-      }
+      ctx.beginPath();
+      ctx.moveTo(node.x, node.y);
+      ctx.quadraticCurveTo(cpX, cpY, parent.x, parent.y);
+      ctx.stroke();
     }
 
     ctx.globalAlpha = 1;
@@ -112,7 +108,8 @@ export const Graph2D = ({
     for (const node of visibleNodes) {
       const isSelected = selectedNode?.id === node.id;
       const isHovered = hoveredNode?.id === node.id;
-      const isDep = selectedNode?.deps?.includes(node.id);
+      const isPrimaryRelation =
+        selectedNode?.parentId === node.id || node.parentId === selectedNode?.id;
       const nodeScale = isHovered ? 1.15 : 1;
       const radius = node.radius * nodeScale;
 
@@ -126,7 +123,7 @@ export const Graph2D = ({
 
       // Fill
       if (node.unlocked) {
-        ctx.fillStyle = isDep && selectedNode
+        ctx.fillStyle = isPrimaryRelation && selectedNode
           ? `${DOMAIN_COLORS[node.domain]}66`
           : DOMAIN_COLORS[node.domain];
       } else {
@@ -196,7 +193,9 @@ export const Graph2D = ({
       return;
     }
 
-    const hovered = positions.find((node) => {
+    const hovered = positions
+      .filter((node) => selectedDomains.has(node.domain))
+      .find((node) => {
       const dx = node.x - x;
       const dy = node.y - y;
       return Math.sqrt(dx * dx + dy * dy) < node.radius;
