@@ -1,0 +1,197 @@
+{
+  "id": "software",
+  "title": "软件系统",
+  "nodes": [
+    {
+      "id": "software-root",
+      "title": "软件系统",
+      "domain": "software",
+      "stage": 1,
+      "deps": [],
+      "description": "软件系统总览图的根节点，用来承接操作系统与应用软件两大方向。",
+      "tags": ["总览", "根节点", "软件"]
+    },
+    {
+      "id": "operating-systems",
+      "title": "操作系统",
+      "domain": "software",
+      "stage": 2,
+      "parentId": "software-root",
+      "deps": ["software-root"],
+      "aliases": ["os", "operating system"],
+      "description": "负责管理硬件资源与基础运行环境，是各类软件运行的平台。",
+      "tags": ["系统", "基础软件", "平台"]
+    },
+    {
+      "id": "application-software",
+      "title": "应用软件",
+      "domain": "software",
+      "stage": 2,
+      "parentId": "software-root",
+      "deps": ["software-root"],
+      "aliases": ["app", "application"],
+      "description": "面向具体工作或生活场景的软件集合，可继续按用途拆分。",
+      "tags": ["应用", "工具", "场景"]
+    },
+    {
+      "id": "windows",
+      "title": "Windows",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "operating-systems",
+      "deps": ["operating-systems"],
+      "description": "常见的桌面操作系统，广泛用于个人电脑与办公环境。",
+      "tags": ["操作系统", "桌面端", "微软"]
+    },
+    {
+      "id": "macos",
+      "title": "macOS",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "operating-systems",
+      "deps": ["operating-systems"],
+      "description": "Apple 生态下的桌面操作系统，强调软硬件一体体验。",
+      "tags": ["操作系统", "桌面端", "Apple"]
+    },
+    {
+      "id": "linux",
+      "title": "Linux",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "operating-systems",
+      "deps": ["operating-systems"],
+      "description": "常见的开源操作系统内核及发行版生态，广泛用于服务器与开发环境。",
+      "tags": ["操作系统", "开源", "发行版"]
+    },
+    {
+      "id": "android",
+      "title": "Android",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "operating-systems",
+      "deps": ["operating-systems"],
+      "description": "常见的移动端操作系统，广泛部署在手机与移动设备上。",
+      "tags": ["操作系统", "移动端", "Google"]
+    },
+    {
+      "id": "ios",
+      "title": "iOS",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "operating-systems",
+      "deps": ["operating-systems"],
+      "description": "Apple 生态下的移动端操作系统，主要运行于 iPhone 等设备。",
+      "tags": ["操作系统", "移动端", "Apple"]
+    },
+    {
+      "id": "office-software",
+      "title": "办公软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "用于文档、表格、演示等日常办公工作的应用软件分类。",
+      "tags": ["应用软件", "办公", "效率"]
+    },
+    {
+      "id": "development-software",
+      "title": "开发软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "服务于写代码、调试、构建与协作的软件工具分类。",
+      "tags": ["应用软件", "开发", "编程"]
+    },
+    {
+      "id": "industrial-software",
+      "title": "工业软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "面向工程、制造与仿真的专业软件分类。",
+      "tags": ["应用软件", "工业", "工程"]
+    },
+    {
+      "id": "communication-software",
+      "title": "通信软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "围绕聊天、社交与团队协作场景的应用软件分类。",
+      "tags": ["应用软件", "通信", "社交"]
+    },
+    {
+      "id": "entertainment-software",
+      "title": "娱乐软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "面向内容消费、游戏平台与娱乐体验的软件分类。",
+      "tags": ["应用软件", "娱乐", "内容"]
+    },
+    {
+      "id": "office",
+      "title": "Office",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "office-software",
+      "deps": ["office-software"],
+      "description": "常见的办公软件套件，覆盖文档、表格与演示等场景。",
+      "tags": ["办公", "文档", "套件"]
+    },
+    {
+      "id": "vscode",
+      "title": "VS Code",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "development-software",
+      "deps": ["development-software"],
+      "description": "常见的现代代码编辑器，适合多语言开发与插件扩展。",
+      "tags": ["开发", "编辑器", "代码"]
+    },
+    {
+      "id": "cad",
+      "title": "CAD",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "industrial-software",
+      "deps": ["industrial-software"],
+      "description": "面向工程制图与设计建模的常见工业软件方向。",
+      "tags": ["工业", "设计", "制图"]
+    },
+    {
+      "id": "cae",
+      "title": "CAE",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "industrial-software",
+      "deps": ["industrial-software"],
+      "description": "面向工程分析与仿真的常见工业软件方向。",
+      "tags": ["工业", "仿真", "分析"]
+    },
+    {
+      "id": "wechat",
+      "title": "微信",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "communication-software",
+      "deps": ["communication-software"],
+      "description": "常见的即时通信与社交软件，覆盖聊天、协作与生活服务场景。",
+      "tags": ["通信", "社交", "聊天"]
+    },
+    {
+      "id": "steam",
+      "title": "Steam",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "entertainment-software",
+      "deps": ["entertainment-software"],
+      "description": "常见的游戏平台与软件分发平台，聚焦数字娱乐内容。",
+      "tags": ["娱乐", "游戏平台", "分发"]
+    }
+  ]
+}

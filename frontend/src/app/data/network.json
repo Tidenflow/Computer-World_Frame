@@ -1,0 +1,255 @@
+{
+  "id": "network",
+  "title": "网络通信",
+  "nodes": [
+    {
+      "id": "network-root",
+      "title": "网络通信",
+      "domain": "network",
+      "stage": 1,
+      "deps": [],
+      "description": "网络通信总览图的根节点，用来承接网络接入、协议、Web 通信、网络服务与网络安全。",
+      "tags": ["总览", "根节点", "网络"]
+    },
+    {
+      "id": "network-access",
+      "title": "网络接入",
+      "domain": "network",
+      "stage": 2,
+      "parentId": "network-root",
+      "deps": ["network-root"],
+      "description": "设备接入网络的基础方式，涵盖有线、无线与移动网络。",
+      "tags": ["接入", "基础设施", "网络"]
+    },
+    {
+      "id": "core-protocols",
+      "title": "核心协议",
+      "domain": "network",
+      "stage": 2,
+      "parentId": "network-root",
+      "deps": ["network-root"],
+      "description": "支撑网络传输与数据交换的基础协议集合。",
+      "tags": ["协议", "基础", "传输"]
+    },
+    {
+      "id": "web-communication",
+      "title": "Web 通信",
+      "domain": "network",
+      "stage": 2,
+      "parentId": "network-root",
+      "deps": ["network-root"],
+      "description": "围绕 Web 应用与接口通信的常见协议与通信方式。",
+      "tags": ["Web", "协议", "通信"]
+    },
+    {
+      "id": "network-services",
+      "title": "网络服务",
+      "domain": "network",
+      "stage": 2,
+      "parentId": "network-root",
+      "deps": ["network-root"],
+      "description": "围绕解析、分发、接口与代理能力构建的网络服务层。",
+      "tags": ["服务", "网络", "基础设施"]
+    },
+    {
+      "id": "network-security",
+      "title": "网络安全",
+      "domain": "network",
+      "stage": 2,
+      "parentId": "network-root",
+      "deps": ["network-root"],
+      "description": "用于保护网络连接、访问链路与传输数据的安全能力。",
+      "tags": ["安全", "网络", "防护"]
+    },
+    {
+      "id": "wifi",
+      "title": "WiFi",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-access",
+      "deps": ["network-access"],
+      "description": "常见的无线局域网接入方式，用于设备近距离联网。",
+      "tags": ["接入", "无线", "局域网"]
+    },
+    {
+      "id": "ethernet",
+      "title": "以太网",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-access",
+      "deps": ["network-access"],
+      "description": "常见的有线网络接入方式，强调稳定与低延迟。",
+      "tags": ["接入", "有线", "局域网"]
+    },
+    {
+      "id": "5g",
+      "title": "5G",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-access",
+      "deps": ["network-access"],
+      "description": "常见的移动通信网络能力，用于蜂窝网络场景下的高速接入。",
+      "tags": ["接入", "移动网络", "蜂窝"]
+    },
+    {
+      "id": "ip",
+      "title": "IP 协议",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "core-protocols",
+      "deps": ["core-protocols"],
+      "description": "网络层的核心协议之一，负责地址标识与数据包路由。",
+      "tags": ["协议", "网络层", "地址"]
+    },
+    {
+      "id": "tcp",
+      "title": "TCP",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "core-protocols",
+      "deps": ["core-protocols", "ip"],
+      "description": "面向连接的传输层协议，强调可靠传输与顺序保证。",
+      "tags": ["协议", "传输层", "可靠"]
+    },
+    {
+      "id": "udp",
+      "title": "UDP",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "core-protocols",
+      "deps": ["core-protocols", "ip"],
+      "description": "无连接的传输层协议，强调轻量与低开销。",
+      "tags": ["协议", "传输层", "轻量"]
+    },
+    {
+      "id": "http",
+      "title": "HTTP",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "web-communication",
+      "deps": ["web-communication", "tcp"],
+      "description": "Web 应用中最常见的应用层协议，用于请求与响应通信。",
+      "tags": ["Web", "协议", "应用层"]
+    },
+    {
+      "id": "https",
+      "title": "HTTPS",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "web-communication",
+      "deps": ["http"],
+      "description": "在 HTTP 基础上增加传输安全能力的协议形式。",
+      "tags": ["Web", "协议", "加密"]
+    },
+    {
+      "id": "websocket",
+      "title": "WebSocket",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "web-communication",
+      "deps": ["web-communication", "http"],
+      "description": "适合双向实时通信的 Web 协议能力。",
+      "tags": ["Web", "实时通信", "双向"]
+    },
+    {
+      "id": "rpc",
+      "title": "RPC",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "web-communication",
+      "deps": ["web-communication"],
+      "description": "远程过程调用思想，用于跨服务调用与接口抽象。",
+      "tags": ["Web", "调用", "服务通信"]
+    },
+    {
+      "id": "grpc",
+      "title": "gRPC",
+      "domain": "network",
+      "stage": 4,
+      "parentId": "rpc",
+      "deps": ["rpc"],
+      "description": "常见的现代 RPC 框架实现，强调高性能与强类型接口定义。",
+      "tags": ["RPC", "框架", "高性能"]
+    },
+    {
+      "id": "dns",
+      "title": "DNS",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-services",
+      "deps": ["network-services", "udp"],
+      "description": "用于域名与 IP 地址映射的核心网络服务。",
+      "tags": ["服务", "域名解析", "基础设施"]
+    },
+    {
+      "id": "cdn",
+      "title": "CDN",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-services",
+      "deps": ["network-services", "http", "dns"],
+      "description": "用于内容分发与访问加速的网络服务能力。",
+      "tags": ["服务", "加速", "分发"]
+    },
+    {
+      "id": "rest-api",
+      "title": "REST API",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-services",
+      "deps": ["network-services", "http"],
+      "description": "基于 HTTP 组织资源接口的常见服务设计方式。",
+      "tags": ["服务", "API", "接口"]
+    },
+    {
+      "id": "graphql",
+      "title": "GraphQL",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-services",
+      "deps": ["network-services", "http"],
+      "description": "围绕查询需求组织接口数据获取方式的 API 方案。",
+      "tags": ["服务", "API", "查询"]
+    },
+    {
+      "id": "proxy-service",
+      "title": "代理服务",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-services",
+      "deps": ["network-services"],
+      "description": "位于客户端与目标服务之间的中间代理能力。",
+      "tags": ["服务", "代理", "转发"]
+    },
+    {
+      "id": "forward-proxy",
+      "title": "正向代理",
+      "domain": "network",
+      "stage": 4,
+      "parentId": "proxy-service",
+      "deps": ["proxy-service"],
+      "description": "代表客户端向外访问目标资源的代理方式。",
+      "tags": ["代理", "客户端", "转发"]
+    },
+    {
+      "id": "reverse-proxy",
+      "title": "反向代理",
+      "domain": "network",
+      "stage": 4,
+      "parentId": "proxy-service",
+      "deps": ["proxy-service"],
+      "description": "代表服务端接收外部请求并分发到内部服务的代理方式。",
+      "tags": ["代理", "服务端", "网关"]
+    },
+    {
+      "id": "vpn",
+      "title": "VPN",
+      "domain": "network",
+      "stage": 3,
+      "parentId": "network-security",
+      "deps": ["network-security", "ip"],
+      "description": "用于构建受保护网络通道的常见安全能力。",
+      "tags": ["安全", "隧道", "虚拟网络"]
+    }
+  ]
+}

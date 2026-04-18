@@ -1,110 +1,243 @@
-﻿# Computer World Frame (CWF)
+# Computer World Frame (CWF) 🌐
 
-> A bridge between scattered terms and a structured worldview.
+> Turn scattered computer terms into a living knowledge map, a personal learning record, and a community-built open source world.
 
-`Computer World Frame` 是一个专为初学者设计的探索式认知项目。
+[![Frontend](https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-61DAFB?style=for-the-badge&logo=react&logoColor=white)](./frontend)
+[![Build](https://img.shields.io/badge/build-Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](./frontend)
+[![Status](https://img.shields.io/badge/status-frontend%20validation-orange?style=for-the-badge)](#-current-stage)
+[![Storage](https://img.shields.io/badge/progress-localStorage-0EA5E9?style=for-the-badge)](#-current-frontend-capabilities)
+[![Roadmap](https://img.shields.io/badge/roadmap-matching%20%E2%86%92%20notes%20%E2%86%92%20community-22C55E?style=for-the-badge)](#-roadmap)
+[![License](https://img.shields.io/badge/license-MIT-black?style=for-the-badge)](./LICENSE)
 
-它的核心初衷是解决传统“计算机导论”课程的断层感：许多有才华的学习者在理解 `0` 和 `1` 之前，就被各种抽象、孤立的概念（如 `C++`、`Linux`、`I/O`）挡在了门外。
+`Computer World Frame` is an exploration-first learning project for beginners.
 
-本项目通过一个开放式、探索式的交互系统，将用户碎片化的认知实时“映射”到完整的计算机科学架构框架（Frame）中，帮助他们点亮属于自己的“计算机世界观”。
+The core idea is simple: most people do not fail at computer science because they are not smart enough. They get blocked because they only see isolated words like `Linux`, `I/O`, `Docker`, `Transformer`, `CPU`, `React`, without a map that explains how those things connect.
 
-## 🌟 核心理念 (Core Philosophy)
+CWF wants to be that map.
 
-本项目的灵感来源于一个朴素的愿景：如果计算机是一座城市，我们不应该给新手一张写满坐标的表格，而应该给他们一张随着探索而逐渐点亮的动态地图。
+Not a static glossary.
 
-- 从混沌到秩序：打破术语的孤立感，将碎片化词汇串联成体系。
-- 低门槛输入：无论是专业学生还是业余爱好者，只需输入脑海中的词汇。
-- 深度探索：每一次“点亮”不仅是视觉反馈，更是对知识边界的深度扩张。
+Not just a graph demo.
 
-## 🚀 核心玩法 (Gameplay)
+A system that helps users:
 
-项目围绕以下四个核心环节展开，模拟真实知识习得的过程。
+- match vague or messy terms into a structured computer-world model
+- build their own learning record around each node
+- eventually co-create an open source contribution map with others
 
-### 1. 采集 (Collect)
+## ✨ Why This Project Is Interesting
 
-用户输入任何已知或感兴趣的计算机词汇（如：显卡、代码、Windows、神经网络）。
+### 🧠 1. Matching Rules Engine
 
-### 2. 匹配与点亮 (Match & Light Up)
+This is the most distinctive part of CWF.
 
-- 利用轻量化语义模型对输入进行识别。
-- 将非标准化词汇（如“苹果系统”）自动映射到 Frame 中的标准节点（如“macOS”）。
-- 在 UI 界面上实时激活对应节点，产生“点亮世界”的视觉反馈。
+Users do not always search with standard terminology. They might type:
 
-### 3. 模块化与范围化 (Scope & Modular)
+- "苹果系统"
+- "做网页的那个语言"
+- "AI 画图"
+- "后端运行环境"
 
-- 自动归类：输入 `Python` 会被归入“编程语言”，输入 `Linux` 会被归入“操作系统”。
-- 展示节点间的依赖关系（例如：点亮“CPU”是理解“计算模型”的前提）。
+The long-term goal is to map these inputs into standard nodes such as:
 
-### 4. 深入探索 (Deep Dive)
+- `macOS`
+- `HTML / CSS / JavaScript`
+- `Midjourney / Stable Diffusion`
+- `Node.js`
 
-点击已点亮的节点，解锁该领域的进阶知识路径。
+This is where CWF becomes more than a search box. It becomes a matching layer between human language and a structured computer knowledge world.
 
-## 🛠️ 技术愿景 (Technical Vision)
+Planned matching stack:
 
-作为开发者，我希望通过此项目打磨以下核心工程能力：
+- string matching
+- aliases / tags / synonym dictionaries
+- curated rule sets
+- client-side `transformers.js` semantic fallback
+- future LLM-assisted routing when needed
 
-- **TypeScript (Full Stack)**：利用强类型约束构建复杂的知识节点系统，确保每一条映射逻辑都有迹可循。
-- **架构设计 (Architectural Design)**：实践前后端分离与模块化开发，确保 Frame 模型具备可扩展性。
-- **AI 赋能**：集成轻量级端侧 `LLM/Embedding`，解决词汇歧义，实现更“懂人心”的模糊匹配。
+### 📝 2. Personal Notes and Learning Record
 
-## 💡 为什么要做这个？
+The map is only the surface. Retention comes from personal accumulation.
 
-大部分失败的导论课，往往源于老师难以衡量班级中水平参差不齐的学生。
+Around each node, the user should eventually be able to record:
 
-而 `Computer World Frame` 的意义在于：它不定义起点，它只负责连接。无论你从哪个词开始，最终我们都会在计算机科学的最深处相遇。
+- what they already understand
+- what still feels unclear
+- personal notes
+- resource collections
+- progress and milestones
 
-## 🧱 当前数据架构 (Current Data Architecture)
+That makes CWF a personal computer-learning map, not just a visualization.
 
-当前版本已经从“节点拆表再回拼”的旧链路，重构为 document-first 架构：
+### 🗺️ 3. Open Source Contribution Map
 
-- `MapDocument` 是唯一内容真相源
-- `MapProjection` 是从地图文档自动派生出的渲染/遍历索引
-- `UserProgressDocument` 负责存储绑定 `mapId + mapVersion` 的用户进度
+The final form of CWF is not "one person maintains a map forever."
 
-当前默认地图作者文件在：
+It should grow into a community-built world where contributors can improve:
 
-- `backend/src/data/maps/default.map.json`
+- nodes
+- aliases and synonyms
+- relationships
+- recommended resources
+- learning paths
+- explanations and annotations
 
-后端数据库中保存的是：
+That turns the map itself into a living open source artifact.
 
-- `map_documents.document_json`
-- `map_projections.projection_json`
-- `user_progress.progress_json`
+## 🚀 Product Vision
 
-这意味着：
+If computer science is a city, beginners should not be handed a spreadsheet full of coordinates.
 
-- 地图内容维护以 JSON 文档为中心
-- 前端渲染消费 `document + projection`
-- 不再维护旧的 `/api/nodes` 节点中心接口
+They should be handed a map that lights up as they explore.
 
-## 🗺️ 地图维护工作流 (Map Authoring Workflow)
+CWF is trying to become that map.
 
-1. 编辑 `backend/src/data/maps/default.map.json`
-2. 运行地图校验与投影逻辑，确保文档结构合法
-3. 使用迁移脚本把最新 `MapDocument` 与 `MapProjection` 写入数据库
-4. 启动前后端，验证地图加载与用户进度链路
+The vision is:
 
-常用命令：
+1. You type any word you know
+2. The system matches it into the right part of the map
+3. The map reveals structure, neighbors, and learning paths
+4. You leave your own notes and progress behind
+5. Over time, the community helps the map get smarter and richer
+
+## 🎯 Current Stage
+
+Right now, **it is completely reasonable to prioritize the frontend first**.
+
+That is not a compromise. It is the right order for this project.
+
+At this stage, the important questions are:
+
+- Is the matching layer actually useful?
+- Does the learning-record flow create real retention?
+- Does the contribution-map concept feel worth growing?
+
+All three can be validated before investing heavily in backend complexity.
+
+So the current strategy is:
+
+- make the frontend feel like a real product first
+- let the backend come later as the system-strengthening layer
+
+Backend is still important, just not the first thing that determines whether CWF is meaningful.
+
+## 🔍 Current Matching Rules
+
+Today, the matching logic is still lightweight and rule-based.
+
+Current search matches against:
+
+- `title`
+- `tags`
+- `aliases`
+
+Current behavior:
+
+- case-insensitive
+- substring matching via `includes(...)`
+- shared base logic for current-map filtering and cross-map search
+- debounced input on the frontend
+
+In other words, the current version is closer to **rule search** than **semantic understanding**.
+
+Recommended evolution path:
+
+1. string rules first
+2. alias / synonym expansion
+3. `transformers.js` as semantic fallback
+4. later, stronger server-side retrieval or LLM routing if needed
+
+## 🧩 Current Frontend Capabilities
+
+The frontend already supports a meaningful interaction loop:
+
+- 2D / 3D knowledge map switching
+- node selection, unlock state, and detail panels
+- category filtering with `All` and `Clear`
+- cursor-centered zoom
+- drag-to-pan in the 2D graph
+- static-data search and matching
+- local progress persistence via `localStorage`
+
+At the moment, user progress is stored locally in the browser. That is perfect for the current validation phase.
+
+## 🛠️ Tech Direction
+
+Current stack:
+
+- `React`
+- `TypeScript`
+- `Vite`
+- local-first state and persistence
+- graph-style interaction design
+
+Technical areas this project is meant to explore:
+
+- frontend architecture
+- interactive knowledge maps
+- rule-based and semantic matching
+- local-first product validation
+- future AI-assisted knowledge navigation
+
+## 🗺️ Roadmap
+
+### Phase 1: Frontend Validation
+
+- sharpen the matching rules
+- improve graph interactions
+- add stronger note-taking and learning-record flows
+- validate whether users actually want to learn through this model
+
+### Phase 2: Sync and Persistence
+
+- add backend persistence
+- support accounts and multi-device sync
+- manage learning records, progress, and versioned map data
+
+### Phase 3: Community Contribution
+
+- introduce contribution proposals
+- review and merge aliases, nodes, and learning-path updates
+- grow CWF into an open source contribution map
+
+## 💡 Why Build This
+
+Many "computer introduction" learning experiences fail because they assume the learner already has a mental structure.
+
+CWF is built on the opposite assumption:
+
+- the learner may start anywhere
+- the learner may use messy or non-standard language
+- the system should connect first, then deepen understanding
+
+Whether someone starts from `CPU`, `Python`, `Linux`, `WiFi`, or `ChatGPT`, they should still be able to find their place in the same world.
+
+## 📦 Local Development
+
+Frontend lives in [`frontend/`](./frontend).
+
+Install and run:
 
 ```bash
-# 后端类型检查
-cd backend
-npm run build
+cd frontend
+npm install
+npm run dev
+```
 
-# 前端构建验证
-cd ../frontend
+Build:
+
+```bash
+cd frontend
 npm run build
 ```
 
-如果要重新写入默认地图文档：
+Tests:
 
 ```bash
-cd backend
-npx tsx src/scripts/migrate-map-to-document.ts
+cd frontend
+npm test -- --run
 ```
 
-对应的地图文档校验与投影构建逻辑位于：
+## 📍 One-Line Summary
 
-- `backend/src/scripts/build-map-projection.ts`
-- `backend/src/scripts/migrate-map-to-document.ts`
-- `shared/map-document.ts`
+**CWF is not trying to be just a knowledge graph. It is trying to connect term matching, personal learning records, and community-built map contributions into one computer learning system.**
