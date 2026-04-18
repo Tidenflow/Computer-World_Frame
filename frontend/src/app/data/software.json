@@ -1,0 +1,21 @@
+{
+  "id": "software",
+  "title": "软件系统",
+  "nodes": [
+    { "id": "windows", "title": "Windows", "domain": "software", "stage": 1, "deps": [], "tags": ["操作系统"] },
+    { "id": "macos", "title": "macOS", "domain": "software", "stage": 1, "deps": [], "tags": ["操作系统"] },
+    { "id": "linux", "title": "Linux", "domain": "software", "stage": 1, "deps": [], "tags": ["操作系统", "开源"] },
+    { "id": "android", "title": "Android", "domain": "software", "stage": 2, "deps": ["linux"], "tags": ["移动系统"] },
+    { "id": "ios", "title": "iOS", "domain": "software", "stage": 2, "deps": ["macos"], "tags": ["移动系统"] },
+    { "id": "office", "title": "Office", "domain": "software", "stage": 3, "deps": ["windows"], "tags": ["办公"] },
+    { "id": "photoshop", "title": "Photoshop", "domain": "software", "stage": 3, "deps": ["windows", "macos"], "tags": ["设计"] },
+    { "id": "vscode", "title": "VS Code", "domain": "software", "stage": 3, "deps": ["windows", "macos", "linux"], "tags": ["编辑器"] },
+    { "id": "chrome", "title": "Chrome", "domain": "software", "stage": 3, "deps": ["windows", "macos", "linux"], "tags": ["浏览器"] },
+    { "id": "steam", "title": "Steam", "domain": "software", "stage": 4, "deps": ["windows"], "tags": ["游戏平台"] },
+    { "id": "minecraft", "title": "Minecraft", "domain": "software", "stage": 5, "deps": ["steam"], "tags": ["游戏"] },
+    { "id": "wechat", "title": "微信", "domain": "software", "stage": 4, "deps": ["windows", "macos", "android", "ios"], "tags": ["社交"] },
+    { "id": "tiktok", "title": "抖音", "domain": "software", "stage": 4, "deps": ["android", "ios"], "tags": ["短视频"] },
+    { "id": "notion", "title": "Notion", "domain": "software", "stage": 4, "deps": ["chrome"], "tags": ["笔记"] },
+    { "id": "figma", "title": "Figma", "domain": "software", "stage": 4, "deps": ["chrome"], "tags": ["设计", "协作"] }
+  ]
+}

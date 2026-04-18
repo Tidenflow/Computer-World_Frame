@@ -1,0 +1,23 @@
+{
+  "id": "programming",
+  "title": "程序开发",
+  "nodes": [
+    { "id": "scratch", "title": "Scratch", "domain": "programming", "stage": 1, "deps": [], "tags": ["入门", "可视化"] },
+    { "id": "html", "title": "HTML", "domain": "programming", "stage": 1, "deps": [], "tags": ["网页", "标记语言"] },
+    { "id": "css", "title": "CSS", "domain": "programming", "stage": 2, "deps": ["html"], "tags": ["网页", "样式"] },
+    { "id": "javascript", "title": "JavaScript", "domain": "programming", "stage": 2, "deps": ["html"], "tags": ["网页", "编程语言"] },
+    { "id": "python", "title": "Python", "domain": "programming", "stage": 2, "deps": [], "tags": ["编程语言", "入门"] },
+    { "id": "git", "title": "Git", "domain": "programming", "stage": 2, "deps": [], "tags": ["版本控制"] },
+    { "id": "react", "title": "React", "domain": "programming", "stage": 3, "deps": ["javascript"], "tags": ["框架", "前端"] },
+    { "id": "vue", "title": "Vue", "domain": "programming", "stage": 3, "deps": ["javascript"], "tags": ["框架", "前端"] },
+    { "id": "nodejs", "title": "Node.js", "domain": "programming", "stage": 3, "deps": ["javascript"], "tags": ["后端", "运行时"] },
+    { "id": "typescript", "title": "TypeScript", "domain": "programming", "stage": 3, "deps": ["javascript"], "tags": ["编程语言", "类型"] },
+    { "id": "tailwind", "title": "Tailwind CSS", "domain": "programming", "stage": 3, "deps": ["css"], "tags": ["框架", "样式"] },
+    { "id": "django", "title": "Django", "domain": "programming", "stage": 3, "deps": ["python"], "tags": ["框架", "后端"] },
+    { "id": "flask", "title": "Flask", "domain": "programming", "stage": 3, "deps": ["python"], "tags": ["框架", "后端"] },
+    { "id": "numpy", "title": "NumPy", "domain": "programming", "stage": 3, "deps": ["python"], "tags": ["数据分析"] },
+    { "id": "nextjs", "title": "Next.js", "domain": "programming", "stage": 4, "deps": ["react"], "tags": ["框架", "全栈"] },
+    { "id": "github", "title": "GitHub", "domain": "programming", "stage": 4, "deps": ["git"], "tags": ["托管", "协作"] },
+    { "id": "docker", "title": "Docker", "domain": "programming", "stage": 4, "deps": ["nodejs"], "tags": ["容器", "部署"] }
+  ]
+}

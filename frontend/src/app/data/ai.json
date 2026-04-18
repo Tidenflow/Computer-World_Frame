@@ -1,0 +1,20 @@
+{
+  "id": "ai",
+  "title": "AI 人工智能",
+  "nodes": [
+    { "id": "chatgpt", "title": "ChatGPT", "domain": "ai", "stage": 1, "deps": [], "tags": ["大模型", "对话"] },
+    { "id": "doubao", "title": "豆包", "domain": "ai", "stage": 1, "deps": [], "tags": ["大模型", "对话"] },
+    { "id": "midjourney", "title": "Midjourney", "domain": "ai", "stage": 1, "deps": [], "tags": ["AI绘画"] },
+    { "id": "stable-diffusion", "title": "Stable Diffusion", "domain": "ai", "stage": 2, "deps": ["midjourney"], "tags": ["AI绘画", "开源"] },
+    { "id": "machine-learning", "title": "机器学习", "domain": "ai", "stage": 2, "deps": [], "tags": ["理论", "算法"] },
+    { "id": "deep-learning", "title": "深度学习", "domain": "ai", "stage": 3, "deps": ["machine-learning"], "tags": ["理论", "神经网络"] },
+    { "id": "pytorch", "title": "PyTorch", "domain": "ai", "stage": 3, "deps": ["deep-learning", "python"], "tags": ["框架", "训练"] },
+    { "id": "tensorflow", "title": "TensorFlow", "domain": "ai", "stage": 3, "deps": ["deep-learning", "python"], "tags": ["框架", "训练"] },
+    { "id": "opencv", "title": "OpenCV", "domain": "ai", "stage": 3, "deps": ["python"], "tags": ["计算机视觉"] },
+    { "id": "nlp", "title": "自然语言处理", "domain": "ai", "stage": 3, "deps": ["machine-learning"], "tags": ["NLP", "文本"] },
+    { "id": "transformer", "title": "Transformer", "domain": "ai", "stage": 4, "deps": ["deep-learning", "nlp"], "tags": ["架构", "注意力机制"] },
+    { "id": "llm", "title": "大语言模型", "domain": "ai", "stage": 5, "deps": ["transformer"], "tags": ["LLM", "GPT"] },
+    { "id": "rag", "title": "RAG", "domain": "ai", "stage": 4, "deps": ["llm"], "tags": ["检索增强"] },
+    { "id": "langchain", "title": "LangChain", "domain": "ai", "stage": 4, "deps": ["llm"], "tags": ["框架", "工具链"] }
+  ]
+}

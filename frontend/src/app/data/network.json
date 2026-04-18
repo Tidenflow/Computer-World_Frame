@@ -1,0 +1,20 @@
+{
+  "id": "network",
+  "title": "网络通信",
+  "nodes": [
+    { "id": "wifi", "title": "WiFi", "domain": "network", "stage": 1, "deps": [], "tags": ["无线"] },
+    { "id": "ethernet", "title": "以太网", "domain": "network", "stage": 1, "deps": [], "tags": ["有线"] },
+    { "id": "ip", "title": "IP 协议", "domain": "network", "stage": 2, "deps": ["wifi", "ethernet"], "tags": ["协议", "网络层"] },
+    { "id": "tcp", "title": "TCP", "domain": "network", "stage": 2, "deps": ["ip"], "tags": ["协议", "传输层"] },
+    { "id": "udp", "title": "UDP", "domain": "network", "stage": 2, "deps": ["ip"], "tags": ["协议", "传输层"] },
+    { "id": "http", "title": "HTTP", "domain": "network", "stage": 3, "deps": ["tcp"], "tags": ["协议", "应用层"] },
+    { "id": "https", "title": "HTTPS", "domain": "network", "stage": 3, "deps": ["http"], "tags": ["协议", "加密"] },
+    { "id": "dns", "title": "DNS", "domain": "network", "stage": 3, "deps": ["udp"], "tags": ["域名解析"] },
+    { "id": "cdn", "title": "CDN", "domain": "network", "stage": 4, "deps": ["http", "dns"], "tags": ["加速", "分发"] },
+    { "id": "websocket", "title": "WebSocket", "domain": "network", "stage": 4, "deps": ["http"], "tags": ["实时通信"] },
+    { "id": "rest-api", "title": "REST API", "domain": "network", "stage": 4, "deps": ["http"], "tags": ["API", "接口"] },
+    { "id": "graphql", "title": "GraphQL", "domain": "network", "stage": 4, "deps": ["http"], "tags": ["API", "查询语言"] },
+    { "id": "vpn", "title": "VPN", "domain": "network", "stage": 4, "deps": ["ip"], "tags": ["虚拟网络", "安全"] },
+    { "id": "5g", "title": "5G", "domain": "network", "stage": 3, "deps": ["wifi"], "tags": ["移动网络"] }
+  ]
+}
