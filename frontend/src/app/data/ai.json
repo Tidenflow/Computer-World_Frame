@@ -2,19 +2,204 @@
   "id": "ai",
   "title": "AI 人工智能",
   "nodes": [
-    { "id": "chatgpt", "title": "ChatGPT", "domain": "ai", "stage": 1, "deps": [], "tags": ["大模型", "对话"] },
-    { "id": "doubao", "title": "豆包", "domain": "ai", "stage": 1, "deps": [], "tags": ["大模型", "对话"] },
-    { "id": "midjourney", "title": "Midjourney", "domain": "ai", "stage": 1, "deps": [], "tags": ["AI绘画"] },
-    { "id": "stable-diffusion", "title": "Stable Diffusion", "domain": "ai", "stage": 2, "deps": ["midjourney"], "tags": ["AI绘画", "开源"] },
-    { "id": "machine-learning", "title": "机器学习", "domain": "ai", "stage": 2, "deps": [], "tags": ["理论", "算法"] },
-    { "id": "deep-learning", "title": "深度学习", "domain": "ai", "stage": 3, "deps": ["machine-learning"], "tags": ["理论", "神经网络"] },
-    { "id": "pytorch", "title": "PyTorch", "domain": "ai", "stage": 3, "deps": ["deep-learning", "python"], "tags": ["框架", "训练"] },
-    { "id": "tensorflow", "title": "TensorFlow", "domain": "ai", "stage": 3, "deps": ["deep-learning", "python"], "tags": ["框架", "训练"] },
-    { "id": "opencv", "title": "OpenCV", "domain": "ai", "stage": 3, "deps": ["python"], "tags": ["计算机视觉"] },
-    { "id": "nlp", "title": "自然语言处理", "domain": "ai", "stage": 3, "deps": ["machine-learning"], "tags": ["NLP", "文本"] },
-    { "id": "transformer", "title": "Transformer", "domain": "ai", "stage": 4, "deps": ["deep-learning", "nlp"], "tags": ["架构", "注意力机制"] },
-    { "id": "llm", "title": "大语言模型", "domain": "ai", "stage": 5, "deps": ["transformer"], "tags": ["LLM", "GPT"] },
-    { "id": "rag", "title": "RAG", "domain": "ai", "stage": 4, "deps": ["llm"], "tags": ["检索增强"] },
-    { "id": "langchain", "title": "LangChain", "domain": "ai", "stage": 4, "deps": ["llm"], "tags": ["框架", "工具链"] }
+    {
+      "id": "ai-root",
+      "title": "AI 人工智能",
+      "domain": "ai",
+      "stage": 1,
+      "deps": [],
+      "description": "AI 人工智能总览图的根节点，用来承接应用、理论、方向、框架与大模型应用。",
+      "tags": ["总览", "根节点", "AI"]
+    },
+    {
+      "id": "ai-applications",
+      "title": "AI 应用",
+      "domain": "ai",
+      "stage": 2,
+      "parentId": "ai-root",
+      "deps": ["ai-root"],
+      "description": "面向普通用户可直接体验到的 AI 产品与应用形态。",
+      "tags": ["AI", "应用", "产品"]
+    },
+    {
+      "id": "ai-foundations",
+      "title": "AI 基础理论",
+      "domain": "ai",
+      "stage": 2,
+      "parentId": "ai-root",
+      "deps": ["ai-root"],
+      "description": "理解人工智能核心能力时常见的基础理论主线。",
+      "tags": ["AI", "理论", "基础"]
+    },
+    {
+      "id": "ai-domains",
+      "title": "AI 方向",
+      "domain": "ai",
+      "stage": 2,
+      "parentId": "ai-root",
+      "deps": ["ai-root"],
+      "description": "AI 在不同问题域中的典型方向划分。",
+      "tags": ["AI", "方向", "场景"]
+    },
+    {
+      "id": "ai-frameworks",
+      "title": "AI 工具框架",
+      "domain": "ai",
+      "stage": 2,
+      "parentId": "ai-root",
+      "deps": ["ai-root"],
+      "description": "支撑模型训练、推理与实验的常见框架工具。",
+      "tags": ["AI", "框架", "工具"]
+    },
+    {
+      "id": "llm-applications",
+      "title": "大模型应用",
+      "domain": "ai",
+      "stage": 2,
+      "parentId": "ai-root",
+      "deps": ["ai-root"],
+      "description": "围绕大语言模型构建应用能力与工作流的重点分支。",
+      "tags": ["AI", "大模型", "应用"]
+    },
+    {
+      "id": "chatgpt",
+      "title": "ChatGPT",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "常见的通用对话式 AI 产品，代表大模型应用体验。",
+      "tags": ["AI", "对话", "产品"]
+    },
+    {
+      "id": "doubao",
+      "title": "豆包",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "常见的通用 AI 助手产品，属于对话类大模型应用。",
+      "tags": ["AI", "对话", "产品"]
+    },
+    {
+      "id": "midjourney",
+      "title": "Midjourney",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "常见的图像生成类 AI 产品，代表 AIGC 绘图体验。",
+      "tags": ["AI", "绘图", "生成"]
+    },
+    {
+      "id": "stable-diffusion",
+      "title": "Stable Diffusion",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "常见的开源图像生成模型生态，广泛用于 AIGC 图像创作。",
+      "tags": ["AI", "绘图", "开源"]
+    },
+    {
+      "id": "machine-learning",
+      "title": "机器学习",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-foundations",
+      "deps": ["ai-foundations"],
+      "description": "AI 理论主线中的基础能力，用于让模型从数据中学习模式。",
+      "tags": ["AI", "理论", "算法"]
+    },
+    {
+      "id": "deep-learning",
+      "title": "深度学习",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "machine-learning",
+      "deps": ["machine-learning"],
+      "description": "建立在机器学习之上的重要分支，依赖多层神经网络表达能力。",
+      "tags": ["AI", "理论", "神经网络"]
+    },
+    {
+      "id": "transformer",
+      "title": "Transformer",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "deep-learning",
+      "deps": ["deep-learning"],
+      "description": "现代大模型的重要架构基础，围绕注意力机制组织序列建模。",
+      "tags": ["AI", "架构", "注意力机制"]
+    },
+    {
+      "id": "nlp",
+      "title": "自然语言处理",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-domains",
+      "deps": ["ai-domains"],
+      "description": "面向文本与语言理解、生成问题的 AI 方向。",
+      "tags": ["AI", "NLP", "文本"]
+    },
+    {
+      "id": "computer-vision",
+      "title": "计算机视觉",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-domains",
+      "deps": ["ai-domains"],
+      "description": "面向图像与视频理解问题的 AI 方向。",
+      "tags": ["AI", "视觉", "图像"]
+    },
+    {
+      "id": "pytorch",
+      "title": "PyTorch",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-frameworks",
+      "deps": ["ai-frameworks"],
+      "description": "常见的深度学习框架，广泛用于研究与模型训练实验。",
+      "tags": ["AI", "框架", "训练"]
+    },
+    {
+      "id": "tensorflow",
+      "title": "TensorFlow",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-frameworks",
+      "deps": ["ai-frameworks"],
+      "description": "常见的深度学习框架，适合训练、部署与工程化使用。",
+      "tags": ["AI", "框架", "训练"]
+    },
+    {
+      "id": "llm",
+      "title": "大语言模型",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "llm-applications",
+      "deps": ["llm-applications", "transformer"],
+      "description": "围绕语言理解与生成能力构建的核心模型方向，是当前 AI 应用的重要基础。",
+      "tags": ["AI", "LLM", "大模型"]
+    },
+    {
+      "id": "rag",
+      "title": "RAG",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "llm",
+      "deps": ["llm"],
+      "description": "检索增强生成方案，用于提升大模型回答的外部知识利用能力。",
+      "tags": ["AI", "LLM", "检索增强"]
+    },
+    {
+      "id": "langchain",
+      "title": "LangChain",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "llm",
+      "deps": ["llm"],
+      "description": "围绕大模型应用工作流组织的常见开发框架。",
+      "tags": ["AI", "LLM", "框架"]
+    }
   ]
 }

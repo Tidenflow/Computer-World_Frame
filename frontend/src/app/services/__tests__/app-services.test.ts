@@ -158,6 +158,39 @@ describe('app services', () => {
     ])
   })
 
+  test('supports the same progressive tree expansion for the ai map', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.ai, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, null).map((node) => node.id)).toEqual([
+      'ai-root',
+      'ai-applications',
+      'ai-foundations',
+      'ai-domains',
+      'ai-frameworks',
+      'llm-applications',
+    ])
+
+    expect(buildVisibleGraphNodes(nodes, 'ai-foundations').map((node) => node.id)).toEqual([
+      'ai-root',
+      'ai-applications',
+      'ai-foundations',
+      'ai-domains',
+      'ai-frameworks',
+      'llm-applications',
+      'machine-learning',
+    ])
+
+    expect(buildVisibleGraphNodes(nodes, 'llm-applications').map((node) => node.id)).toEqual([
+      'ai-root',
+      'ai-applications',
+      'ai-foundations',
+      'ai-domains',
+      'ai-frameworks',
+      'llm-applications',
+      'llm',
+    ])
+  })
+
   test('computes unlocked stats across all maps', () => {
     const stats = computeUnlockedStats(allMaps, unlockedNodes)
 
