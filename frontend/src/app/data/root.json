@@ -55,6 +55,17 @@
       "tags": ["软件", "应用", "操作系统"]
     },
     {
+      "id": "programming-languages",
+      "title": "编程语言",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "cw-root",
+      "deps": ["cw-root"],
+      "targetMap": "programming-languages",
+      "description": "从机器码到高级语言，编程语言是人与计算机对话的媒介。按范式与运行平台，可分为系统语言、脚本语言、Web 语言等多种类别。",
+      "tags": ["编程", "语言", "入门"]
+    },
+    {
       "id": "programming",
       "title": "程序开发",
       "domain": "programming",
@@ -63,7 +74,7 @@
       "deps": ["cw-root"],
       "targetMap": "programming",
       "description": "Python、JavaScript、Git、IDE 等开发工具和语言。学习编程是创造软件的第一步。",
-      "tags": ["编程", "开发", "语言"]
+      "tags": ["编程", "开发", "工具"]
     },
     {
       "id": "network",

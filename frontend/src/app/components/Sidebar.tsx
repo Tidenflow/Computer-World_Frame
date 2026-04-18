@@ -34,6 +34,7 @@ export const Sidebar = ({
     { id: 'root', name: '总览地图' },
     { id: 'software', name: '软件系统' },
     { id: 'programming', name: '程序开发' },
+    { id: 'programming-languages', name: '编程语言' },
     { id: 'ai', name: 'AI 人工智能' },
     { id: 'network', name: '网络通信' },
   ];

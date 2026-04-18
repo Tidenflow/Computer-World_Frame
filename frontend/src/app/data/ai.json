@@ -72,13 +72,53 @@
       "tags": ["AI", "对话", "产品"]
     },
     {
+      "id": "claude",
+      "title": "Claude",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "Anthropic 推出的 AI 助手，以安全性与长文档处理能力著称，适合写作与代码辅助。",
+      "tags": ["AI", "对话", "产品"]
+    },
+    {
+      "id": "gemini-app",
+      "title": "Gemini",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "Google 推出的多模态 AI 产品，支持文本、图像、视频与代码的全模态理解与生成。",
+      "tags": ["AI", "对话", "多模态"]
+    },
+    {
+      "id": "kimi",
+      "title": "Kimi",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "月之暗面推出的中文 AI 助手，以超长上下文窗口著称，支持百万字无损上下文。",
+      "tags": ["AI", "对话", "中文"]
+    },
+    {
+      "id": "deepseek",
+      "title": "DeepSeek",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "深度求索推出的开源大模型系列，以高性价比与强大的推理能力著称。",
+      "tags": ["AI", "对话", "开源"]
+    },
+    {
       "id": "doubao",
       "title": "豆包",
       "domain": "ai",
       "stage": 3,
       "parentId": "ai-applications",
       "deps": ["ai-applications"],
-      "description": "常见的通用 AI 助手产品，属于对话类大模型应用。",
+      "description": "字节跳动推出的通用 AI 助手产品，属于对话类大模型应用。",
       "tags": ["AI", "对话", "产品"]
     },
     {
@@ -102,6 +142,66 @@
       "tags": ["AI", "绘图", "开源"]
     },
     {
+      "id": "dall-e",
+      "title": "DALL-E",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "OpenAI 推出的图像生成模型，根据自然语言描述创建高质量图像。",
+      "tags": ["AI", "绘图", "生成"]
+    },
+    {
+      "id": "flux",
+      "title": "Flux",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "Black Forest Labs 推出的开源图像生成模型，以细节质量与文字渲染能力著称。",
+      "tags": ["AI", "绘图", "开源"]
+    },
+    {
+      "id": "sora",
+      "title": "Sora",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "OpenAI 推出的视频生成模型，能够根据文本描述生成高质量视频内容。",
+      "tags": ["AI", "视频生成", "生成"]
+    },
+    {
+      "id": "sunno",
+      "title": "Suno",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "AI 音乐生成产品，能够根据文本描述生成完整的音乐作品，包括歌词与人声。",
+      "tags": ["AI", "音乐生成", "生成"]
+    },
+    {
+      "id": "cursor-ai",
+      "title": "Cursor",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "AI 代码编辑器，将大模型能力深度集成到 IDE 中，支持智能补全、代码生成与对话调试。",
+      "tags": ["AI", "编程", "工具"]
+    },
+    {
+      "id": "copilot",
+      "title": "GitHub Copilot",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-applications",
+      "deps": ["ai-applications"],
+      "description": "GitHub 与 OpenAI 合作的 AI 编程辅助工具，深度集成于 VS Code 等编辑器。",
+      "tags": ["AI", "编程", "辅助"]
+    },
+    {
       "id": "machine-learning",
       "title": "机器学习",
       "domain": "ai",
@@ -110,6 +210,46 @@
       "deps": ["ai-foundations"],
       "description": "AI 理论主线中的基础能力，用于让模型从数据中学习模式。",
       "tags": ["AI", "理论", "算法"]
+    },
+    {
+      "id": "supervised-learning",
+      "title": "监督学习",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "machine-learning",
+      "deps": ["machine-learning"],
+      "description": "在有标注数据的条件下训练模型，是工业界最成熟、应用最广泛的机器学习方法。",
+      "tags": ["AI", "理论", "监督学习"]
+    },
+    {
+      "id": "unsupervised-learning",
+      "title": "无监督学习",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "machine-learning",
+      "deps": ["machine-learning"],
+      "description": "在没有标注数据的条件下发现数据中的模式与结构，如聚类与降维。",
+      "tags": ["AI", "理论", "无监督学习"]
+    },
+    {
+      "id": "reinforcement-learning",
+      "title": "强化学习",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "machine-learning",
+      "deps": ["machine-learning"],
+      "description": "通过与环境交互、接收奖励信号学习最优策略，是游戏 AI 与机器人控制的核心方法。",
+      "tags": ["AI", "理论", "强化学习"]
+    },
+    {
+      "id": "transfer-learning",
+      "title": "迁移学习",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "machine-learning",
+      "deps": ["machine-learning"],
+      "description": "将在一个任务上学到的知识迁移到另一个相关任务中，适合数据稀缺的场景。",
+      "tags": ["AI", "理论", "迁移学习"]
     },
     {
       "id": "deep-learning",
@@ -122,6 +262,66 @@
       "tags": ["AI", "理论", "神经网络"]
     },
     {
+      "id": "cnn",
+      "title": "CNN",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "deep-learning",
+      "deps": ["deep-learning"],
+      "description": "卷积神经网络，通过局部感受野与权重共享高效处理图像等网格结构数据，是计算机视觉的基础。",
+      "tags": ["AI", "神经网络", "计算机视觉"]
+    },
+    {
+      "id": "rnn",
+      "title": "RNN",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "deep-learning",
+      "deps": ["deep-learning"],
+      "description": "循环神经网络，通过隐藏状态记忆历史信息，适合处理序列数据。",
+      "tags": ["AI", "神经网络", "序列"]
+    },
+    {
+      "id": "lstm",
+      "title": "LSTM",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "deep-learning",
+      "deps": ["deep-learning"],
+      "description": "长短期记忆网络，通过门控机制解决了标准 RNN 的梯度消失问题，适合长序列建模。",
+      "tags": ["AI", "神经网络", "序列"]
+    },
+    {
+      "id": "gan",
+      "title": "GAN",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "deep-learning",
+      "deps": ["deep-learning"],
+      "description": "生成对抗网络，通过生成器与判别器的对抗训练生成逼真的图像、音频与视频。",
+      "tags": ["AI", "神经网络", "生成模型"]
+    },
+    {
+      "id": "diffusion-model",
+      "title": "扩散模型",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "deep-learning",
+      "deps": ["deep-learning"],
+      "description": "通过逐步加噪与去噪生成数据的模型，是当前图像与视频生成的主流架构。",
+      "tags": ["AI", "神经网络", "生成模型"]
+    },
+    {
+      "id": "optimization-theory",
+      "title": "优化理论",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "ai-foundations",
+      "deps": ["ai-foundations"],
+      "description": "支撑神经网络训练的理论基础，研究如何高效地在高维参数空间中寻找最优解。",
+      "tags": ["AI", "理论", "优化"]
+    },
+    {
       "id": "transformer",
       "title": "Transformer",
       "domain": "ai",
@@ -130,6 +330,36 @@
       "deps": ["deep-learning"],
       "description": "现代大模型的重要架构基础，围绕注意力机制组织序列建模。",
       "tags": ["AI", "架构", "注意力机制"]
+    },
+    {
+      "id": "bert",
+      "title": "BERT",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "transformer",
+      "deps": ["transformer"],
+      "description": "双向 Transformer 编码器模型，通过掩码语言建模预训练，在 NLP 各项任务中取得突破。",
+      "tags": ["AI", "NLP", "预训练模型"]
+    },
+    {
+      "id": "gpt",
+      "title": "GPT 系列",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "transformer",
+      "deps": ["transformer"],
+      "description": "基于自回归解码器的 Transformer 模型系列，通过大规模预训练与指令微调实现强大语言能力。",
+      "tags": ["AI", "NLP", "预训练模型"]
+    },
+    {
+      "id": "t5",
+      "title": "T5",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "transformer",
+      "deps": ["transformer"],
+      "description": "Encoder-Decoder 架构的 Transformer 模型，将所有 NLP 任务统一为文本到文本的格式。",
+      "tags": ["AI", "NLP", "预训练模型"]
     },
     {
       "id": "nlp",
@@ -152,6 +382,136 @@
       "tags": ["AI", "视觉", "图像"]
     },
     {
+      "id": "text-classification",
+      "title": "文本分类",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "nlp",
+      "deps": ["nlp"],
+      "description": "将文本自动归类到预定义类别的任务，是垃圾邮件过滤、情感分析的基础技术。",
+      "tags": ["AI", "NLP", "分类"]
+    },
+    {
+      "id": "ner",
+      "title": "命名实体识别",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "nlp",
+      "deps": ["nlp"],
+      "description": "从文本中自动识别出人名、地名、机构名等特定实体的技术，是信息抽取的核心任务。",
+      "tags": ["AI", "NLP", "信息抽取"]
+    },
+    {
+      "id": "machine-translation",
+      "title": "机器翻译",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "nlp",
+      "deps": ["nlp"],
+      "description": "将一种自然语言自动转换为另一种自然语言的技术，Transformer 彻底改变了这一领域。",
+      "tags": ["AI", "NLP", "翻译"]
+    },
+    {
+      "id": "text-summarization",
+      "title": "文本摘要",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "nlp",
+      "deps": ["nlp"],
+      "description": "将长文本压缩为简短摘要的技术，分为抽取式与生成式两类方法。",
+      "tags": ["AI", "NLP", "摘要"]
+    },
+    {
+      "id": "object-detection",
+      "title": "目标检测",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "computer-vision",
+      "deps": ["computer-vision"],
+      "description": "在图像中定位并识别出多个目标的技术，是自动驾驶与视频监控的核心能力。",
+      "tags": ["AI", "计算机视觉", "目标检测"]
+    },
+    {
+      "id": "semantic-segmentation",
+      "title": "语义分割",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "computer-vision",
+      "deps": ["computer-vision"],
+      "description": "对图像中每个像素进行分类标注的技术，用于场景理解与医学影像分析。",
+      "tags": ["AI", "计算机视觉", "分割"]
+    },
+    {
+      "id": "face-recognition",
+      "title": "人脸识别",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "computer-vision",
+      "deps": ["computer-vision"],
+      "description": "识别与验证人脸身份的技术，广泛用于安防、支付与手机解锁等场景。",
+      "tags": ["AI", "计算机视觉", "人脸"]
+    },
+    {
+      "id": "ocr",
+      "title": "OCR",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "computer-vision",
+      "deps": ["computer-vision"],
+      "description": "光学字符识别，将图像中的文字转换为可编辑的文本，是文档数字化的基础。",
+      "tags": ["AI", "计算机视觉", "文字识别"]
+    },
+    {
+      "id": "speech-recognition",
+      "title": "语音识别",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-domains",
+      "deps": ["ai-domains"],
+      "description": "将语音信号转换为文本的技术，是智能助手、语音输入与会议转录的核心。",
+      "tags": ["AI", "语音", "识别"]
+    },
+    {
+      "id": "recommendation-system",
+      "title": "推荐系统",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-domains",
+      "deps": ["ai-domains"],
+      "description": "根据用户行为与偏好自动推荐内容的技术，是电商、短视频与音乐平台的核心竞争力。",
+      "tags": ["AI", "推荐", "个性化"]
+    },
+    {
+      "id": "robotics",
+      "title": "机器人",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-domains",
+      "deps": ["ai-domains"],
+      "description": "将 AI 感知、决策与控制能力集成到物理机器人中的技术方向。",
+      "tags": ["AI", "机器人", "控制"]
+    },
+    {
+      "id": "autonomous-driving",
+      "title": "自动驾驶",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-domains",
+      "deps": ["ai-domains"],
+      "description": "让车辆自主感知环境、规划路径并安全行驶的 AI 技术，是计算机视觉与强化学习的综合应用。",
+      "tags": ["AI", "自动驾驶", "感知"]
+    },
+    {
+      "id": "multimodal",
+      "title": "多模态",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-domains",
+      "deps": ["ai-domains"],
+      "description": "同时处理与理解文本、图像、音频、视频等多种模态信息的 AI 能力。",
+      "tags": ["AI", "多模态", "融合"]
+    },
+    {
       "id": "pytorch",
       "title": "PyTorch",
       "domain": "ai",
@@ -172,6 +532,46 @@
       "tags": ["AI", "框架", "训练"]
     },
     {
+      "id": "jax",
+      "title": "JAX",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-frameworks",
+      "deps": ["ai-frameworks"],
+      "description": "Google 推出的高性能数值计算框架，支持自动微分与 GPU/TPU 加速，适合科学计算与机器学习研究。",
+      "tags": ["AI", "框架", "高性能"]
+    },
+    {
+      "id": "huggingface",
+      "title": "Hugging Face",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-frameworks",
+      "deps": ["ai-frameworks"],
+      "description": "全球最大的开源 AI 模型社区与平台，提供了数以万计的预训练模型与易用的工具库。",
+      "tags": ["AI", "平台", "开源模型"]
+    },
+    {
+      "id": "transformers",
+      "title": "Transformers 库",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "ai-frameworks",
+      "deps": ["ai-frameworks"],
+      "description": "Hugging Face 核心的模型库，实现了 BERT、GPT、T5 等主流预训练模型，是 NLP 与多模态研究的标配工具。",
+      "tags": ["AI", "框架", "NLP"]
+    },
+    {
+      "id": "langchain",
+      "title": "LangChain",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "llm-applications",
+      "deps": ["llm-applications"],
+      "description": "围绕大模型应用工作流组织的常见开发框架。",
+      "tags": ["AI", "LLM", "框架"]
+    },
+    {
       "id": "llm",
       "title": "大语言模型",
       "domain": "ai",
@@ -180,6 +580,46 @@
       "deps": ["llm-applications", "transformer"],
       "description": "围绕语言理解与生成能力构建的核心模型方向，是当前 AI 应用的重要基础。",
       "tags": ["AI", "LLM", "大模型"]
+    },
+    {
+      "id": "openai-api",
+      "title": "OpenAI API",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "llm",
+      "deps": ["llm"],
+      "description": "OpenAI 提供的 GPT 系列模型 API，是全球 AI 应用开发中使用最广泛的接口。",
+      "tags": ["AI", "LLM", "API"]
+    },
+    {
+      "id": "claude-api",
+      "title": "Claude API",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "llm",
+      "deps": ["llm"],
+      "description": "Anthropic 提供的 Claude 系列模型 API，以安全性与长上下文处理能力著称。",
+      "tags": ["AI", "LLM", "API"]
+    },
+    {
+      "id": "llama",
+      "title": "Llama",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "llm",
+      "deps": ["llm"],
+      "description": "Meta 开源的大语言模型系列，Llama 3 以开源免费的方式提供了强大的语言理解与生成能力。",
+      "tags": ["AI", "LLM", "开源"]
+    },
+    {
+      "id": "qwen",
+      "title": "通义千问",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "llm",
+      "deps": ["llm"],
+      "description": "阿里云开源的大语言模型系列，在中文理解与编程任务上表现出色。",
+      "tags": ["AI", "LLM", "中文"]
     },
     {
       "id": "rag",
@@ -192,14 +632,64 @@
       "tags": ["AI", "LLM", "检索增强"]
     },
     {
-      "id": "langchain",
-      "title": "LangChain",
+      "id": "fine-tuning",
+      "title": "模型微调",
       "domain": "ai",
       "stage": 4,
       "parentId": "llm",
       "deps": ["llm"],
-      "description": "围绕大模型应用工作流组织的常见开发框架。",
-      "tags": ["AI", "LLM", "框架"]
+      "description": "在预训练模型基础上针对特定任务或领域进行额外训练的技术，包括 LoRA、QLoRA 与 RLHF 等方法。",
+      "tags": ["AI", "LLM", "微调"]
+    },
+    {
+      "id": "ai-inference",
+      "title": "推理优化",
+      "domain": "ai",
+      "stage": 4,
+      "parentId": "llm",
+      "deps": ["llm"],
+      "description": "针对大模型推理阶段的速度优化与成本降低技术，包括量化、蒸馏、推理框架（vLLM、Ollama）等。",
+      "tags": ["AI", "LLM", "推理"]
+    },
+    {
+      "id": "ai-agent",
+      "title": "AI Agent",
+      "domain": "ai",
+      "stage": 3,
+      "parentId": "llm-applications",
+      "deps": ["llm-applications"],
+      "description": "能够自主规划、使用工具并完成复杂任务的 AI 智能体，代表了大模型从对话到行动的关键跨越。",
+      "tags": ["AI", "Agent", "自主"]
+    },
+    {
+      "id": "langgraph",
+      "title": "LangGraph",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "langchain",
+      "deps": ["langchain"],
+      "description": "LangChain 生态中的复杂 Agent 编排框架，通过有向图建模多步骤推理与工具调用工作流。",
+      "tags": ["AI", "Agent", "编排"]
+    },
+    {
+      "id": "crewai",
+      "title": "CrewAI",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "ai-agent",
+      "deps": ["ai-agent"],
+      "description": "多 Agent 协作框架，多个 AI 角色分工合作完成复杂任务，适合团队模拟与自动化工作流。",
+      "tags": ["AI", "Agent", "协作"]
+    },
+    {
+      "id": "autogen",
+      "title": "AutoGen",
+      "domain": "ai",
+      "stage": 5,
+      "parentId": "ai-agent",
+      "deps": ["ai-agent"],
+      "description": "微软推出的多 Agent 对话编程框架，支持多个 Agent 之间通过自然语言协作解决问题。",
+      "tags": ["AI", "Agent", "微软"]
     }
   ]
 }

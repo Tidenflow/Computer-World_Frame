@@ -44,6 +44,16 @@
       "tags": ["操作系统", "桌面端", "微软"]
     },
     {
+      "id": "windows-server",
+      "title": "Windows Server",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "windows",
+      "deps": ["windows"],
+      "description": "微软推出的服务器操作系统，提供 AD 域、IIS、Hyper-V 虚拟化等企业级服务能力。",
+      "tags": ["操作系统", "服务器", "微软"]
+    },
+    {
       "id": "macos",
       "title": "macOS",
       "domain": "software",
@@ -62,6 +72,46 @@
       "deps": ["operating-systems"],
       "description": "常见的开源操作系统内核及发行版生态，广泛用于服务器与开发环境。",
       "tags": ["操作系统", "开源", "发行版"]
+    },
+    {
+      "id": "ubuntu",
+      "title": "Ubuntu",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "linux",
+      "deps": ["linux"],
+      "description": "最流行的 Linux 发行版之一，以用户友好与频繁更新著称，适合桌面、服务器与云环境。",
+      "tags": ["操作系统", "Linux", "发行版"]
+    },
+    {
+      "id": "debian",
+      "title": "Debian",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "linux",
+      "deps": ["linux"],
+      "description": "以稳定性为核心价值观的 Linux 发行版，是 Ubuntu 与众多发行版的上游根基。",
+      "tags": ["操作系统", "Linux", "稳定"]
+    },
+    {
+      "id": "centos",
+      "title": "CentOS",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "linux",
+      "deps": ["linux"],
+      "description": "来自 Red Hat 的企业级 Linux 发行版社区版，以长期支持与高稳定性著称。",
+      "tags": ["操作系统", "Linux", "企业级"]
+    },
+    {
+      "id": "arch",
+      "title": "Arch Linux",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "linux",
+      "deps": ["linux"],
+      "description": "滚动更新、极致定制化的 Linux 发行版，深受高级用户与极客喜爱。",
+      "tags": ["操作系统", "Linux", "定制化"]
     },
     {
       "id": "android",
@@ -84,6 +134,56 @@
       "tags": ["操作系统", "移动端", "Apple"]
     },
     {
+      "id": "ipadOS",
+      "title": "iPadOS",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "ios",
+      "deps": ["ios"],
+      "description": "Apple 为 iPad 打造的专属操作系统，充分利用了大屏与 Apple Pencil 的能力。",
+      "tags": ["操作系统", "平板", "Apple"]
+    },
+    {
+      "id": "watchOS",
+      "title": "watchOS",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "ios",
+      "deps": ["ios"],
+      "description": "Apple Watch 的专用操作系统，支持健康监测、移动支付与独立应用生态。",
+      "tags": ["操作系统", "手表", "Apple"]
+    },
+    {
+      "id": "embedded-os",
+      "title": "嵌入式系统",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "operating-systems",
+      "deps": ["operating-systems"],
+      "description": "面向资源受限硬件的专用操作系统，覆盖物联网设备、微控制器与工业控制器等场景。",
+      "tags": ["操作系统", "嵌入式", "物联网"]
+    },
+    {
+      "id": "freertos",
+      "title": "FreeRTOS",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "embedded-os",
+      "deps": ["embedded-os"],
+      "description": "最流行的开源实时操作系统之一，专为微控制器设计，广泛用于物联网与工业嵌入式设备。",
+      "tags": ["嵌入式", "RTOS", "开源"]
+    },
+    {
+      "id": "rtthread",
+      "title": "RT-Thread",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "embedded-os",
+      "deps": ["embedded-os"],
+      "description": "国产的开源实时操作系统，中文社区活跃，对中文开发者友好，生态完善。",
+      "tags": ["嵌入式", "RTOS", "国产"]
+    },
+    {
       "id": "office-software",
       "title": "办公软件",
       "domain": "software",
@@ -92,46 +192,6 @@
       "deps": ["application-software"],
       "description": "用于文档、表格、演示等日常办公工作的应用软件分类。",
       "tags": ["应用软件", "办公", "效率"]
-    },
-    {
-      "id": "development-software",
-      "title": "开发软件",
-      "domain": "software",
-      "stage": 3,
-      "parentId": "application-software",
-      "deps": ["application-software"],
-      "description": "服务于写代码、调试、构建与协作的软件工具分类。",
-      "tags": ["应用软件", "开发", "编程"]
-    },
-    {
-      "id": "industrial-software",
-      "title": "工业软件",
-      "domain": "software",
-      "stage": 3,
-      "parentId": "application-software",
-      "deps": ["application-software"],
-      "description": "面向工程、制造与仿真的专业软件分类。",
-      "tags": ["应用软件", "工业", "工程"]
-    },
-    {
-      "id": "communication-software",
-      "title": "通信软件",
-      "domain": "software",
-      "stage": 3,
-      "parentId": "application-software",
-      "deps": ["application-software"],
-      "description": "围绕聊天、社交与团队协作场景的应用软件分类。",
-      "tags": ["应用软件", "通信", "社交"]
-    },
-    {
-      "id": "entertainment-software",
-      "title": "娱乐软件",
-      "domain": "software",
-      "stage": 3,
-      "parentId": "application-software",
-      "deps": ["application-software"],
-      "description": "面向内容消费、游戏平台与娱乐体验的软件分类。",
-      "tags": ["应用软件", "娱乐", "内容"]
     },
     {
       "id": "office",
@@ -144,6 +204,36 @@
       "tags": ["办公", "文档", "套件"]
     },
     {
+      "id": "wps-office",
+      "title": "WPS Office",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "office-software",
+      "deps": ["office-software"],
+      "description": "金山推出的国产办公软件套件，轻量、兼容性强，在国内市场占有率高。",
+      "tags": ["办公", "国产", "轻量"]
+    },
+    {
+      "id": "google-docs",
+      "title": "Google Docs",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "office-software",
+      "deps": ["office-software"],
+      "description": "Google 的在线办公套件，以实时协作与云端存储为核心卖点。",
+      "tags": ["办公", "在线", "协作"]
+    },
+    {
+      "id": "development-software",
+      "title": "开发软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "服务于写代码、调试、构建与协作的软件工具分类。",
+      "tags": ["应用软件", "开发", "编程"]
+    },
+    {
       "id": "vscode",
       "title": "VS Code",
       "domain": "software",
@@ -152,6 +242,66 @@
       "deps": ["development-software"],
       "description": "常见的现代代码编辑器，适合多语言开发与插件扩展。",
       "tags": ["开发", "编辑器", "代码"]
+    },
+    {
+      "id": "intellij-idea",
+      "title": "IntelliJ IDEA",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "vscode",
+      "deps": ["vscode"],
+      "description": "JetBrains 出品的 Java/Kotlin 专业 IDE，智能代码分析与重构能力业界领先。",
+      "tags": ["开发", "IDE", "Java"]
+    },
+    {
+      "id": "pycharm",
+      "title": "PyCharm",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "vscode",
+      "deps": ["vscode"],
+      "description": "JetBrains 出品的专业 Python IDE，适合大型 Python 项目与数据科学开发。",
+      "tags": ["开发", "IDE", "Python"]
+    },
+    {
+      "id": "webstorm",
+      "title": "WebStorm",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "vscode",
+      "deps": ["vscode"],
+      "description": "JetBrains 出品的专业 JavaScript/TypeScript IDE，前端开发者的强力工具。",
+      "tags": ["开发", "IDE", "前端"]
+    },
+    {
+      "id": "xcode",
+      "title": "Xcode",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "vscode",
+      "deps": ["vscode"],
+      "description": "Apple 官方的 iOS 与 macOS 开发 IDE，深度集成 Swift 与 Apple 平台 SDK。",
+      "tags": ["开发", "IDE", "Apple"]
+    },
+    {
+      "id": "android-studio",
+      "title": "Android Studio",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "vscode",
+      "deps": ["vscode"],
+      "description": "Google 官方的 Android 开发 IDE，基于 IntelliJ IDEA 构建，集成 Android SDK 与模拟器。",
+      "tags": ["开发", "IDE", "Android"]
+    },
+    {
+      "id": "industrial-software",
+      "title": "工业软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "面向工程、制造与仿真的专业软件分类。",
+      "tags": ["应用软件", "工业", "工程"]
     },
     {
       "id": "cad",
@@ -164,6 +314,46 @@
       "tags": ["工业", "设计", "制图"]
     },
     {
+      "id": "autocad",
+      "title": "AutoCAD",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "cad",
+      "deps": ["cad"],
+      "description": "Autodesk 出品的二维与三维 CAD 软件，是工程制图与建筑设计的行业标准工具。",
+      "tags": ["工业", "CAD", "工程制图"]
+    },
+    {
+      "id": "solidworks",
+      "title": "SolidWorks",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "cad",
+      "deps": ["cad"],
+      "description": "达索系统旗下的三维 CAD 软件，以机械设计与装配建模能力著称。",
+      "tags": ["工业", "CAD", "机械设计"]
+    },
+    {
+      "id": "catia",
+      "title": "CATIA",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "cad",
+      "deps": ["cad"],
+      "description": "达索系统的高端 CAD/CAM/CAE 平台，主导航空、汽车与高端制造业的产品设计。",
+      "tags": ["工业", "CAD", "高端制造"]
+    },
+    {
+      "id": "sketchup",
+      "title": "SketchUp",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "cad",
+      "deps": ["cad"],
+      "description": "以简洁易用著称的建筑三维建模软件，适合快速概念设计与室内装修可视化。",
+      "tags": ["工业", "CAD", "建筑设计"]
+    },
+    {
       "id": "cae",
       "title": "CAE",
       "domain": "software",
@@ -172,6 +362,46 @@
       "deps": ["industrial-software"],
       "description": "面向工程分析与仿真的常见工业软件方向。",
       "tags": ["工业", "仿真", "分析"]
+    },
+    {
+      "id": "ansys",
+      "title": "ANSYS",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "cae",
+      "deps": ["cae"],
+      "description": "全球领先的工程仿真软件，覆盖结构力学、流体、热学与电磁等多物理场分析。",
+      "tags": ["工业", "CAE", "仿真"]
+    },
+    {
+      "id": "abaqus",
+      "title": "Abaqus",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "cae",
+      "deps": ["cae"],
+      "description": "达索系统旗下的高级非线性有限元分析软件，适合航空航天与汽车工业的复杂仿真。",
+      "tags": ["工业", "CAE", "有限元"]
+    },
+    {
+      "id": "hypermesh",
+      "title": "HyperMesh",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "cae",
+      "deps": ["cae"],
+      "description": "Altair 公司的高端有限元前处理软件，以高质量网格划分能力著称。",
+      "tags": ["工业", "CAE", "网格划分"]
+    },
+    {
+      "id": "communication-software",
+      "title": "通信软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "围绕聊天、社交与团队协作场景的应用软件分类。",
+      "tags": ["应用软件", "通信", "社交"]
     },
     {
       "id": "wechat",
@@ -184,6 +414,66 @@
       "tags": ["通信", "社交", "聊天"]
     },
     {
+      "id": "dingtalk",
+      "title": "钉钉",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "communication-software",
+      "deps": ["communication-software"],
+      "description": "阿里巴巴推出的企业通信与协同办公平台，支持即时消息、视频会议与 OA 审批。",
+      "tags": ["通信", "企业", "协同"]
+    },
+    {
+      "id": "feishu",
+      "title": "飞书",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "communication-software",
+      "deps": ["communication-software"],
+      "description": "字节跳动推出的新一代办公协作平台，以即时沟通、文档协作与日历管理的一体化著称。",
+      "tags": ["通信", "协作", "办公"]
+    },
+    {
+      "id": "slack",
+      "title": "Slack",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "communication-software",
+      "deps": ["communication-software"],
+      "description": "以频道组织对话的团队通信工具，与大量第三方服务深度集成，是远程协作的标杆产品。",
+      "tags": ["通信", "团队", "协作"]
+    },
+    {
+      "id": "discord",
+      "title": "Discord",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "communication-software",
+      "deps": ["communication-software"],
+      "description": "以语音、视频与文字频道为核心的通信平台，深受游戏社区与开发者社区喜爱。",
+      "tags": ["通信", "社区", "语音"]
+    },
+    {
+      "id": "teams",
+      "title": "Microsoft Teams",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "communication-software",
+      "deps": ["communication-software"],
+      "description": "微软的团队协作平台，与 Office 365 深度集成，支持聊天、会议与文件共享。",
+      "tags": ["通信", "协作", "微软"]
+    },
+    {
+      "id": "entertainment-software",
+      "title": "娱乐软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "面向内容消费、游戏平台与娱乐体验的软件分类。",
+      "tags": ["应用软件", "娱乐", "内容"]
+    },
+    {
       "id": "steam",
       "title": "Steam",
       "domain": "software",
@@ -192,6 +482,106 @@
       "deps": ["entertainment-software"],
       "description": "常见的游戏平台与软件分发平台，聚焦数字娱乐内容。",
       "tags": ["娱乐", "游戏平台", "分发"]
+    },
+    {
+      "id": "epic-games",
+      "title": "Epic Games Store",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "steam",
+      "deps": ["steam"],
+      "description": "Epic Games 的游戏分发平台，以独占游戏与频繁优惠活动著称。",
+      "tags": ["娱乐", "游戏平台", "分发"]
+    },
+    {
+      "id": "gog",
+      "title": "GOG",
+      "domain": "software",
+      "stage": 5,
+      "parentId": "steam",
+      "deps": ["steam"],
+      "description": "DRM-free 游戏分发平台，强调玩家对购买游戏的完全拥有权。",
+      "tags": ["娱乐", "游戏平台", "DRM-free"]
+    },
+    {
+      "id": "database-software",
+      "title": "数据库软件",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "用于存储、管理与查询结构化数据的专业软件，涵盖关系型、文档型、键值型等多种类型。",
+      "tags": ["应用软件", "数据库", "存储"]
+    },
+    {
+      "id": "oracle-db",
+      "title": "Oracle",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "database-software",
+      "deps": ["database-software"],
+      "description": "Oracle 公司的商业关系型数据库，在企业级市场长期占据主导地位，功能最全面但价格昂贵。",
+      "tags": ["数据库", "关系型", "商业"]
+    },
+    {
+      "id": "mongodb-db",
+      "title": "MongoDB",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "database-software",
+      "deps": ["database-software"],
+      "description": "主流的文档型 NoSQL 数据库，以灵活的 JSON 文档存储著称。",
+      "tags": ["数据库", "NoSQL", "文档型"]
+    },
+    {
+      "id": "browser-software",
+      "title": "浏览器",
+      "domain": "software",
+      "stage": 3,
+      "parentId": "application-software",
+      "deps": ["application-software"],
+      "description": "用于访问互联网内容的基础软件，是 Web 应用的主要入口。",
+      "tags": ["应用软件", "浏览器", "互联网"]
+    },
+    {
+      "id": "chrome",
+      "title": "Chrome",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "browser-software",
+      "deps": ["browser-software"],
+      "description": "Google 推出的浏览器，以 Blink 渲染引擎与 V8 JavaScript 引擎为核心，全球市场占有率最高。",
+      "tags": ["浏览器", "Google", "主流"]
+    },
+    {
+      "id": "firefox",
+      "title": "Firefox",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "browser-software",
+      "deps": ["browser-software"],
+      "description": "Mozilla 基金会维护的开源浏览器，以隐私保护与独立生态著称。",
+      "tags": ["浏览器", "开源", "隐私"]
+    },
+    {
+      "id": "safari",
+      "title": "Safari",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "browser-software",
+      "deps": ["browser-software"],
+      "description": "Apple 设备的默认浏览器，以低功耗与苹果生态深度整合著称。",
+      "tags": ["浏览器", "Apple", "低功耗"]
+    },
+    {
+      "id": "edge",
+      "title": "Edge",
+      "domain": "software",
+      "stage": 4,
+      "parentId": "browser-software",
+      "deps": ["browser-software"],
+      "description": "微软基于 Chromium 内核重构的浏览器，在 Windows 平台集成度高，性能优秀。",
+      "tags": ["浏览器", "微软", "Chromium"]
     }
   ]
 }

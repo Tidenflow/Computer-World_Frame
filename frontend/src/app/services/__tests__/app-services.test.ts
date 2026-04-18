@@ -65,6 +65,7 @@ describe('app services', () => {
       'web-frontend',
       'frontend-languages',
       'frontend-frameworks',
+      'frontend-styling',
       'web-backend',
       'desktop-development',
       'development-tools',
@@ -76,8 +77,13 @@ describe('app services', () => {
       'web-frontend',
       'frontend-languages',
       'frontend-frameworks',
+      'frontend-styling',
       'react',
       'vue',
+      'angular',
+      'svelte',
+      'astro',
+      'remix',
       'web-backend',
       'desktop-development',
       'development-tools',
@@ -90,7 +96,9 @@ describe('app services', () => {
       'web-backend',
       'backend-python-stack',
       'backend-js-stack',
+      'backend-java-stack',
       'backend-data-storage',
+      'backend-middleware',
       'desktop-development',
       'development-tools',
       'architecture-design',
@@ -115,6 +123,8 @@ describe('app services', () => {
       'industrial-software',
       'communication-software',
       'entertainment-software',
+      'database-software',
+      'browser-software',
     ])
   })
 
@@ -140,7 +150,9 @@ describe('app services', () => {
       'http',
       'https',
       'websocket',
+      'sse',
       'rpc',
+      'mqtt',
     ])
 
     expect(buildVisibleGraphNodes(nodes, 'network-services').map((node) => node.id)).toEqual([
@@ -155,6 +167,9 @@ describe('app services', () => {
       'rest-api',
       'graphql',
       'proxy-service',
+      'load-balancer',
+      'service-mesh',
+      'observability',
     ])
   })
 
@@ -178,6 +193,7 @@ describe('app services', () => {
       'ai-frameworks',
       'llm-applications',
       'machine-learning',
+      'optimization-theory',
     ])
 
     expect(buildVisibleGraphNodes(nodes, 'llm-applications').map((node) => node.id)).toEqual([
@@ -187,7 +203,9 @@ describe('app services', () => {
       'ai-domains',
       'ai-frameworks',
       'llm-applications',
+      'langchain',
       'llm',
+      'ai-agent',
     ])
   })
 
@@ -199,6 +217,7 @@ describe('app services', () => {
       'fundamentals',
       'hardware',
       'software',
+      'programming-languages',
       'programming',
       'network',
       'data',
