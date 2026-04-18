@@ -4,8 +4,19 @@ import { aiMap, allMaps, defaultMap, networkMap, programmingMap, softwareMap } f
 
 describe('map data entrypoint', () => {
   test('exports the expected top-level map ids', () => {
-    expect(Object.keys(allMaps)).toEqual(['root', 'software', 'programming', 'programming-languages', 'ai', 'network'])
+    expect(Object.keys(allMaps)).toEqual([
+      'root',
+      'fundamentals',
+      'hardware',
+      'software',
+      'programming',
+      'programming-languages',
+      'ai',
+      'network',
+    ])
     expect(defaultMap.id).toBe('root')
+    expect(allMaps.fundamentals.id).toBe('fundamentals')
+    expect(allMaps.hardware.id).toBe('hardware')
     expect(softwareMap.id).toBe('software')
     expect(programmingMap.id).toBe('programming')
     expect(allMaps['programming-languages'].id).toBe('programming-languages')
@@ -16,9 +27,21 @@ describe('map data entrypoint', () => {
   test('preserves representative cross-map and dependency references', () => {
     expect(allMaps.root.nodes.find((node) => node.id === 'hardware')?.parentId).toBe('cw-root')
     expect(allMaps.root.nodes.find((node) => node.id === 'ai')?.parentId).toBe('cw-root')
+    expect(allMaps.root.nodes.find((node) => node.id === 'fundamentals')?.targetMap).toBe('fundamentals')
+    expect(allMaps.root.nodes.find((node) => node.id === 'hardware')?.targetMap).toBe('hardware')
     expect(allMaps.root.nodes.find((node) => node.id === 'software')?.targetMap).toBe('software')
     expect(allMaps.root.nodes.find((node) => node.id === 'ai')?.deps).toEqual(['cw-root'])
     expect(allMaps.root.nodes.find((node) => node.id === 'programming-languages')?.targetMap).toBe('programming-languages')
+    expect(allMaps.fundamentals.nodes.find((node) => node.id === 'fundamentals-root')?.stage).toBe(1)
+    expect(allMaps.fundamentals.nodes.find((node) => node.id === 'computer-organization')?.parentId).toBe('fundamentals-root')
+    expect(allMaps.fundamentals.nodes.find((node) => node.id === 'operating-systems-fundamentals')?.parentId).toBe('fundamentals-root')
+    expect(allMaps.fundamentals.nodes.find((node) => node.id === 'data-structures')?.parentId).toBe('fundamentals-root')
+    expect(allMaps.fundamentals.nodes.find((node) => node.id === 'algorithms')?.parentId).toBe('fundamentals-root')
+    expect(allMaps.hardware.nodes.find((node) => node.id === 'hardware-root')?.stage).toBe(1)
+    expect(allMaps.hardware.nodes.find((node) => node.id === 'cpu')?.parentId).toBe('hardware-root')
+    expect(allMaps.hardware.nodes.find((node) => node.id === 'memory')?.parentId).toBe('hardware-root')
+    expect(allMaps.hardware.nodes.find((node) => node.id === 'storage-devices')?.parentId).toBe('hardware-root')
+    expect(allMaps.hardware.nodes.find((node) => node.id === 'input-output-devices')?.parentId).toBe('hardware-root')
     expect(allMaps.software.nodes.find((node) => node.id === 'operating-systems')?.parentId).toBe('software-root')
     expect(allMaps.software.nodes.find((node) => node.id === 'application-software')?.parentId).toBe('software-root')
     expect(allMaps.software.nodes.find((node) => node.id === 'development-software')?.parentId).toBe('application-software')

@@ -235,8 +235,31 @@ describe('app services', () => {
       'programming-languages',
       'programming',
       'network',
-      'data',
       'ai',
+    ])
+  })
+
+  test('supports the same progressive tree expansion for the fundamentals map', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.fundamentals, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, null).map((node) => node.id)).toEqual([
+      'fundamentals-root',
+      'computer-organization',
+      'operating-systems-fundamentals',
+      'data-structures',
+      'algorithms',
+    ])
+  })
+
+  test('supports the same progressive tree expansion for the hardware map', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.hardware, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, null).map((node) => node.id)).toEqual([
+      'hardware-root',
+      'cpu',
+      'memory',
+      'storage-devices',
+      'input-output-devices',
     ])
   })
 

@@ -1,0 +1,88 @@
+{
+  "id": "fundamentals",
+  "title": "计算机基础",
+  "nodes": [
+    {
+      "id": "fundamentals-root",
+      "title": "计算机基础",
+      "domain": "theory",
+      "stage": 1,
+      "deps": [],
+      "description": "计算机基础子图的根节点，用来承接计算机组成原理、操作系统、数据结构与算法基础。",
+      "tags": [
+        "总览",
+        "根节点",
+        "基础"
+      ],
+      "category": "fundamentals"
+    },
+    {
+      "id": "computer-organization",
+      "title": "计算机组成原理",
+      "domain": "theory",
+      "stage": 2,
+      "parentId": "fundamentals-root",
+      "deps": [
+        "fundamentals-root"
+      ],
+      "description": "关注 CPU、存储器、指令执行与整机组织方式，是理解计算机底层运作的入口。",
+      "tags": [
+        "硬件基础",
+        "计算机组成",
+        "底层"
+      ],
+      "category": "fundamentals"
+    },
+    {
+      "id": "operating-systems-fundamentals",
+      "title": "操作系统",
+      "domain": "theory",
+      "stage": 2,
+      "parentId": "fundamentals-root",
+      "deps": [
+        "fundamentals-root"
+      ],
+      "description": "理解进程、线程、内存管理、文件系统与调度机制，是软硬件之间的关键桥梁。",
+      "tags": [
+        "系统",
+        "进程",
+        "调度"
+      ],
+      "category": "fundamentals"
+    },
+    {
+      "id": "data-structures",
+      "title": "数据结构",
+      "domain": "theory",
+      "stage": 2,
+      "parentId": "fundamentals-root",
+      "deps": [
+        "fundamentals-root"
+      ],
+      "description": "面向数据组织与存取方式的基础知识，影响程序表达能力与性能上限。",
+      "tags": [
+        "数据",
+        "结构",
+        "抽象"
+      ],
+      "category": "fundamentals"
+    },
+    {
+      "id": "algorithms",
+      "title": "算法基础",
+      "domain": "theory",
+      "stage": 2,
+      "parentId": "fundamentals-root",
+      "deps": [
+        "fundamentals-root"
+      ],
+      "description": "关注常见算法思想与时间/空间复杂度，是从会写代码走向会设计解法的基础。",
+      "tags": [
+        "算法",
+        "复杂度",
+        "思维"
+      ],
+      "category": "fundamentals"
+    }
+  ]
+}

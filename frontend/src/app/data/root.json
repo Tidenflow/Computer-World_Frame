@@ -8,7 +8,7 @@
       "domain": "theory",
       "stage": 1,
       "deps": [],
-      "description": "计算机世界总览图的根节点，用来承接基础理论、硬件、软件、开发、网络、数据与 AI。",
+      "description": "计算机世界总览图的根节点，用来承接基础理论、硬件、软件、开发、网络与 AI。",
       "tags": [
         "总览",
         "根节点",
@@ -25,7 +25,8 @@
       "deps": [
         "cw-root"
       ],
-      "description": "计算机科学的基础理论知识，包括数字逻辑、计算机组成原理等。这是一切计算机技术的起点。",
+      "targetMap": "fundamentals",
+      "description": "计算机科学的基础理论知识，包括计算机组成原理、操作系统、数据结构与算法基础。",
       "tags": [
         "理论",
         "基础",
@@ -48,6 +49,7 @@
       "deps": [
         "cw-root"
       ],
+      "targetMap": "hardware",
       "description": "CPU、显卡、内存、主板等物理组件。理解硬件是理解计算机工作原理的关键。",
       "tags": [
         "硬件",
@@ -90,7 +92,7 @@
         "cw-root"
       ],
       "targetMap": "programming-languages",
-      "description": "从机器码到高级语言，编程语言是人与计算机对话的媒介。按范式与运行平台，可分为系统语言、脚本语言、Web 语言等多种类别。",
+      "description": "从机器码到高级语言，编程语言是人与计算机对话的媒介。",
       "tags": [
         "编程",
         "语言",
@@ -108,11 +110,11 @@
         "cw-root"
       ],
       "targetMap": "programming",
-      "description": "Python、JavaScript、Git、IDE 等开发工具和语言。学习编程是创造软件的第一步。",
+      "description": "围绕前端、后端、桌面端、开发工具与架构设计的程序开发体系。",
       "tags": [
         "编程",
         "开发",
-        "工具"
+        "工程"
       ],
       "category": "technology"
     },
@@ -135,23 +137,6 @@
       "category": "platform"
     },
     {
-      "id": "data",
-      "title": "数据存储",
-      "domain": "software",
-      "stage": 2,
-      "parentId": "cw-root",
-      "deps": [
-        "cw-root"
-      ],
-      "description": "数据库、文件系统、云存储等数据管理技术。数据是信息时代最重要的资产。",
-      "tags": [
-        "数据",
-        "存储",
-        "数据库"
-      ],
-      "category": "technology"
-    },
-    {
       "id": "ai",
       "title": "AI 人工智能",
       "domain": "ai",
@@ -161,7 +146,7 @@
         "cw-root"
       ],
       "targetMap": "ai",
-      "description": "ChatGPT、豆包、机器学习、深度学习等。AI 正在改变世界的每一个角落。",
+      "description": "ChatGPT、机器学习、深度学习与大模型应用。AI 正在改变世界的每一个角落。",
       "tags": [
         "AI",
         "机器学习",
