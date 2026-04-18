@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { motion } from 'motion/react';
-import { Node, DOMAIN_COLORS, DOMAIN_NAMES } from '../types';
+import { getNodeCategoryColor, getNodeCategoryName, Node } from '../types';
 
 interface DetailPanelProps {
   node: Node | null;
@@ -28,12 +28,12 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
             <div
               className="w-4 h-4 rounded-full"
               style={{
-                backgroundColor: node.unlocked ? DOMAIN_COLORS[node.domain] : '#D1D5DB',
-                boxShadow: node.unlocked ? `0 0 8px ${DOMAIN_COLORS[node.domain]}40` : 'none',
+                backgroundColor: node.unlocked ? getNodeCategoryColor(node) : '#D1D5DB',
+                boxShadow: node.unlocked ? `0 0 8px ${getNodeCategoryColor(node)}40` : 'none',
               }}
             />
             <Badge variant="secondary" className="text-xs">
-              {DOMAIN_NAMES[node.domain]}
+              {getNodeCategoryName(node)}
             </Badge>
           </div>
           <h2 className="text-xl font-semibold text-[#111827]">{node.title}</h2>
@@ -75,7 +75,7 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
                   key={i}
                   className="h-2 flex-1 rounded-full"
                   style={{
-                    backgroundColor: i < node.stage! ? DOMAIN_COLORS[node.domain] : '#E5E7EB',
+                    backgroundColor: i < node.stage! ? getNodeCategoryColor(node) : '#E5E7EB',
                   }}
                 />
               ))}
@@ -126,7 +126,7 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
             <Button
               onClick={() => onNavigateToMap(node.targetMap!)}
               className="w-full"
-              style={{ backgroundColor: DOMAIN_COLORS[node.domain] }}
+              style={{ backgroundColor: getNodeCategoryColor(node) }}
             >
               进入 {node.title} 地图
               <ArrowRight className="w-4 h-4 ml-2" />

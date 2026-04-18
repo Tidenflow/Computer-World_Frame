@@ -9,7 +9,12 @@
       "stage": 1,
       "deps": [],
       "description": "网络通信总览图的根节点，用来承接网络接入、协议、Web 通信、网络服务与网络安全。",
-      "tags": ["总览", "根节点", "网络"]
+      "tags": [
+        "总览",
+        "根节点",
+        "网络"
+      ],
+      "category": "technology"
     },
     {
       "id": "network-access",
@@ -17,9 +22,16 @@
       "domain": "network",
       "stage": 2,
       "parentId": "network-root",
-      "deps": ["network-root"],
+      "deps": [
+        "network-root"
+      ],
       "description": "设备接入网络的基础方式，涵盖有线、无线与移动网络。",
-      "tags": ["接入", "基础设施", "网络"]
+      "tags": [
+        "接入",
+        "基础设施",
+        "网络"
+      ],
+      "category": "technology"
     },
     {
       "id": "core-protocols",
@@ -27,9 +39,16 @@
       "domain": "network",
       "stage": 2,
       "parentId": "network-root",
-      "deps": ["network-root"],
+      "deps": [
+        "network-root"
+      ],
       "description": "支撑网络传输与数据交换的基础协议集合。",
-      "tags": ["协议", "基础", "传输"]
+      "tags": [
+        "协议",
+        "基础",
+        "传输"
+      ],
+      "category": "technology"
     },
     {
       "id": "web-communication",
@@ -37,9 +56,16 @@
       "domain": "network",
       "stage": 2,
       "parentId": "network-root",
-      "deps": ["network-root"],
+      "deps": [
+        "network-root"
+      ],
       "description": "围绕 Web 应用与接口通信的常见协议与通信方式。",
-      "tags": ["Web", "协议", "通信"]
+      "tags": [
+        "Web",
+        "协议",
+        "通信"
+      ],
+      "category": "technology"
     },
     {
       "id": "network-services",
@@ -47,9 +73,16 @@
       "domain": "network",
       "stage": 2,
       "parentId": "network-root",
-      "deps": ["network-root"],
+      "deps": [
+        "network-root"
+      ],
       "description": "围绕解析、分发、接口与代理能力构建的网络服务层。",
-      "tags": ["服务", "网络", "基础设施"]
+      "tags": [
+        "服务",
+        "网络",
+        "基础设施"
+      ],
+      "category": "platform"
     },
     {
       "id": "network-security",
@@ -57,9 +90,16 @@
       "domain": "network",
       "stage": 2,
       "parentId": "network-root",
-      "deps": ["network-root"],
+      "deps": [
+        "network-root"
+      ],
       "description": "用于保护网络连接、访问链路与传输数据的安全能力。",
-      "tags": ["安全", "网络", "防护"]
+      "tags": [
+        "安全",
+        "网络",
+        "防护"
+      ],
+      "category": "technology"
     },
     {
       "id": "wifi",
@@ -67,9 +107,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-access",
-      "deps": ["network-access"],
+      "deps": [
+        "network-access"
+      ],
       "description": "常见的无线局域网接入方式，用于设备近距离联网。",
-      "tags": ["接入", "无线", "局域网"]
+      "tags": [
+        "接入",
+        "无线",
+        "局域网"
+      ],
+      "category": "technology"
     },
     {
       "id": "wifi6",
@@ -77,9 +124,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "wifi",
-      "deps": ["wifi"],
+      "deps": [
+        "wifi"
+      ],
       "description": "第六代无线局域网标准（802.11ax），引入了 OFDMA 与 MU-MIMO 技术，大幅提升了多设备并发传输效率。",
-      "tags": ["接入", "无线", "高性能"]
+      "tags": [
+        "接入",
+        "无线",
+        "高性能"
+      ],
+      "category": "technology"
     },
     {
       "id": "wifi7",
@@ -87,9 +141,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "wifi",
-      "deps": ["wifi"],
+      "deps": [
+        "wifi"
+      ],
       "description": "第七代无线局域网标准（802.11be），支持 320MHz 超宽信道与 Multi-Link Operation，进一步提升吞吐量与稳定性。",
-      "tags": ["接入", "无线", "最新标准"]
+      "tags": [
+        "接入",
+        "无线",
+        "最新标准"
+      ],
+      "category": "technology"
     },
     {
       "id": "bluetooth",
@@ -97,9 +158,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "network-access",
-      "deps": ["network-access"],
+      "deps": [
+        "network-access"
+      ],
       "description": "短距离无线通信技术，广泛用于可穿戴设备、音频设备与物联网场景。",
-      "tags": ["接入", "短距离", "物联网"]
+      "tags": [
+        "接入",
+        "短距离",
+        "物联网"
+      ],
+      "category": "technology"
     },
     {
       "id": "zigbee",
@@ -107,9 +175,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "network-access",
-      "deps": ["network-access"],
+      "deps": [
+        "network-access"
+      ],
       "description": "低功耗短距离物联网无线通信协议，适合智能家居中的传感器与控制器组网。",
-      "tags": ["接入", "物联网", "低功耗"]
+      "tags": [
+        "接入",
+        "物联网",
+        "低功耗"
+      ],
+      "category": "technology"
     },
     {
       "id": "ethernet",
@@ -117,9 +192,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-access",
-      "deps": ["network-access"],
+      "deps": [
+        "network-access"
+      ],
       "description": "常见的有线网络接入方式，强调稳定与低延迟。",
-      "tags": ["接入", "有线", "局域网"]
+      "tags": [
+        "接入",
+        "有线",
+        "局域网"
+      ],
+      "category": "technology"
     },
     {
       "id": "fiber-optic",
@@ -127,9 +209,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "ethernet",
-      "deps": ["ethernet"],
+      "deps": [
+        "ethernet"
+      ],
       "description": "以光信号传输数据的有线介质，带宽与传输距离远优于铜缆，是数据中心与骨干网的核心技术。",
-      "tags": ["接入", "有线", "光纤"]
+      "tags": [
+        "接入",
+        "有线",
+        "光纤"
+      ],
+      "category": "technology"
     },
     {
       "id": "5g",
@@ -137,9 +226,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-access",
-      "deps": ["network-access"],
+      "deps": [
+        "network-access"
+      ],
       "description": "常见的移动通信网络能力，用于蜂窝网络场景下的高速接入。",
-      "tags": ["接入", "移动网络", "蜂窝"]
+      "tags": [
+        "接入",
+        "移动网络",
+        "蜂窝"
+      ],
+      "category": "technology"
     },
     {
       "id": "4g-lte",
@@ -147,9 +243,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "5g",
-      "deps": ["5g"],
+      "deps": [
+        "5g"
+      ],
       "description": "第四代长期演进技术，是移动互联网的主要承载标准，为智能手机与移动设备提供宽带接入。",
-      "tags": ["接入", "移动网络", "4G"]
+      "tags": [
+        "接入",
+        "移动网络",
+        "4G"
+      ],
+      "category": "technology"
     },
     {
       "id": "satellite-internet",
@@ -157,9 +260,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "network-access",
-      "deps": ["network-access"],
+      "deps": [
+        "network-access"
+      ],
       "description": "通过低轨卫星星座提供全球互联网接入服务，解决偏远地区与海洋的网络覆盖问题。",
-      "tags": ["接入", "卫星", "全球覆盖"]
+      "tags": [
+        "接入",
+        "卫星",
+        "全球覆盖"
+      ],
+      "category": "platform"
     },
     {
       "id": "ip",
@@ -167,9 +277,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "core-protocols",
-      "deps": ["core-protocols"],
+      "deps": [
+        "core-protocols"
+      ],
       "description": "网络层的核心协议之一，负责地址标识与数据包路由。",
-      "tags": ["协议", "网络层", "地址"]
+      "tags": [
+        "协议",
+        "网络层",
+        "地址"
+      ],
+      "category": "technology"
     },
     {
       "id": "ipv4",
@@ -177,9 +294,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "ip",
-      "deps": ["ip"],
+      "deps": [
+        "ip"
+      ],
       "description": "第四版互联网协议，采用 32 位地址，地址空间接近枯竭，是互联网发展初期的主流协议。",
-      "tags": ["协议", "地址", "IPv4"]
+      "tags": [
+        "协议",
+        "地址",
+        "IPv4"
+      ],
+      "category": "technology"
     },
     {
       "id": "ipv6",
@@ -187,9 +311,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "ip",
-      "deps": ["ip"],
+      "deps": [
+        "ip"
+      ],
       "description": "第六版互联网协议，采用 128 位地址，彻底解决地址枯竭问题，同时简化了包头结构。",
-      "tags": ["协议", "地址", "IPv6"]
+      "tags": [
+        "协议",
+        "地址",
+        "IPv6"
+      ],
+      "category": "technology"
     },
     {
       "id": "icmp",
@@ -197,9 +328,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "ip",
-      "deps": ["ip"],
+      "deps": [
+        "ip"
+      ],
       "description": "互联网控制消息协议，用于在 IP 主机与路由器之间传递控制消息，是 ping 与路由追踪的工具基础。",
-      "tags": ["协议", "网络层", "控制"]
+      "tags": [
+        "协议",
+        "网络层",
+        "控制"
+      ],
+      "category": "technology"
     },
     {
       "id": "tcp",
@@ -207,9 +345,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "core-protocols",
-      "deps": ["core-protocols", "ip"],
+      "deps": [
+        "core-protocols",
+        "ip"
+      ],
       "description": "面向连接的传输层协议，强调可靠传输与顺序保证。",
-      "tags": ["协议", "传输层", "可靠"]
+      "tags": [
+        "协议",
+        "传输层",
+        "可靠"
+      ],
+      "category": "technology"
     },
     {
       "id": "udp",
@@ -217,9 +363,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "core-protocols",
-      "deps": ["core-protocols", "ip"],
+      "deps": [
+        "core-protocols",
+        "ip"
+      ],
       "description": "无连接的传输层协议，强调轻量与低开销。",
-      "tags": ["协议", "传输层", "轻量"]
+      "tags": [
+        "协议",
+        "传输层",
+        "轻量"
+      ],
+      "category": "technology"
     },
     {
       "id": "quic",
@@ -227,9 +381,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "core-protocols",
-      "deps": ["core-protocols", "udp"],
+      "deps": [
+        "core-protocols",
+        "udp"
+      ],
       "description": "基于 UDP 的可靠传输协议，由 Google 提出并成为 HTTP/3 的底层协议，融合了 TCP 的可靠性与 UDP 的低延迟。",
-      "tags": ["协议", "传输层", "高性能"]
+      "tags": [
+        "协议",
+        "传输层",
+        "高性能"
+      ],
+      "category": "technology"
     },
     {
       "id": "http",
@@ -237,9 +399,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "web-communication",
-      "deps": ["web-communication", "tcp"],
+      "deps": [
+        "web-communication",
+        "tcp"
+      ],
       "description": "Web 应用中最常见的应用层协议，用于请求与响应通信。",
-      "tags": ["Web", "协议", "应用层"]
+      "tags": [
+        "Web",
+        "协议",
+        "应用层"
+      ],
+      "category": "technology"
     },
     {
       "id": "http2",
@@ -247,9 +417,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "http",
-      "deps": ["http"],
+      "deps": [
+        "http"
+      ],
       "description": "HTTP 的第二个主要版本，通过多路复用、头部压缩与服务器推送大幅提升了页面加载效率。",
-      "tags": ["Web", "协议", "优化"]
+      "tags": [
+        "Web",
+        "协议",
+        "优化"
+      ],
+      "category": "technology"
     },
     {
       "id": "http3",
@@ -257,9 +434,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "http",
-      "deps": ["http"],
+      "deps": [
+        "http"
+      ],
       "description": "基于 QUIC 协议的 HTTP 新版本，零 RTT 连接建立与丢包无阻塞特性解决了网络切换时的延迟问题。",
-      "tags": ["Web", "协议", "最新标准"]
+      "tags": [
+        "Web",
+        "协议",
+        "最新标准"
+      ],
+      "category": "technology"
     },
     {
       "id": "https",
@@ -267,9 +451,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "web-communication",
-      "deps": ["http"],
+      "deps": [
+        "http"
+      ],
       "description": "在 HTTP 基础上增加传输安全能力的协议形式。",
-      "tags": ["Web", "协议", "加密"]
+      "tags": [
+        "Web",
+        "协议",
+        "加密"
+      ],
+      "category": "technology"
     },
     {
       "id": "tls",
@@ -277,9 +468,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "https",
-      "deps": ["https"],
+      "deps": [
+        "https"
+      ],
       "description": "传输层安全协议，用于在通信双方之间建立加密通道，是 HTTPS 的核心安全机制。",
-      "tags": ["安全", "加密", "TLS"]
+      "tags": [
+        "安全",
+        "加密",
+        "TLS"
+      ],
+      "category": "technology"
     },
     {
       "id": "websocket",
@@ -287,9 +485,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "web-communication",
-      "deps": ["web-communication", "http"],
+      "deps": [
+        "web-communication",
+        "http"
+      ],
       "description": "适合双向实时通信的 Web 协议能力。",
-      "tags": ["Web", "实时通信", "双向"]
+      "tags": [
+        "Web",
+        "实时通信",
+        "双向"
+      ],
+      "category": "technology"
     },
     {
       "id": "sse",
@@ -297,9 +503,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "web-communication",
-      "deps": ["web-communication"],
+      "deps": [
+        "web-communication"
+      ],
       "description": "服务器推送事件（Server-Sent Events），服务器向浏览器单向推送实时数据，比 WebSocket 更轻量。",
-      "tags": ["Web", "实时通信", "服务器推送"]
+      "tags": [
+        "Web",
+        "实时通信",
+        "服务器推送"
+      ],
+      "category": "technology"
     },
     {
       "id": "rpc",
@@ -307,9 +520,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "web-communication",
-      "deps": ["web-communication"],
+      "deps": [
+        "web-communication"
+      ],
       "description": "远程过程调用思想，用于跨服务调用与接口抽象。",
-      "tags": ["Web", "调用", "服务通信"]
+      "tags": [
+        "Web",
+        "调用",
+        "服务通信"
+      ],
+      "category": "technology"
     },
     {
       "id": "grpc",
@@ -317,9 +537,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "rpc",
-      "deps": ["rpc"],
+      "deps": [
+        "rpc"
+      ],
       "description": "常见的现代 RPC 框架实现，强调高性能与强类型接口定义。",
-      "tags": ["RPC", "框架", "高性能"]
+      "tags": [
+        "RPC",
+        "框架",
+        "高性能"
+      ],
+      "category": "technology"
     },
     {
       "id": "mqtt",
@@ -327,9 +554,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "web-communication",
-      "deps": ["web-communication", "tcp"],
+      "deps": [
+        "web-communication",
+        "tcp"
+      ],
       "description": "轻量级物联网消息传输协议，以发布/订阅模式实现设备间的低带宽通信。",
-      "tags": ["物联网", "消息协议", "发布订阅"]
+      "tags": [
+        "物联网",
+        "消息协议",
+        "发布订阅"
+      ],
+      "category": "technology"
     },
     {
       "id": "dns",
@@ -337,9 +572,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-services",
-      "deps": ["network-services", "udp"],
+      "deps": [
+        "network-services",
+        "udp"
+      ],
       "description": "用于域名与 IP 地址映射的核心网络服务。",
-      "tags": ["服务", "域名解析", "基础设施"]
+      "tags": [
+        "服务",
+        "域名解析",
+        "基础设施"
+      ],
+      "category": "platform"
     },
     {
       "id": "dnssec",
@@ -347,9 +590,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "dns",
-      "deps": ["dns"],
+      "deps": [
+        "dns"
+      ],
       "description": "DNS 安全扩展，通过数字签名验证 DNS 响应的真实性，防止 DNS 欺骗与缓存投毒攻击。",
-      "tags": ["安全", "DNS", "防护"]
+      "tags": [
+        "安全",
+        "DNS",
+        "防护"
+      ],
+      "category": "technology"
     },
     {
       "id": "cdn",
@@ -357,9 +607,18 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-services",
-      "deps": ["network-services", "http", "dns"],
+      "deps": [
+        "network-services",
+        "http",
+        "dns"
+      ],
       "description": "用于内容分发与访问加速的网络服务能力。",
-      "tags": ["服务", "加速", "分发"]
+      "tags": [
+        "服务",
+        "加速",
+        "分发"
+      ],
+      "category": "platform"
     },
     {
       "id": "rest-api",
@@ -367,9 +626,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-services",
-      "deps": ["network-services", "http"],
+      "deps": [
+        "network-services",
+        "http"
+      ],
       "description": "基于 HTTP 组织资源接口的常见服务设计方式。",
-      "tags": ["服务", "API", "接口"]
+      "tags": [
+        "服务",
+        "API",
+        "接口"
+      ],
+      "category": "architecture"
     },
     {
       "id": "graphql",
@@ -377,9 +644,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-services",
-      "deps": ["network-services", "http"],
+      "deps": [
+        "network-services",
+        "http"
+      ],
       "description": "围绕查询需求组织接口数据获取方式的 API 方案。",
-      "tags": ["服务", "API", "查询"]
+      "tags": [
+        "服务",
+        "API",
+        "查询"
+      ],
+      "category": "architecture"
     },
     {
       "id": "proxy-service",
@@ -387,9 +662,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-services",
-      "deps": ["network-services"],
+      "deps": [
+        "network-services"
+      ],
       "description": "位于客户端与目标服务之间的中间代理能力。",
-      "tags": ["服务", "代理", "转发"]
+      "tags": [
+        "服务",
+        "代理",
+        "转发"
+      ],
+      "category": "platform"
     },
     {
       "id": "forward-proxy",
@@ -397,9 +679,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "proxy-service",
-      "deps": ["proxy-service"],
+      "deps": [
+        "proxy-service"
+      ],
       "description": "代表客户端向外访问目标资源的代理方式。",
-      "tags": ["代理", "客户端", "转发"]
+      "tags": [
+        "代理",
+        "客户端",
+        "转发"
+      ],
+      "category": "platform"
     },
     {
       "id": "reverse-proxy",
@@ -407,9 +696,16 @@
       "domain": "network",
       "stage": 4,
       "parentId": "proxy-service",
-      "deps": ["proxy-service"],
+      "deps": [
+        "proxy-service"
+      ],
       "description": "代表服务端接收外部请求并分发到内部服务的代理方式。",
-      "tags": ["代理", "服务端", "网关"]
+      "tags": [
+        "代理",
+        "服务端",
+        "网关"
+      ],
+      "category": "platform"
     },
     {
       "id": "load-balancer",
@@ -417,9 +713,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-services",
-      "deps": ["network-services"],
+      "deps": [
+        "network-services"
+      ],
       "description": "将请求流量均匀分配到多个后端服务器的组件，用于提升系统吞吐能力与可用性。",
-      "tags": ["服务", "负载均衡", "分发"]
+      "tags": [
+        "服务",
+        "负载均衡",
+        "分发"
+      ],
+      "category": "platform"
     },
     {
       "id": "service-mesh",
@@ -427,9 +730,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-services",
-      "deps": ["network-services"],
+      "deps": [
+        "network-services"
+      ],
       "description": "将网络通信基础设施下沉到 Sidecar 代理层的架构模式，实现微服务间的可观测、安全与流量管理。",
-      "tags": ["服务", "微服务", "网格"]
+      "tags": [
+        "服务",
+        "微服务",
+        "网格"
+      ],
+      "category": "platform"
     },
     {
       "id": "observability",
@@ -437,9 +747,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-services",
-      "deps": ["network-services"],
+      "deps": [
+        "network-services"
+      ],
       "description": "通过指标、日志与链路追踪三大支柱全面了解分布式系统运行状态的技术体系。",
-      "tags": ["服务", "监控", "可观测性"]
+      "tags": [
+        "服务",
+        "监控",
+        "可观测性"
+      ],
+      "category": "platform"
     },
     {
       "id": "vpn",
@@ -447,9 +764,17 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-security",
-      "deps": ["network-security", "ip"],
+      "deps": [
+        "network-security",
+        "ip"
+      ],
       "description": "用于构建受保护网络通道的常见安全能力。",
-      "tags": ["安全", "隧道", "虚拟网络"]
+      "tags": [
+        "安全",
+        "隧道",
+        "虚拟网络"
+      ],
+      "category": "technology"
     },
     {
       "id": "firewall",
@@ -457,9 +782,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-security",
-      "deps": ["network-security"],
+      "deps": [
+        "network-security"
+      ],
       "description": "位于网络边界的安全设备或软件，根据预设规则对进出流量进行过滤与控制。",
-      "tags": ["安全", "防护", "访问控制"]
+      "tags": [
+        "安全",
+        "防护",
+        "访问控制"
+      ],
+      "category": "technology"
     },
     {
       "id": "waf",
@@ -467,9 +799,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-security",
-      "deps": ["network-security"],
+      "deps": [
+        "network-security"
+      ],
       "description": "Web 应用防火墙，专门检测与阻断针对 Web 应用的攻击，如 SQL 注入、XSS 与 CSRF。",
-      "tags": ["安全", "Web", "防护"]
+      "tags": [
+        "安全",
+        "Web",
+        "防护"
+      ],
+      "category": "technology"
     },
     {
       "id": "oauth2",
@@ -477,9 +816,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-security",
-      "deps": ["network-security"],
+      "deps": [
+        "network-security"
+      ],
       "description": "开放授权协议，允许第三方应用在用户授权后访问其数据，是现代互联网认证授权的标准。",
-      "tags": ["安全", "授权", "身份"]
+      "tags": [
+        "安全",
+        "授权",
+        "身份"
+      ],
+      "category": "architecture"
     },
     {
       "id": "ids-ips",
@@ -487,9 +833,16 @@
       "domain": "network",
       "stage": 3,
       "parentId": "network-security",
-      "deps": ["network-security"],
+      "deps": [
+        "network-security"
+      ],
       "description": "入侵检测系统（IDS）与入侵防御系统（IPS），实时监控网络流量中的可疑行为并发出警报或主动阻断。",
-      "tags": ["安全", "入侵检测", "防御"]
+      "tags": [
+        "安全",
+        "入侵检测",
+        "防御"
+      ],
+      "category": "technology"
     }
   ]
 }

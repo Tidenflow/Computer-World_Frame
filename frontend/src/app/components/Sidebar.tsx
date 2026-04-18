@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { DOMAIN_COLORS, DOMAIN_NAMES, Domain } from '../types';
+import {
+  NODE_CATEGORY_COLORS,
+  NODE_CATEGORY_NAMES,
+  NODE_CATEGORY_ORDER,
+  NodeCategory,
+} from '../types';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 
 interface SidebarProps {
-  selectedDomains: Set<Domain>;
-  onDomainToggle: (domain: Domain) => void;
-  onSelectAllDomains: () => void;
-  onClearDomains: () => void;
+  selectedCategories: Set<NodeCategory>;
+  onCategoryToggle: (category: NodeCategory) => void;
+  onSelectAllCategories: () => void;
+  onClearCategories: () => void;
   totalNodes: number;
   unlockedCount: number;
   currentMap: string;
@@ -17,18 +22,16 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({
-  selectedDomains,
-  onDomainToggle,
-  onSelectAllDomains,
-  onClearDomains,
+  selectedCategories,
+  onCategoryToggle,
+  onSelectAllCategories,
+  onClearCategories,
   totalNodes,
   unlockedCount,
   currentMap,
   onMapChange,
 }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
-
-  const domains: Domain[] = ['hardware', 'software', 'programming', 'theory', 'ai', 'network'];
 
   const maps = [
     { id: 'root', name: '总览地图' },
@@ -98,7 +101,7 @@ export const Sidebar = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onSelectAllDomains}
+              onClick={onSelectAllCategories}
               className="h-7 px-2 text-xs"
             >
               All
@@ -106,7 +109,7 @@ export const Sidebar = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onClearDomains}
+              onClick={onClearCategories}
               className="h-7 px-2 text-xs"
             >
               Clear
@@ -114,12 +117,12 @@ export const Sidebar = ({
           </div>
         </div>
         <div className="space-y-2">
-          {domains.map((domain) => {
-            const isSelected = selectedDomains.has(domain);
+          {NODE_CATEGORY_ORDER.map((category) => {
+            const isSelected = selectedCategories.has(category);
             return (
               <button
-                key={domain}
-                onClick={() => onDomainToggle(domain)}
+                key={category}
+                onClick={() => onCategoryToggle(category)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
                   isSelected ? 'bg-[#F9FAFB]' : ''
                 }`}
@@ -127,10 +130,10 @@ export const Sidebar = ({
                 <div
                   className="w-3 h-3 rounded-full transition-all"
                   style={{
-                    backgroundColor: isSelected ? DOMAIN_COLORS[domain] : '#D1D5DB',
+                    backgroundColor: isSelected ? NODE_CATEGORY_COLORS[category] : '#D1D5DB',
                   }}
                 />
-                <span className="text-sm text-[#111827] flex-1">{DOMAIN_NAMES[domain]}</span>
+                <span className="text-sm text-[#111827] flex-1">{NODE_CATEGORY_NAMES[category]}</span>
               </button>
             );
           })}

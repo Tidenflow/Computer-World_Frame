@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { Node, DOMAIN_COLORS, Domain } from '../types';
+import { getNodeCategory, getNodeCategoryColor, Node, NodeCategory } from '../types';
 
 interface Graph3DProps {
   nodes: Node[];
   selectedNode: Node | null;
   onNodeClick: (node: Node) => void;
-  selectedDomains: Set<Domain>;
+  selectedCategories: Set<NodeCategory>;
   unlockedCount: number;
   totalNodes: number;
 }
@@ -15,7 +15,7 @@ export const Graph3D = ({
   nodes,
   selectedNode,
   onNodeClick,
-  selectedDomains,
+  selectedCategories,
   unlockedCount,
   totalNodes,
 }: Graph3DProps) => {
@@ -87,7 +87,7 @@ export const Graph3D = ({
 
       const size = node.unlocked ? 5 : 4;
       const geometry = new THREE.SphereGeometry(size, 16, 16);
-      const color = new THREE.Color(node.unlocked ? DOMAIN_COLORS[node.domain] : '#D1D5DB');
+      const color = new THREE.Color(node.unlocked ? getNodeCategoryColor(node) : '#D1D5DB');
       const material = new THREE.MeshPhongMaterial({
         color,
         emissive: node.unlocked ? color : new THREE.Color(0x000000),
@@ -216,16 +216,16 @@ export const Graph3D = ({
     };
   }, [nodes]);
 
-  // Update node visibility based on selected domains
+  // Update node visibility based on selected categories
   useEffect(() => {
     nodeObjectsRef.current.forEach((mesh, nodeId) => {
       const node = nodes.find((n) => n.id === nodeId);
       if (!node) return;
 
-      const isVisible = selectedDomains.has(node.domain);
+      const isVisible = selectedCategories.has(getNodeCategory(node));
       mesh.visible = isVisible;
     });
-  }, [selectedDomains, nodes]);
+  }, [selectedCategories, nodes]);
 
   // Highlight selected node
   useEffect(() => {

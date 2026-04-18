@@ -13,12 +13,12 @@ import {
 import {
   autoUnlockNodeOnSelect,
   closeSelectedNode,
-  createAllDomainSelection,
-  createEmptyDomainSelection,
-  toggleDomainSelection,
+  createAllCategorySelection,
+  createEmptyCategorySelection,
+  toggleCategorySelection,
   toggleNodeLock,
 } from '../services/app-state-transitions'
-import type { Domain, Node } from '../types'
+import type { Node, NodeCategory } from '../types'
 import { useProgressState } from './use-progress-state'
 import { useSearchState } from './use-search-state'
 
@@ -26,7 +26,9 @@ type ViewMode = '2d' | '3d'
 
 export function useCwfApp() {
   const [viewMode, setViewMode] = useState<ViewMode>('2d')
-  const [selectedDomains, setSelectedDomains] = useState<Set<Domain>>(() => createAllDomainSelection())
+  const [selectedCategories, setSelectedCategories] = useState<Set<NodeCategory>>(
+    () => createAllCategorySelection(),
+  )
   const [currentMapId, setCurrentMapId] = useState('root')
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
 
@@ -59,8 +61,10 @@ export function useCwfApp() {
     [currentMap, currentMapId],
   )
 
-  const handleDomainToggle = (domain: Domain) => {
-    setSelectedDomains((previousDomains) => toggleDomainSelection(previousDomains, domain))
+  const handleCategoryToggle = (category: NodeCategory) => {
+    setSelectedCategories((previousCategories) =>
+      toggleCategorySelection(previousCategories, category),
+    )
   }
 
   const handleNodeClick = (node: Node) => {
@@ -92,7 +96,7 @@ export function useCwfApp() {
     searchQuery,
     setSearchQuery,
     debouncedSearch,
-    selectedDomains,
+    selectedCategories,
     currentMapId,
     selectedNode,
     currentMap,
@@ -101,16 +105,16 @@ export function useCwfApp() {
     totalUnlockedCount,
     breadcrumbs,
     unlockedNodes,
-    handleDomainToggle,
+    handleCategoryToggle,
     handleNodeClick,
     handleToggleLock,
     handleNodeDoubleClick,
     handleNavigateToMap,
-    selectAllDomains() {
-      setSelectedDomains(createAllDomainSelection())
+    selectAllCategories() {
+      setSelectedCategories(createAllCategorySelection())
     },
-    clearDomains() {
-      setSelectedDomains(createEmptyDomainSelection())
+    clearCategories() {
+      setSelectedCategories(createEmptyCategorySelection())
     },
     closeDetailPanel() {
       setSelectedNode(closeSelectedNode())

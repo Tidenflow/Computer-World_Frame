@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { allMaps } from '../../data'
-import type { Node } from '../../types'
+import { getNodeCategory, type Node } from '../../types'
 import {
   buildBreadcrumbs,
   buildNodesWithUnlockedStatus,
@@ -20,6 +20,21 @@ describe('app services', () => {
 
     expect(nodes.find((node) => node.id === 'fundamentals')?.unlocked).toBe(true)
     expect(nodes.find((node) => node.id === 'software')?.unlocked).toBe(false)
+  })
+
+  test('enriches loaded map nodes with semantic categories', () => {
+    expect(getNodeCategory(allMaps.programming.nodes.find((node) => node.id === 'javascript')!)).toBe(
+      'language',
+    )
+    expect(getNodeCategory(allMaps.programming.nodes.find((node) => node.id === 'react')!)).toBe(
+      'tooling',
+    )
+    expect(getNodeCategory(allMaps.network.nodes.find((node) => node.id === 'dns')!)).toBe(
+      'platform',
+    )
+    expect(getNodeCategory(allMaps.ai.nodes.find((node) => node.id === 'rag')!)).toBe(
+      'technology',
+    )
   })
 
   test('filters nodes by title, tags, or aliases using a case-insensitive query', () => {

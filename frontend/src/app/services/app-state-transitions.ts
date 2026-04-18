@@ -1,28 +1,36 @@
-import type { Domain, Node } from '../types'
+import type { Node, NodeCategory } from '../types'
 
-const ALL_DOMAINS: Domain[] = ['hardware', 'software', 'programming', 'theory', 'ai', 'network']
+const ALL_CATEGORIES: NodeCategory[] = [
+  'fundamentals',
+  'language',
+  'technology',
+  'tooling',
+  'product',
+  'architecture',
+  'platform',
+]
 
-export function createAllDomainSelection(): Set<Domain> {
-  return new Set(ALL_DOMAINS)
+export function createAllCategorySelection(): Set<NodeCategory> {
+  return new Set(ALL_CATEGORIES)
 }
 
-export function createEmptyDomainSelection(): Set<Domain> {
+export function createEmptyCategorySelection(): Set<NodeCategory> {
   return new Set()
 }
 
-export function toggleDomainSelection(
-  selectedDomains: Set<Domain>,
-  domain: Domain,
-): Set<Domain> {
-  const nextDomains = new Set(selectedDomains)
+export function toggleCategorySelection(
+  selectedCategories: Set<NodeCategory>,
+  category: NodeCategory,
+): Set<NodeCategory> {
+  const nextCategories = new Set(selectedCategories)
 
-  if (nextDomains.has(domain)) {
-    nextDomains.delete(domain)
+  if (nextCategories.has(category)) {
+    nextCategories.delete(category)
   } else {
-    nextDomains.add(domain)
+    nextCategories.add(category)
   }
 
-  return nextDomains
+  return nextCategories
 }
 
 export function autoUnlockNodeOnSelect(unlockedNodes: Set<string>, node: Node): Set<string> {

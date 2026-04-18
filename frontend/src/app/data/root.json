@@ -9,7 +9,12 @@
       "stage": 1,
       "deps": [],
       "description": "计算机世界总览图的根节点，用来承接基础理论、硬件、软件、开发、网络、数据与 AI。",
-      "tags": ["总览", "根节点", "计算机"]
+      "tags": [
+        "总览",
+        "根节点",
+        "计算机"
+      ],
+      "category": "fundamentals"
     },
     {
       "id": "fundamentals",
@@ -17,15 +22,22 @@
       "domain": "theory",
       "stage": 2,
       "parentId": "cw-root",
-      "deps": ["cw-root"],
+      "deps": [
+        "cw-root"
+      ],
       "description": "计算机科学的基础理论知识，包括数字逻辑、计算机组成原理等。这是一切计算机技术的起点。",
-      "tags": ["理论", "基础", "入门"],
+      "tags": [
+        "理论",
+        "基础",
+        "入门"
+      ],
       "resources": [
         {
           "title": "计算机科学导论",
           "url": "https://example.com"
         }
-      ]
+      ],
+      "category": "fundamentals"
     },
     {
       "id": "hardware",
@@ -33,15 +45,22 @@
       "domain": "hardware",
       "stage": 2,
       "parentId": "cw-root",
-      "deps": ["cw-root"],
+      "deps": [
+        "cw-root"
+      ],
       "description": "CPU、显卡、内存、主板等物理组件。理解硬件是理解计算机工作原理的关键。",
-      "tags": ["硬件", "物理", "CPU"],
+      "tags": [
+        "硬件",
+        "物理",
+        "CPU"
+      ],
       "resources": [
         {
           "title": "硬件基础知识",
           "url": "https://example.com"
         }
-      ]
+      ],
+      "category": "fundamentals"
     },
     {
       "id": "software",
@@ -49,10 +68,17 @@
       "domain": "software",
       "stage": 2,
       "parentId": "cw-root",
-      "deps": ["cw-root"],
+      "deps": [
+        "cw-root"
+      ],
       "targetMap": "software",
       "description": "操作系统、应用程序、游戏等软件。软件是运行在硬件之上的逻辑系统。",
-      "tags": ["软件", "应用", "操作系统"]
+      "tags": [
+        "软件",
+        "应用",
+        "操作系统"
+      ],
+      "category": "product"
     },
     {
       "id": "programming-languages",
@@ -60,10 +86,17 @@
       "domain": "programming",
       "stage": 2,
       "parentId": "cw-root",
-      "deps": ["cw-root"],
+      "deps": [
+        "cw-root"
+      ],
       "targetMap": "programming-languages",
       "description": "从机器码到高级语言，编程语言是人与计算机对话的媒介。按范式与运行平台，可分为系统语言、脚本语言、Web 语言等多种类别。",
-      "tags": ["编程", "语言", "入门"]
+      "tags": [
+        "编程",
+        "语言",
+        "入门"
+      ],
+      "category": "language"
     },
     {
       "id": "programming",
@@ -71,10 +104,17 @@
       "domain": "programming",
       "stage": 2,
       "parentId": "cw-root",
-      "deps": ["cw-root"],
+      "deps": [
+        "cw-root"
+      ],
       "targetMap": "programming",
       "description": "Python、JavaScript、Git、IDE 等开发工具和语言。学习编程是创造软件的第一步。",
-      "tags": ["编程", "开发", "工具"]
+      "tags": [
+        "编程",
+        "开发",
+        "工具"
+      ],
+      "category": "technology"
     },
     {
       "id": "network",
@@ -82,10 +122,17 @@
       "domain": "network",
       "stage": 2,
       "parentId": "cw-root",
-      "deps": ["cw-root"],
+      "deps": [
+        "cw-root"
+      ],
       "targetMap": "network",
       "description": "浏览器、WiFi、HTTP、TCP/IP 等网络技术。网络连接了全世界的计算机。",
-      "tags": ["网络", "通信", "互联网"]
+      "tags": [
+        "网络",
+        "通信",
+        "互联网"
+      ],
+      "category": "platform"
     },
     {
       "id": "data",
@@ -93,9 +140,16 @@
       "domain": "software",
       "stage": 2,
       "parentId": "cw-root",
-      "deps": ["cw-root"],
+      "deps": [
+        "cw-root"
+      ],
       "description": "数据库、文件系统、云存储等数据管理技术。数据是信息时代最重要的资产。",
-      "tags": ["数据", "存储", "数据库"]
+      "tags": [
+        "数据",
+        "存储",
+        "数据库"
+      ],
+      "category": "technology"
     },
     {
       "id": "ai",
@@ -103,10 +157,17 @@
       "domain": "ai",
       "stage": 2,
       "parentId": "cw-root",
-      "deps": ["cw-root"],
+      "deps": [
+        "cw-root"
+      ],
       "targetMap": "ai",
       "description": "ChatGPT、豆包、机器学习、深度学习等。AI 正在改变世界的每一个角落。",
-      "tags": ["AI", "机器学习", "深度学习"]
+      "tags": [
+        "AI",
+        "机器学习",
+        "深度学习"
+      ],
+      "category": "technology"
     }
   ]
 }

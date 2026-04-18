@@ -1,34 +1,34 @@
 import { describe, expect, test } from 'vitest'
 
-import type { Domain, Node } from '../../types'
+import type { Node, NodeCategory } from '../../types'
 import {
   autoUnlockNodeOnSelect,
   closeSelectedNode,
-  createAllDomainSelection,
-  createEmptyDomainSelection,
-  toggleDomainSelection,
+  createAllCategorySelection,
+  createEmptyCategorySelection,
+  toggleCategorySelection,
   toggleNodeLock,
 } from '../app-state-transitions'
 
 describe('app state transitions', () => {
-  test('creates a default selection that includes all domains', () => {
-    expect(createAllDomainSelection()).toEqual(
-      new Set(['hardware', 'software', 'programming', 'theory', 'ai', 'network']),
+  test('creates a default selection that includes all categories', () => {
+    expect(createAllCategorySelection()).toEqual(
+      new Set(['fundamentals', 'language', 'technology', 'tooling', 'product', 'architecture', 'platform']),
     )
   })
 
-  test('creates an empty domain selection for clear filters', () => {
-    expect(createEmptyDomainSelection()).toEqual(new Set())
+  test('creates an empty category selection for clear filters', () => {
+    expect(createEmptyCategorySelection()).toEqual(new Set())
   })
 
-  test('toggles domain selection without mutating the previous set', () => {
-    const selectedDomains = new Set<Domain>(['hardware'])
+  test('toggles category selection without mutating the previous set', () => {
+    const selectedCategories = new Set<NodeCategory>(['fundamentals'])
 
-    const nextSelection = toggleDomainSelection(selectedDomains, 'software')
+    const nextSelection = toggleCategorySelection(selectedCategories, 'product')
 
-    expect(selectedDomains).toEqual(new Set(['hardware']))
-    expect(nextSelection).toEqual(new Set(['hardware', 'software']))
-    expect(toggleDomainSelection(nextSelection, 'hardware')).toEqual(new Set(['software']))
+    expect(selectedCategories).toEqual(new Set(['fundamentals']))
+    expect(nextSelection).toEqual(new Set(['fundamentals', 'product']))
+    expect(toggleCategorySelection(nextSelection, 'fundamentals')).toEqual(new Set(['product']))
   })
 
   test('auto unlocks a node when it is selected for the first time', () => {

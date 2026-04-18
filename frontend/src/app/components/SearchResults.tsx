@@ -1,4 +1,4 @@
-import { Node, DOMAIN_NAMES, DOMAIN_COLORS } from '../types';
+import { getNodeCategoryColor, getNodeCategoryName, Node } from '../types';
 import { Badge } from './ui/badge';
 import { motion } from 'motion/react';
 
@@ -33,14 +33,14 @@ export const SearchResults = ({ results, query, onSelectNode }: SearchResultsPro
             <div
               className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
               style={{
-                backgroundColor: node.unlocked ? DOMAIN_COLORS[node.domain] : '#D1D5DB',
+                backgroundColor: node.unlocked ? getNodeCategoryColor(node) : '#D1D5DB',
               }}
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-medium text-[#111827]">{node.title}</span>
                 <Badge variant="secondary" className="text-xs">
-                  {DOMAIN_NAMES[node.domain]}
+                  {getNodeCategoryName(node)}
                 </Badge>
               </div>
               {node.description && (

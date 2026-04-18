@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Node, DOMAIN_COLORS, Domain } from '../types';
+import { getNodeCategory, getNodeCategoryColor, Node, NodeCategory } from '../types';
 import { ContextMenu } from './ContextMenu';
 import {
   createStableNodePositions,
@@ -13,7 +13,7 @@ interface Graph2DProps {
   selectedNode: Node | null;
   onNodeClick: (node: Node) => void;
   onNodeDoubleClick: (node: Node) => void;
-  selectedDomains: Set<Domain>;
+  selectedCategories: Set<NodeCategory>;
   onToggleLock?: (nodeId: string) => void;
 }
 
@@ -27,7 +27,7 @@ export const Graph2D = ({
   selectedNode,
   onNodeClick,
   onNodeDoubleClick,
-  selectedDomains,
+  selectedCategories,
   onToggleLock,
 }: Graph2DProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -71,7 +71,7 @@ export const Graph2D = ({
     ctx.clearRect(0, 0, width, height);
 
     // Filter nodes by selected domains
-    const visibleNodes = positions.filter((node) => selectedDomains.has(node.domain));
+    const visibleNodes = positions.filter((node) => selectedCategories.has(getNodeCategory(node)));
 
     // Draw connections
     ctx.save();
@@ -86,7 +86,7 @@ export const Graph2D = ({
 
       const isHighlighted =
         selectedNode && (selectedNode.id === node.id || selectedNode.id === parent.id);
-      const color = DOMAIN_COLORS[node.domain];
+      const color = getNodeCategoryColor(node);
 
       ctx.strokeStyle = isHighlighted ? color : `${color}66`;
       ctx.lineWidth = isHighlighted ? 2 : 1;
@@ -118,7 +118,7 @@ export const Graph2D = ({
 
       // Glow for selected/hovered
       if (isSelected || isHovered) {
-        ctx.shadowColor = DOMAIN_COLORS[node.domain];
+        ctx.shadowColor = getNodeCategoryColor(node);
         ctx.shadowBlur = 12;
       } else {
         ctx.shadowBlur = 0;
@@ -126,7 +126,7 @@ export const Graph2D = ({
 
       // Fill
       if (node.unlocked) {
-        ctx.fillStyle = DOMAIN_COLORS[node.domain];
+        ctx.fillStyle = getNodeCategoryColor(node);
       } else {
         ctx.fillStyle = '#D1D5DB';
       }
@@ -137,7 +137,7 @@ export const Graph2D = ({
 
       // Border
       if (node.unlocked) {
-        ctx.strokeStyle = DOMAIN_COLORS[node.domain];
+        ctx.strokeStyle = getNodeCategoryColor(node);
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
@@ -155,7 +155,7 @@ export const Graph2D = ({
     }
 
     ctx.restore();
-  }, [positions, selectedNode, hoveredNode, offset, scale, selectedDomains]);
+  }, [positions, selectedNode, hoveredNode, offset, scale, selectedCategories]);
 
   // Mouse handlers
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -195,7 +195,7 @@ export const Graph2D = ({
     }
 
     const hovered = positions
-      .filter((node) => selectedDomains.has(node.domain))
+      .filter((node) => selectedCategories.has(getNodeCategory(node)))
       .find((node) => {
       const dx = node.x - x;
       const dy = node.y - y;

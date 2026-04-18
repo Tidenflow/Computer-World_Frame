@@ -14,7 +14,7 @@ function App() {
     searchQuery,
     setSearchQuery,
     debouncedSearch,
-    selectedDomains,
+    selectedCategories,
     currentMapId,
     selectedNode,
     currentMap,
@@ -23,13 +23,13 @@ function App() {
     totalUnlockedCount,
     breadcrumbs,
     unlockedNodes,
-    handleDomainToggle,
+    handleCategoryToggle,
     handleNodeClick,
     handleToggleLock,
     handleNodeDoubleClick,
     handleNavigateToMap,
-    selectAllDomains,
-    clearDomains,
+    selectAllCategories,
+    clearCategories,
     closeDetailPanel,
   } = useCwfApp()
 
@@ -55,10 +55,10 @@ function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar
-          selectedDomains={selectedDomains}
-          onDomainToggle={handleDomainToggle}
-          onSelectAllDomains={selectAllDomains}
-          onClearDomains={clearDomains}
+          selectedCategories={selectedCategories}
+          onCategoryToggle={handleCategoryToggle}
+          onSelectAllCategories={selectAllCategories}
+          onClearCategories={clearCategories}
           totalNodes={currentMap.nodes.length}
           unlockedCount={currentMap.nodes.filter((node) => unlockedNodes.has(node.id)).length}
           currentMap={currentMapId}
@@ -72,7 +72,7 @@ function App() {
               selectedNode={selectedNode}
               onNodeClick={handleNodeClick}
               onNodeDoubleClick={handleNodeDoubleClick}
-              selectedDomains={selectedDomains}
+              selectedCategories={selectedCategories}
               onToggleLock={handleToggleLock}
             />
           ) : (
@@ -80,7 +80,7 @@ function App() {
               nodes={filteredNodes}
               selectedNode={selectedNode}
               onNodeClick={handleNodeClick}
-              selectedDomains={selectedDomains}
+              selectedCategories={selectedCategories}
               unlockedCount={totalUnlockedCount.unlocked}
               totalNodes={totalUnlockedCount.total}
             />
