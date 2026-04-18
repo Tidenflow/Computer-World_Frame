@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import type { Node } from '../../types'
-import { createStableNodePositions } from '../graph-layout'
+import { createStableNodePositions, createTreeEdgeCurve } from '../graph-layout'
 
 describe('graph layout', () => {
   const nodes: Node[] = [
@@ -100,6 +100,20 @@ describe('graph layout', () => {
     expect(root).toBeTruthy()
     expect(child).toBeTruthy()
     expect(Math.abs((root?.y ?? 0) - (child?.y ?? 0))).toBeLessThanOrEqual(220)
+  })
+
+  test('uses vertical-first tree edge curves instead of wide sideways arcs', () => {
+    const curve = createTreeEdgeCurve({
+      child: { x: 140, y: 120, radius: 12 },
+      parent: { x: 520, y: 300, radius: 12 },
+    })
+
+    expect(curve.start).toEqual({ x: 140, y: 132 })
+    expect(curve.end).toEqual({ x: 520, y: 288 })
+    expect(curve.control1.x).toBe(curve.start.x)
+    expect(curve.control2.x).toBe(curve.end.x)
+    expect(curve.control1.y).toBeGreaterThan(curve.start.y)
+    expect(curve.control2.y).toBeLessThan(curve.end.y)
   })
 })
 

@@ -12,6 +12,13 @@ export interface StableNodePosition extends Node {
   radius: number
 }
 
+export interface TreeEdgeCurve {
+  start: { x: number; y: number }
+  control1: { x: number; y: number }
+  control2: { x: number; y: number }
+  end: { x: number; y: number }
+}
+
 interface SimulationNode extends StableNodePosition {
   preferredX: number
 }
@@ -137,5 +144,37 @@ function createFallbackPosition(node: Node, x: number, y: number): StableNodePos
     x,
     y,
     radius: 12,
+  }
+}
+
+export function createTreeEdgeCurve({
+  child,
+  parent,
+}: {
+  child: Pick<StableNodePosition, 'x' | 'y' | 'radius'>
+  parent: Pick<StableNodePosition, 'x' | 'y' | 'radius'>
+}): TreeEdgeCurve {
+  const start = {
+    x: child.x,
+    y: child.y + child.radius,
+  }
+  const end = {
+    x: parent.x,
+    y: parent.y - parent.radius,
+  }
+  const verticalDistance = Math.max(end.y - start.y, 40)
+  const bend = Math.max(30, Math.min(verticalDistance * 0.45, 90))
+
+  return {
+    start,
+    control1: {
+      x: start.x,
+      y: start.y + bend,
+    },
+    control2: {
+      x: end.x,
+      y: end.y - bend,
+    },
+    end,
   }
 }

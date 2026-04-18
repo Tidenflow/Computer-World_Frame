@@ -118,6 +118,46 @@ describe('app services', () => {
     ])
   })
 
+  test('supports the same progressive tree expansion for the network map', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.network, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, null).map((node) => node.id)).toEqual([
+      'network-root',
+      'network-access',
+      'core-protocols',
+      'web-communication',
+      'network-services',
+      'network-security',
+    ])
+
+    expect(buildVisibleGraphNodes(nodes, 'web-communication').map((node) => node.id)).toEqual([
+      'network-root',
+      'network-access',
+      'core-protocols',
+      'web-communication',
+      'network-services',
+      'network-security',
+      'http',
+      'https',
+      'websocket',
+      'rpc',
+    ])
+
+    expect(buildVisibleGraphNodes(nodes, 'network-services').map((node) => node.id)).toEqual([
+      'network-root',
+      'network-access',
+      'core-protocols',
+      'web-communication',
+      'network-services',
+      'network-security',
+      'dns',
+      'cdn',
+      'rest-api',
+      'graphql',
+      'proxy-service',
+    ])
+  })
+
   test('computes unlocked stats across all maps', () => {
     const stats = computeUnlockedStats(allMaps, unlockedNodes)
 

@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Node, DOMAIN_COLORS, Domain } from '../types';
 import { ContextMenu } from './ContextMenu';
-import { createStableNodePositions, type StableNodePosition } from '../services/graph-layout';
+import {
+  createStableNodePositions,
+  createTreeEdgeCurve,
+  type StableNodePosition,
+} from '../services/graph-layout';
 import { panViewport, zoomAtPoint } from '../services/graph-viewport';
 
 interface Graph2DProps {
@@ -88,17 +92,18 @@ export const Graph2D = ({
       ctx.lineWidth = isHighlighted ? 2 : 1;
       ctx.globalAlpha = 0.4;
 
-      const midX = (node.x + parent.x) / 2;
-      const midY = (node.y + parent.y) / 2;
-      const dx = parent.x - node.x;
-      const dy = parent.y - node.y;
-      const offset1 = 30;
-      const cpX = midX - dy * offset1 / 100;
-      const cpY = midY + dx * offset1 / 100;
+      const curve = createTreeEdgeCurve({ child: node, parent });
 
       ctx.beginPath();
-      ctx.moveTo(node.x, node.y);
-      ctx.quadraticCurveTo(cpX, cpY, parent.x, parent.y);
+      ctx.moveTo(curve.start.x, curve.start.y);
+      ctx.bezierCurveTo(
+        curve.control1.x,
+        curve.control1.y,
+        curve.control2.x,
+        curve.control2.y,
+        curve.end.x,
+        curve.end.y,
+      );
       ctx.stroke();
     }
 
