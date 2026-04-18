@@ -1,0 +1,412 @@
+{
+  "id": "programming-languages",
+  "title": "编程语言",
+  "nodes": [
+    {
+      "id": "pl-root",
+      "title": "编程语言",
+      "domain": "programming",
+      "stage": 1,
+      "deps": [],
+      "description": "编程语言总览图的根节点，用来承接系统语言、JVM 语言、Web 语言、脚本语言与编译型语言等方向。",
+      "tags": [
+        "总览",
+        "根节点",
+        "编程语言"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "system-languages",
+      "title": "系统级语言",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "pl-root",
+      "deps": [
+        "pl-root"
+      ],
+      "description": "面向操作系统、嵌入式与性能敏感场景的底层语言，强调对硬件的直接控制与高效的内存管理。",
+      "tags": [
+        "系统",
+        "底层",
+        "性能"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "jvm-languages",
+      "title": "JVM 系语言",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "pl-root",
+      "deps": [
+        "pl-root"
+      ],
+      "description": "运行在 Java 虚拟机之上的语言家族，共享统一的运行时与生态，在企业后端开发中占据重要地位。",
+      "tags": [
+        "JVM",
+        "企业",
+        "后端"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "web-languages",
+      "title": "Web 语言",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "pl-root",
+      "deps": [
+        "pl-root"
+      ],
+      "description": "以浏览器为运行环境的语言生态，同时向服务端（Node.js）与跨端（Electron、Tauri）方向延伸。",
+      "tags": [
+        "Web",
+        "浏览器",
+        "前端"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "scripting-languages",
+      "title": "脚本语言",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "pl-root",
+      "deps": [
+        "pl-root"
+      ],
+      "description": "以解释执行为特点的语言，适合快速原型、自动化脚本与数据处理等场景。",
+      "tags": [
+        "脚本",
+        "解释执行",
+        "快速"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "compiled-languages",
+      "title": "现代编译型语言",
+      "domain": "programming",
+      "stage": 2,
+      "parentId": "pl-root",
+      "deps": [
+        "pl-root"
+      ],
+      "description": "通过编译器将源码直接编译为机器码或中间字节码的语言，强调强类型与高性能。",
+      "tags": [
+        "编译",
+        "强类型",
+        "高性能"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "c-lang",
+      "title": "C",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "system-languages",
+      "deps": [
+        "system-languages"
+      ],
+      "description": "最经典的系统级编程语言，是操作系统、嵌入式系统与编译器工具链的基础。",
+      "tags": [
+        "系统",
+        "底层",
+        "经典"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "cpp",
+      "title": "C++",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "system-languages",
+      "deps": [
+        "system-languages",
+        "c-lang"
+      ],
+      "description": "在 C 语言基础上扩展了面向对象、泛型与模板等特性的语言，适合游戏引擎、高频交易与性能关键应用。",
+      "tags": [
+        "系统",
+        "面向对象",
+        "高性能"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "rust-lang",
+      "title": "Rust",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "system-languages",
+      "deps": [
+        "system-languages"
+      ],
+      "description": "强调内存安全与并发安全的新一代系统级语言，无需垃圾回收即可避免空指针与数据竞争。",
+      "tags": [
+        "系统",
+        "安全",
+        "现代"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "java-lang",
+      "title": "Java",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "jvm-languages",
+      "deps": [
+        "jvm-languages"
+      ],
+      "description": "企业级后端开发的主流语言，以 Write Once, Run Anywhere 为核心理念，生态成熟。",
+      "tags": [
+        "JVM",
+        "企业",
+        "后端"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "kotlin-lang",
+      "title": "Kotlin",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "java-lang",
+      "deps": [
+        "java-lang"
+      ],
+      "description": "运行在 JVM 上的现代编程语言，语法简洁、空安全，是 Android 官方推荐语言。",
+      "tags": [
+        "JVM",
+        "现代",
+        "Android"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "scala-lang",
+      "title": "Scala",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "java-lang",
+      "deps": [
+        "java-lang"
+      ],
+      "description": "融合了面向对象与函数式编程的 JVM 语言，适合大数据处理（Spark）与高并发场景。",
+      "tags": [
+        "JVM",
+        "函数式",
+        "大数据"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "groovy-lang",
+      "title": "Groovy",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "java-lang",
+      "deps": [
+        "java-lang"
+      ],
+      "description": "运行在 JVM 上的动态脚本语言，语法灵活，常用于 Gradle 构建脚本与 Jenkins 自动化。",
+      "tags": [
+        "JVM",
+        "动态",
+        "脚本"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "javascript",
+      "title": "JavaScript",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-languages",
+      "deps": [
+        "web-languages"
+      ],
+      "description": "浏览器端唯一原生语言，是 Web 前端的核心，推动了 Node.js 全栈化与 Electron 跨端应用生态。",
+      "tags": [
+        "Web",
+        "前端",
+        "全栈"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "typescript",
+      "title": "TypeScript",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "javascript",
+      "deps": [
+        "javascript"
+      ],
+      "description": "在 JavaScript 基础上加入静态类型系统的语言，适合工程化前端与大型团队协作。",
+      "tags": [
+        "Web",
+        "类型",
+        "工程化"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "python-lang",
+      "title": "Python",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "scripting-languages",
+      "deps": [
+        "scripting-languages"
+      ],
+      "description": "以简洁语法与丰富生态著称的解释型语言，广泛用于数据科学、Web 后端、自动化与 AI 领域。",
+      "tags": [
+        "脚本",
+        "数据科学",
+        "AI"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "ruby-lang",
+      "title": "Ruby",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "scripting-languages",
+      "deps": [
+        "scripting-languages"
+      ],
+      "description": "以开发者体验为核心的动态语言，Ruby on Rails 框架开创了现代 Web 快速开发的范式。",
+      "tags": [
+        "脚本",
+        "Web",
+        "Rails"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "lua-lang",
+      "title": "Lua",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "scripting-languages",
+      "deps": [
+        "scripting-languages"
+      ],
+      "description": "轻量小巧的脚本语言，常作为嵌入式脚本引擎用于游戏开发（如 Roblox）与 Nginx 配置。",
+      "tags": [
+        "脚本",
+        "嵌入式",
+        "游戏"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "perl-lang",
+      "title": "Perl",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "scripting-languages",
+      "deps": [
+        "scripting-languages"
+      ],
+      "description": "擅长文本处理与正则表达式的脚本语言，在生物信息学、系统管理与 CGI 时代广泛使用。",
+      "tags": [
+        "脚本",
+        "文本处理",
+        "正则"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "go-lang",
+      "title": "Go",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "compiled-languages",
+      "deps": [
+        "compiled-languages"
+      ],
+      "description": "Google 推出的编译型语言，以简洁语法、内置并发支持与快速编译著称，适合云原生与微服务。",
+      "tags": [
+        "编译",
+        "并发",
+        "云原生"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "swift-lang",
+      "title": "Swift",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "compiled-languages",
+      "deps": [
+        "compiled-languages"
+      ],
+      "description": "Apple 推出的现代编程语言，用于 iOS、macOS 应用开发，语法安全且性能出色。",
+      "tags": [
+        "编译",
+        "Apple",
+        "移动"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "csharp",
+      "title": "C#",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "compiled-languages",
+      "deps": [
+        "compiled-languages"
+      ],
+      "description": "Microsoft 推出的强类型语言，从 .NET Framework 演进到跨平台 .NET，主导游戏开发（Unity）与 Windows 应用。",
+      "tags": [
+        "编译",
+        "Microsoft",
+        "Unity"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "dart-lang",
+      "title": "Dart",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "compiled-languages",
+      "deps": [
+        "compiled-languages"
+      ],
+      "description": "Google 推出的语言，通过 Flutter 框架支持 iOS、Android、Web 与桌面跨平台开发。",
+      "tags": [
+        "编译",
+        "跨平台",
+        "Flutter"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "zig-lang",
+      "title": "Zig",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "system-languages",
+      "deps": [
+        "system-languages"
+      ],
+      "description": "聚焦性能与安全的新兴系统级语言，以零成本抽象与精确内存控制为目标，被视为 C 的现代替代。",
+      "tags": [
+        "系统",
+        "现代",
+        "底层"
+      ],
+      "category": "language"
+    }
+  ]
+}

@@ -1,38 +1,73 @@
-import type { Domain, Node } from '../types'
+import { getNodeCategory, isRootNode, type Node, type NodeCategory } from '../types'
 
-const ALL_DOMAINS: Domain[] = ['hardware', 'software', 'programming', 'theory', 'ai', 'network']
+const ALL_CATEGORIES: NodeCategory[] = [
+  'fundamentals',
+  'language',
+  'technology',
+  'tooling',
+  'product',
+  'architecture',
+  'platform',
+]
 
-export function createAllDomainSelection(): Set<Domain> {
-  return new Set(ALL_DOMAINS)
+export function createAllCategorySelection(): Set<NodeCategory> {
+  return new Set(ALL_CATEGORIES)
 }
 
-export function createEmptyDomainSelection(): Set<Domain> {
+export function createEmptyCategorySelection(): Set<NodeCategory> {
   return new Set()
 }
 
-export function toggleDomainSelection(
-  selectedDomains: Set<Domain>,
-  domain: Domain,
-): Set<Domain> {
-  const nextDomains = new Set(selectedDomains)
+export function toggleCategorySelection(
+  selectedCategories: Set<NodeCategory>,
+  category: NodeCategory,
+): Set<NodeCategory> {
+  const nextCategories = new Set(selectedCategories)
 
-  if (nextDomains.has(domain)) {
-    nextDomains.delete(domain)
+  if (nextCategories.has(category)) {
+    nextCategories.delete(category)
   } else {
-    nextDomains.add(domain)
+    nextCategories.add(category)
   }
 
-  return nextDomains
+  return nextCategories
+}
+
+export function reconcileSelectedNodeWithCategories(
+  selectedNode: Node | null,
+  selectedCategories: Set<NodeCategory>,
+): Node | null {
+  if (!selectedNode || isRootNode(selectedNode)) {
+    return selectedNode
+  }
+
+  return selectedCategories.has(getNodeCategory(selectedNode)) ? selectedNode : null
 }
 
 export function autoUnlockNodeOnSelect(unlockedNodes: Set<string>, node: Node): Set<string> {
-  if (unlockedNodes.has(node.id)) {
+  if (isRootNode(node) || unlockedNodes.has(node.id)) {
     return unlockedNodes
   }
 
   const nextUnlockedNodes = new Set(unlockedNodes)
   nextUnlockedNodes.add(node.id)
   return nextUnlockedNodes
+}
+
+export function unlockNodes(unlockedNodes: Set<string>, nodes: Node[]): Set<string> {
+  const nextUnlockedNodes = new Set(unlockedNodes)
+  let didChange = false
+
+  nodes.forEach((node) => {
+    if (isRootNode(node) || nextUnlockedNodes.has(node.id)) {
+      return
+    }
+
+    nextUnlockedNodes.add(node.id)
+    didChange = true
+  })
+
+  return didChange ? nextUnlockedNodes : unlockedNodes
 }
 
 export function toggleNodeLock(unlockedNodes: Set<string>, nodeId: string): Set<string> {

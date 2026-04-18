@@ -1,18 +1,28 @@
-import { X, ExternalLink, ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Separator } from './ui/separator';
-import { motion } from 'motion/react';
-import { Node, DOMAIN_COLORS, DOMAIN_NAMES } from '../types';
+import { X, ExternalLink, ArrowRight } from 'lucide-react'
+import { motion } from 'motion/react'
+
+import { Button } from './ui/button'
+import { Badge } from './ui/badge'
+import { Separator } from './ui/separator'
+import {
+  getNodeCategoryColor,
+  getNodeCategoryName,
+  isRootNode,
+  type Node,
+  ROOT_NODE_COLOR,
+} from '../types'
 
 interface DetailPanelProps {
-  node: Node | null;
-  onClose: () => void;
-  onNavigateToMap?: (mapId: string) => void;
+  node: Node | null
+  onClose: () => void
+  onToggleLock?: (nodeId: string) => void
+  onNavigateToMap?: (mapId: string) => void
 }
 
-export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps) => {
-  if (!node) return null;
+export const DetailPanel = ({ node, onClose, onToggleLock, onNavigateToMap }: DetailPanelProps) => {
+  if (!node) return null
+
+  const lockable = !isRootNode(node)
 
   return (
     <motion.aside
@@ -20,42 +30,64 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
       animate={{ x: 0 }}
       exit={{ x: 320 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className="w-80 border-l border-[#E5E7EB] bg-white flex flex-col absolute right-0 top-0 bottom-0 z-10 shadow-lg"
+      className="absolute bottom-0 right-0 top-0 z-10 flex w-80 flex-col border-l border-[#E5E7EB] bg-white shadow-lg"
     >
-      <div className="p-4 flex justify-between items-start">
+      <div className="flex items-start justify-between p-4">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <div
-              className="w-4 h-4 rounded-full"
+              className={isRootNode(node) ? 'h-4 w-4' : 'h-4 w-4 rounded-full'}
               style={{
-                backgroundColor: node.unlocked ? DOMAIN_COLORS[node.domain] : '#D1D5DB',
-                boxShadow: node.unlocked ? `0 0 8px ${DOMAIN_COLORS[node.domain]}40` : 'none',
+                backgroundColor: isRootNode(node)
+                  ? ROOT_NODE_COLOR
+                  : node.unlocked
+                    ? getNodeCategoryColor(node)
+                    : '#D1D5DB',
+                boxShadow:
+                  isRootNode(node) || node.unlocked
+                    ? `0 0 8px ${isRootNode(node) ? ROOT_NODE_COLOR : getNodeCategoryColor(node)}40`
+                    : 'none',
               }}
             />
             <Badge variant="secondary" className="text-xs">
-              {DOMAIN_NAMES[node.domain]}
+              {isRootNode(node) ? 'Root' : getNodeCategoryName(node)}
             </Badge>
           </div>
           <h2 className="text-xl font-semibold text-[#111827]">{node.title}</h2>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="w-8 h-8 p-0 -mr-2">
-          <X className="w-4 h-4" />
+        <Button variant="ghost" size="sm" onClick={onClose} className="-mr-2 h-8 w-8 p-0">
+          <X className="h-4 w-4" />
         </Button>
       </div>
 
       <Separator />
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        {lockable && node.unlocked && onToggleLock && (
+          <div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                onToggleLock(node.id)
+                onClose()
+              }}
+              className="w-full"
+            >
+              Lock
+            </Button>
+          </div>
+        )}
+
         {node.description && (
           <div>
-            <div className="text-sm font-medium text-[#111827] mb-2">描述</div>
-            <p className="text-sm text-[#6B7280] leading-relaxed">{node.description}</p>
+            <div className="mb-2 text-sm font-medium text-[#111827]">描述</div>
+            <p className="text-sm leading-relaxed text-[#6B7280]">{node.description}</p>
           </div>
         )}
 
         {node.tags && node.tags.length > 0 && (
           <div>
-            <div className="text-sm font-medium text-[#111827] mb-2">标签</div>
+            <div className="mb-2 text-sm font-medium text-[#111827]">标签</div>
             <div className="flex flex-wrap gap-2">
               {node.tags.map((tag, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
@@ -68,30 +100,35 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
 
         {node.stage && (
           <div>
-            <div className="text-sm font-medium text-[#111827] mb-2">难度等级</div>
+            <div className="mb-2 text-sm font-medium text-[#111827]">难度等级</div>
             <div className="flex items-center gap-1">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
                   className="h-2 flex-1 rounded-full"
                   style={{
-                    backgroundColor: i < node.stage! ? DOMAIN_COLORS[node.domain] : '#E5E7EB',
+                    backgroundColor:
+                      i < node.stage
+                        ? isRootNode(node)
+                          ? ROOT_NODE_COLOR
+                          : getNodeCategoryColor(node)
+                        : '#E5E7EB',
                   }}
                 />
               ))}
             </div>
-            <div className="text-xs text-[#6B7280] mt-1">Level {node.stage} / 5</div>
+            <div className="mt-1 text-xs text-[#6B7280]">Level {node.stage} / 5</div>
           </div>
         )}
 
         {node.deps && node.deps.length > 0 && (
           <div>
-            <div className="text-sm font-medium text-[#111827] mb-2">前置依赖</div>
+            <div className="mb-2 text-sm font-medium text-[#111827]">前置依赖</div>
             <div className="space-y-1">
               {node.deps.map((dep, index) => (
                 <div
                   key={index}
-                  className="text-sm text-[#6B7280] bg-[#F9FAFB] px-3 py-1.5 rounded-md"
+                  className="rounded-md bg-[#F9FAFB] px-3 py-1.5 text-sm text-[#6B7280]"
                 >
                   {dep}
                 </div>
@@ -102,7 +139,7 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
 
         {node.resources && node.resources.length > 0 && (
           <div>
-            <div className="text-sm font-medium text-[#111827] mb-2">相关资源</div>
+            <div className="mb-2 text-sm font-medium text-[#111827]">相关资源</div>
             <div className="space-y-2">
               {node.resources.map((resource, index) => (
                 <a
@@ -112,7 +149,7 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm text-[#3B82F6] hover:underline"
                 >
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="h-3 w-3" />
                   {resource.title}
                 </a>
               ))}
@@ -126,14 +163,16 @@ export const DetailPanel = ({ node, onClose, onNavigateToMap }: DetailPanelProps
             <Button
               onClick={() => onNavigateToMap(node.targetMap!)}
               className="w-full"
-              style={{ backgroundColor: DOMAIN_COLORS[node.domain] }}
+              style={{
+                backgroundColor: isRootNode(node) ? ROOT_NODE_COLOR : getNodeCategoryColor(node),
+              }}
             >
               进入 {node.title} 地图
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         )}
       </div>
     </motion.aside>
-  );
-};
+  )
+}

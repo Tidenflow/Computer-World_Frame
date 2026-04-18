@@ -6,52 +6,60 @@ import {
   buildBreadcrumbs,
   buildNodesWithUnlockedStatus,
   buildVisibleGraphNodes,
+  computeMapUnlockedStats,
   computeUnlockedStats,
-  filterNodesByQuery,
   searchNodesAcrossMaps,
 } from '../services/app-services'
 import {
   autoUnlockNodeOnSelect,
   closeSelectedNode,
-  createAllDomainSelection,
-  createEmptyDomainSelection,
-  toggleDomainSelection,
+  createAllCategorySelection,
+  createEmptyCategorySelection,
+  reconcileSelectedNodeWithCategories,
+  toggleCategorySelection,
   toggleNodeLock,
+  unlockNodes,
 } from '../services/app-state-transitions'
-import type { Domain, Node } from '../types'
+import type { Node, NodeCategory, SearchMatch } from '../types'
 import { useProgressState } from './use-progress-state'
 import { useSearchState } from './use-search-state'
 
 type ViewMode = '2d' | '3d'
 
+function withUnlockedState(node: Node, unlockedNodes: Set<string>): Node {
+  return {
+    ...node,
+    unlocked: unlockedNodes.has(node.id),
+  }
+}
+
 export function useCwfApp() {
   const [viewMode, setViewMode] = useState<ViewMode>('2d')
-  const [selectedDomains, setSelectedDomains] = useState<Set<Domain>>(() => createAllDomainSelection())
+  const [selectedCategories, setSelectedCategories] = useState<Set<NodeCategory>>(
+    () => createAllCategorySelection(),
+  )
   const [currentMapId, setCurrentMapId] = useState('root')
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
+  const [recentSearchMatches, setRecentSearchMatches] = useState<SearchMatch[]>([])
 
   const { unlockedNodes, saveUnlockedNodeSet } = useProgressState(localStorageProgressRepository)
-  const { searchQuery, setSearchQuery, debouncedSearch, clearSearch } = useSearchState()
+  const { searchQuery, setSearchQuery, clearSearch } = useSearchState()
 
   const currentMap = allMaps[currentMapId]
 
   const filteredNodes = useMemo(() => {
     const nodesWithStatus = buildNodesWithUnlockedStatus(currentMap, unlockedNodes)
-    if (debouncedSearch) {
-      return filterNodesByQuery(nodesWithStatus, debouncedSearch)
-    }
-
     return buildVisibleGraphNodes(nodesWithStatus, selectedNode?.id ?? null)
-  }, [currentMap, debouncedSearch, selectedNode?.id, unlockedNodes])
-
-  const searchResults = useMemo(
-    () => searchNodesAcrossMaps(allMaps, debouncedSearch, unlockedNodes),
-    [debouncedSearch, unlockedNodes],
-  )
+  }, [currentMap, selectedNode?.id, unlockedNodes])
 
   const totalUnlockedCount = useMemo(
     () => computeUnlockedStats(allMaps, unlockedNodes),
     [unlockedNodes],
+  )
+
+  const currentMapUnlockedCount = useMemo(
+    () => computeMapUnlockedStats(currentMap, unlockedNodes),
+    [currentMap, unlockedNodes],
   )
 
   const breadcrumbs = useMemo(
@@ -59,8 +67,14 @@ export function useCwfApp() {
     [currentMap, currentMapId],
   )
 
-  const handleDomainToggle = (domain: Domain) => {
-    setSelectedDomains((previousDomains) => toggleDomainSelection(previousDomains, domain))
+  const handleCategoryToggle = (category: NodeCategory) => {
+    setSelectedCategories((previousCategories) => {
+      const nextCategories = toggleCategorySelection(previousCategories, category)
+      setSelectedNode((previousSelectedNode) =>
+        reconcileSelectedNodeWithCategories(previousSelectedNode, nextCategories),
+      )
+      return nextCategories
+    })
   }
 
   const handleNodeClick = (node: Node) => {
@@ -74,6 +88,12 @@ export function useCwfApp() {
   }
 
   const handleToggleLock = (nodeId: string) => {
+    if (unlockedNodes.has(nodeId)) {
+      setRecentSearchMatches((previousMatches) =>
+        previousMatches.filter((match) => match.id !== nodeId),
+      )
+    }
+
     saveUnlockedNodeSet(toggleNodeLock(unlockedNodes, nodeId))
   }
 
@@ -86,31 +106,73 @@ export function useCwfApp() {
     setSelectedNode(null)
   }
 
+  const handleSearchSubmit = () => {
+    const normalizedQuery = searchQuery.trim()
+
+    if (!normalizedQuery) {
+      setRecentSearchMatches([])
+      return
+    }
+
+    const matches = searchNodesAcrossMaps(allMaps, normalizedQuery, unlockedNodes)
+    const nextUnlockedNodes = unlockNodes(unlockedNodes, matches)
+
+    if (nextUnlockedNodes !== unlockedNodes) {
+      saveUnlockedNodeSet(nextUnlockedNodes)
+    }
+
+    setRecentSearchMatches(
+      matches.map((match) => ({
+        ...match,
+        unlocked: nextUnlockedNodes.has(match.id),
+      })),
+    )
+  }
+
+  const handleSelectRecentMatch = (match: SearchMatch) => {
+    const targetMap = allMaps[match.mapId]
+    const targetNode = targetMap.nodes.find((node) => node.id === match.id)
+
+    if (!targetNode) {
+      return
+    }
+
+    setCurrentMapId(match.mapId)
+    setSelectedNode(withUnlockedState(targetNode, unlockedNodes))
+    clearSearch()
+  }
+
   return {
     viewMode,
     setViewMode,
     searchQuery,
     setSearchQuery,
-    debouncedSearch,
-    selectedDomains,
+    selectedCategories,
     currentMapId,
     selectedNode,
     currentMap,
     filteredNodes,
-    searchResults,
     totalUnlockedCount,
+    currentMapUnlockedCount,
+    recentSearchMatches,
     breadcrumbs,
     unlockedNodes,
-    handleDomainToggle,
+    handleCategoryToggle,
     handleNodeClick,
     handleToggleLock,
     handleNodeDoubleClick,
     handleNavigateToMap,
-    selectAllDomains() {
-      setSelectedDomains(createAllDomainSelection())
+    handleSearchSubmit,
+    handleSelectRecentMatch,
+    selectAllCategories() {
+      setSelectedCategories(createAllCategorySelection())
     },
-    clearDomains() {
-      setSelectedDomains(createEmptyDomainSelection())
+    clearCategories() {
+      const nextCategories = createEmptyCategorySelection()
+      setSelectedCategories(nextCategories)
+      setSelectedNode((previousSelectedNode) =>
+        reconcileSelectedNodeWithCategories(previousSelectedNode, nextCategories),
+      )
     },
     closeDetailPanel() {
       setSelectedNode(closeSelectedNode())

@@ -9,7 +9,12 @@
       "stage": 1,
       "deps": [],
       "description": "程序开发总览图的根节点，用来承接前端、后端、桌面端、工具与架构设计等方向。",
-      "tags": ["总览", "根节点", "开发"]
+      "tags": [
+        "总览",
+        "根节点",
+        "开发"
+      ],
+      "category": "technology"
     },
     {
       "id": "web-frontend",
@@ -17,10 +22,20 @@
       "domain": "programming",
       "stage": 2,
       "parentId": "programming-root",
-      "deps": ["programming-root"],
-      "aliases": ["frontend", "web frontend"],
+      "deps": [
+        "programming-root"
+      ],
+      "aliases": [
+        "frontend",
+        "web frontend"
+      ],
       "description": "面向浏览器界面的开发方向，后续可继续拆分为编程语言、技术框架与样式方案。",
-      "tags": ["前端", "浏览器", "界面"]
+      "tags": [
+        "前端",
+        "浏览器",
+        "界面"
+      ],
+      "category": "technology"
     },
     {
       "id": "frontend-languages",
@@ -28,9 +43,16 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "web-frontend",
-      "deps": ["web-frontend"],
+      "deps": [
+        "web-frontend"
+      ],
       "description": "Web 前端常见的基础语言层，负责页面结构、样式与交互能力。",
-      "tags": ["前端", "语言", "基础"]
+      "tags": [
+        "前端",
+        "语言",
+        "基础"
+      ],
+      "category": "language"
     },
     {
       "id": "frontend-frameworks",
@@ -38,9 +60,33 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "web-frontend",
-      "deps": ["web-frontend"],
+      "deps": [
+        "web-frontend"
+      ],
       "description": "Web 前端的主流框架生态，后续继续向具体框架与配套方案展开。",
-      "tags": ["前端", "框架", "生态"]
+      "tags": [
+        "前端",
+        "框架",
+        "生态"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "frontend-styling",
+      "title": "样式方案",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-frontend",
+      "deps": [
+        "web-frontend"
+      ],
+      "description": "负责页面视觉表现与布局的样式工具集合，包括 CSS 预处理器、CSS-in-JS 与 UI 框架。",
+      "tags": [
+        "前端",
+        "样式",
+        "CSS"
+      ],
+      "category": "technology"
     },
     {
       "id": "html",
@@ -48,9 +94,16 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "frontend-languages",
-      "deps": ["frontend-languages"],
+      "deps": [
+        "frontend-languages"
+      ],
       "description": "负责页面结构与语义化标记，是 Web 前端的基础组成。",
-      "tags": ["前端", "标记语言", "结构"]
+      "tags": [
+        "前端",
+        "标记语言",
+        "结构"
+      ],
+      "category": "technology"
     },
     {
       "id": "css",
@@ -58,9 +111,16 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "frontend-languages",
-      "deps": ["html"],
+      "deps": [
+        "html"
+      ],
       "description": "负责页面样式与布局表达，用于控制视觉表现。",
-      "tags": ["前端", "样式", "布局"]
+      "tags": [
+        "前端",
+        "样式",
+        "布局"
+      ],
+      "category": "technology"
     },
     {
       "id": "javascript",
@@ -68,9 +128,16 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "frontend-languages",
-      "deps": ["html"],
+      "deps": [
+        "html"
+      ],
       "description": "负责页面交互逻辑，是 Web 前端的核心脚本语言。",
-      "tags": ["前端", "脚本", "交互"]
+      "tags": [
+        "前端",
+        "脚本",
+        "交互"
+      ],
+      "category": "language"
     },
     {
       "id": "typescript",
@@ -78,9 +145,50 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "frontend-languages",
-      "deps": ["javascript"],
+      "deps": [
+        "javascript"
+      ],
       "description": "建立在 JavaScript 之上的类型化语言，适合工程化前端开发。",
-      "tags": ["前端", "类型系统", "工程化"]
+      "tags": [
+        "前端",
+        "类型系统",
+        "工程化"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "sass",
+      "title": "Sass",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-styling",
+      "deps": [
+        "css"
+      ],
+      "description": "成熟的 CSS 预处理器，支持变量、嵌套、混合器等特性，大幅提升样式代码的可维护性。",
+      "tags": [
+        "前端",
+        "CSS",
+        "预处理器"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "tailwindcss",
+      "title": "Tailwind CSS",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-styling",
+      "deps": [
+        "css"
+      ],
+      "description": "实用优先的 CSS 框架，通过原子类快速构建自定义设计系统，是当前最流行的 CSS 框架之一。",
+      "tags": [
+        "前端",
+        "CSS",
+        "框架"
+      ],
+      "category": "tooling"
     },
     {
       "id": "react",
@@ -88,9 +196,16 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "frontend-frameworks",
-      "deps": ["javascript"],
+      "deps": [
+        "javascript"
+      ],
       "description": "组件化前端框架生态的重要代表，适合构建交互式 UI。",
-      "tags": ["前端", "框架", "组件化"]
+      "tags": [
+        "前端",
+        "框架",
+        "组件化"
+      ],
+      "category": "tooling"
     },
     {
       "id": "vue",
@@ -98,9 +213,50 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "frontend-frameworks",
-      "deps": ["javascript"],
+      "deps": [
+        "javascript"
+      ],
       "description": "渐进式前端框架，强调易学与清晰的组织方式。",
-      "tags": ["前端", "框架", "渐进式"]
+      "tags": [
+        "前端",
+        "框架",
+        "渐进式"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "angular",
+      "title": "Angular",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-frameworks",
+      "deps": [
+        "javascript"
+      ],
+      "description": "Google 维护的完整前端框架，包含路由、状态管理、表单处理等全家桶，适合大型企业应用。",
+      "tags": [
+        "前端",
+        "框架",
+        "全家桶"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "svelte",
+      "title": "Svelte",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "frontend-frameworks",
+      "deps": [
+        "javascript"
+      ],
+      "description": "编译时框架，将响应式状态编译为高效的 DOM 更新代码，无需虚拟 DOM，打包体积极小。",
+      "tags": [
+        "前端",
+        "框架",
+        "轻量"
+      ],
+      "category": "tooling"
     },
     {
       "id": "nextjs",
@@ -108,9 +264,16 @@
       "domain": "programming",
       "stage": 5,
       "parentId": "react",
-      "deps": ["react"],
+      "deps": [
+        "react"
+      ],
       "description": "构建在 React 生态之上的全栈框架，常用于现代 Web 应用开发。",
-      "tags": ["前端", "React 生态", "全栈框架"]
+      "tags": [
+        "前端",
+        "React 生态",
+        "全栈框架"
+      ],
+      "category": "tooling"
     },
     {
       "id": "pinia",
@@ -118,9 +281,16 @@
       "domain": "programming",
       "stage": 5,
       "parentId": "vue",
-      "deps": ["vue"],
+      "deps": [
+        "vue"
+      ],
       "description": "Vue 生态中的状态管理方案，用于组织应用共享状态。",
-      "tags": ["前端", "Vue 生态", "状态管理"]
+      "tags": [
+        "前端",
+        "Vue 生态",
+        "状态管理"
+      ],
+      "category": "tooling"
     },
     {
       "id": "vuex",
@@ -128,9 +298,16 @@
       "domain": "programming",
       "stage": 5,
       "parentId": "vue",
-      "deps": ["vue"],
+      "deps": [
+        "vue"
+      ],
       "description": "Vue 生态中的经典状态管理方案，适合理解集中式状态管理。",
-      "tags": ["前端", "Vue 生态", "状态管理"]
+      "tags": [
+        "前端",
+        "Vue 生态",
+        "状态管理"
+      ],
+      "category": "tooling"
     },
     {
       "id": "nuxt",
@@ -138,9 +315,50 @@
       "domain": "programming",
       "stage": 5,
       "parentId": "vue",
-      "deps": ["vue"],
+      "deps": [
+        "vue"
+      ],
       "description": "建立在 Vue 生态之上的应用框架，常用于服务端渲染与工程化项目。",
-      "tags": ["前端", "Vue 生态", "应用框架"]
+      "tags": [
+        "前端",
+        "Vue 生态",
+        "应用框架"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "astro",
+      "title": "Astro",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "frontend-frameworks",
+      "deps": [
+        "javascript"
+      ],
+      "description": "内容优先的 Web 框架，支持孤岛架构，擅长内容密集型网站的高性能渲染。",
+      "tags": [
+        "前端",
+        "框架",
+        "内容网站"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "remix",
+      "title": "Remix",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "frontend-frameworks",
+      "deps": [
+        "javascript"
+      ],
+      "description": "基于 Web 标准构建的全栈框架，强调渐进增强与服务器端数据加载的效率。",
+      "tags": [
+        "前端",
+        "框架",
+        "全栈"
+      ],
+      "category": "tooling"
     },
     {
       "id": "web-backend",
@@ -148,10 +366,20 @@
       "domain": "programming",
       "stage": 2,
       "parentId": "programming-root",
-      "deps": ["programming-root"],
-      "aliases": ["backend", "web backend"],
+      "deps": [
+        "programming-root"
+      ],
+      "aliases": [
+        "backend",
+        "web backend"
+      ],
       "description": "负责服务端逻辑、接口与数据处理的开发方向，后续可继续拆分为不同语言技术栈。",
-      "tags": ["后端", "服务端", "接口"]
+      "tags": [
+        "后端",
+        "服务端",
+        "接口"
+      ],
+      "category": "technology"
     },
     {
       "id": "backend-python-stack",
@@ -159,9 +387,16 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "web-backend",
-      "deps": ["web-backend"],
+      "deps": [
+        "web-backend"
+      ],
       "description": "以 Python 为核心的 Web 后端技术栈，适合快速构建服务端应用。",
-      "tags": ["后端", "Python", "技术栈"]
+      "tags": [
+        "后端",
+        "Python",
+        "技术栈"
+      ],
+      "category": "technology"
     },
     {
       "id": "backend-js-stack",
@@ -169,9 +404,33 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "web-backend",
-      "deps": ["web-backend"],
+      "deps": [
+        "web-backend"
+      ],
       "description": "以 Node.js 生态为核心的 Web 后端技术栈，适合前后端协同开发。",
-      "tags": ["后端", "Node.js", "技术栈"]
+      "tags": [
+        "后端",
+        "Node.js",
+        "技术栈"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "backend-java-stack",
+      "title": "Java 技术栈",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-backend",
+      "deps": [
+        "web-backend"
+      ],
+      "description": "以 Java 为核心的企业级后端技术栈，生态成熟，广泛用于大型分布式系统。",
+      "tags": [
+        "后端",
+        "Java",
+        "技术栈"
+      ],
+      "category": "technology"
     },
     {
       "id": "backend-data-storage",
@@ -179,9 +438,33 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "web-backend",
-      "deps": ["web-backend"],
+      "deps": [
+        "web-backend"
+      ],
       "description": "服务端常见的数据存储层，支撑持久化、缓存与数据查询。",
-      "tags": ["后端", "数据", "存储"]
+      "tags": [
+        "后端",
+        "数据",
+        "存储"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "backend-middleware",
+      "title": "中间件与消息队列",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "web-backend",
+      "deps": [
+        "web-backend"
+      ],
+      "description": "服务间通信与异步处理的关键组件，用于解耦、削峰与可靠传递。",
+      "tags": [
+        "后端",
+        "中间件",
+        "消息队列"
+      ],
+      "category": "technology"
     },
     {
       "id": "python",
@@ -189,9 +472,16 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "backend-python-stack",
-      "deps": ["backend-python-stack"],
+      "deps": [
+        "backend-python-stack"
+      ],
       "description": "后端开发中常见的编程语言，拥有成熟的 Web 框架生态。",
-      "tags": ["后端", "Python", "语言"]
+      "tags": [
+        "后端",
+        "Python",
+        "语言"
+      ],
+      "category": "language"
     },
     {
       "id": "django",
@@ -199,9 +489,16 @@
       "domain": "programming",
       "stage": 5,
       "parentId": "python",
-      "deps": ["python"],
+      "deps": [
+        "python"
+      ],
       "description": "Python 生态中的全功能 Web 框架，适合快速搭建完整后端应用。",
-      "tags": ["后端", "Python 生态", "框架"]
+      "tags": [
+        "后端",
+        "Python 生态",
+        "框架"
+      ],
+      "category": "tooling"
     },
     {
       "id": "flask",
@@ -209,9 +506,33 @@
       "domain": "programming",
       "stage": 5,
       "parentId": "python",
-      "deps": ["python"],
+      "deps": [
+        "python"
+      ],
       "description": "Python 生态中的轻量级 Web 框架，适合灵活组织后端服务。",
-      "tags": ["后端", "Python 生态", "框架"]
+      "tags": [
+        "后端",
+        "Python 生态",
+        "框架"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "fastapi",
+      "title": "FastAPI",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "python",
+      "deps": [
+        "python"
+      ],
+      "description": "现代 Python Web 框架，基于类型提示自动生成 API 文档，性能接近 Node.js。",
+      "tags": [
+        "后端",
+        "Python 生态",
+        "API"
+      ],
+      "category": "tooling"
     },
     {
       "id": "nodejs",
@@ -219,9 +540,67 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "backend-js-stack",
-      "deps": ["backend-js-stack"],
+      "deps": [
+        "backend-js-stack"
+      ],
       "description": "JavaScript / TypeScript 后端开发的运行时基础，构成 Node.js 服务生态。",
-      "tags": ["后端", "Node.js", "运行时"]
+      "tags": [
+        "后端",
+        "Node.js",
+        "运行时"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "bun",
+      "title": "Bun",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "backend-js-stack",
+      "deps": [
+        "backend-js-stack"
+      ],
+      "description": "all-in-one 的 JavaScript 运行时、工具链与包管理器，比 Node.js 启动更快。",
+      "tags": [
+        "后端",
+        "运行时",
+        "高性能"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "deno",
+      "title": "Deno",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "backend-js-stack",
+      "deps": [
+        "backend-js-stack"
+      ],
+      "description": "Node.js 原作者打造的新一代 JavaScript 运行时，默认安全，支持 TypeScript。",
+      "tags": [
+        "后端",
+        "运行时",
+        "安全"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "spring",
+      "title": "Spring",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "backend-java-stack",
+      "deps": [
+        "backend-java-stack"
+      ],
+      "description": "Java 企业级开发的核心框架，提供了依赖注入、AOP 与微服务全家桶。",
+      "tags": [
+        "后端",
+        "Java 生态",
+        "企业级"
+      ],
+      "category": "tooling"
     },
     {
       "id": "mysql",
@@ -229,9 +608,67 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "backend-data-storage",
-      "deps": ["backend-data-storage"],
+      "deps": [
+        "backend-data-storage"
+      ],
       "description": "常见的关系型数据库，用于服务端业务数据持久化。",
-      "tags": ["后端", "数据库", "关系型"]
+      "tags": [
+        "后端",
+        "数据库",
+        "关系型"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "postgresql",
+      "title": "PostgreSQL",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "backend-data-storage",
+      "deps": [
+        "backend-data-storage"
+      ],
+      "description": "功能最强大的开源关系型数据库，支持 JSON、地理信息、全文检索，是现代互联网应用的首选。",
+      "tags": [
+        "后端",
+        "数据库",
+        "关系型"
+      ],
+      "category": "fundamentals"
+    },
+    {
+      "id": "mongodb",
+      "title": "MongoDB",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "backend-data-storage",
+      "deps": [
+        "backend-data-storage"
+      ],
+      "description": "主流的文档型 NoSQL 数据库，以灵活的 JSON 文档存储著称，适合快速迭代的互联网产品。",
+      "tags": [
+        "后端",
+        "数据库",
+        "NoSQL"
+      ],
+      "category": "platform"
+    },
+    {
+      "id": "sqlite",
+      "title": "SQLite",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "backend-data-storage",
+      "deps": [
+        "backend-data-storage"
+      ],
+      "description": "轻量级嵌入式关系型数据库，零配置、无需独立服务进程，广泛用于移动应用与小型项目。",
+      "tags": [
+        "后端",
+        "数据库",
+        "嵌入式"
+      ],
+      "category": "technology"
     },
     {
       "id": "redis",
@@ -239,9 +676,50 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "backend-data-storage",
-      "deps": ["backend-data-storage"],
+      "deps": [
+        "backend-data-storage"
+      ],
       "description": "常见的内存型数据存储，用于缓存、队列与高频读写场景。",
-      "tags": ["后端", "缓存", "数据存储"]
+      "tags": [
+        "后端",
+        "缓存",
+        "数据存储"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "rabbitmq",
+      "title": "RabbitMQ",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "backend-middleware",
+      "deps": [
+        "backend-middleware"
+      ],
+      "description": "实现了 AMQP 协议的消息队列中间件，适合异步任务处理与微服务间解耦。",
+      "tags": [
+        "后端",
+        "消息队列",
+        "中间件"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "kafka",
+      "title": "Kafka",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "backend-middleware",
+      "deps": [
+        "backend-middleware"
+      ],
+      "description": "高吞吐量分布式流处理平台，适合日志收集、实时分析与事件驱动架构。",
+      "tags": [
+        "后端",
+        "消息队列",
+        "流处理"
+      ],
+      "category": "technology"
     },
     {
       "id": "desktop-development",
@@ -249,10 +727,20 @@
       "domain": "programming",
       "stage": 2,
       "parentId": "programming-root",
-      "deps": ["programming-root"],
-      "aliases": ["desktop", "desktop development"],
+      "deps": [
+        "programming-root"
+      ],
+      "aliases": [
+        "desktop",
+        "desktop development"
+      ],
       "description": "面向桌面应用的开发方向，后续可继续补充 Qt、Electron 等技术栈。",
-      "tags": ["桌面端", "客户端", "应用"]
+      "tags": [
+        "桌面端",
+        "客户端",
+        "应用"
+      ],
+      "category": "technology"
     },
     {
       "id": "desktop-cpp-stack",
@@ -260,9 +748,50 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "desktop-development",
-      "deps": ["desktop-development"],
+      "deps": [
+        "desktop-development"
+      ],
       "description": "以 C++ 为核心的桌面端开发路线，适合构建高性能本地应用。",
-      "tags": ["桌面端", "C++", "技术栈"]
+      "tags": [
+        "桌面端",
+        "C++",
+        "技术栈"
+      ],
+      "category": "language"
+    },
+    {
+      "id": "desktop-js-stack",
+      "title": "跨平台 JS 技术栈",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "desktop-development",
+      "deps": [
+        "desktop-development"
+      ],
+      "description": "以 Web 技术栈为核心的跨平台桌面应用开发路线，一套代码覆盖 Windows、macOS、Linux。",
+      "tags": [
+        "桌面端",
+        "跨平台",
+        "Web 技术"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "desktop-dotnet-stack",
+      "title": ".NET 技术栈",
+      "domain": "programming",
+      "stage": 3,
+      "parentId": "desktop-development",
+      "deps": [
+        "desktop-development"
+      ],
+      "description": "以 C# 和 .NET 为核心的桌面端与移动端开发路线，Windows 平台原生体验最佳。",
+      "tags": [
+        "桌面端",
+        "C#",
+        ".NET"
+      ],
+      "category": "technology"
     },
     {
       "id": "qt",
@@ -270,9 +799,84 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "desktop-cpp-stack",
-      "deps": ["desktop-cpp-stack"],
+      "deps": [
+        "desktop-cpp-stack"
+      ],
       "description": "常见的跨平台桌面应用开发框架，适合构建原生体验应用。",
-      "tags": ["桌面端", "框架", "跨平台"]
+      "tags": [
+        "桌面端",
+        "框架",
+        "跨平台"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "electron",
+      "title": "Electron",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "desktop-js-stack",
+      "deps": [
+        "desktop-js-stack"
+      ],
+      "description": "以 Chromium + Node.js 为核心的跨平台桌面应用框架，VS Code、Slack、Postman 均基于此构建。",
+      "tags": [
+        "桌面端",
+        "跨平台",
+        "Chromium"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "tauri",
+      "title": "Tauri",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "desktop-js-stack",
+      "deps": [
+        "desktop-js-stack"
+      ],
+      "description": "以 Rust 为后端、Web 为前端的轻量级跨平台框架，打包体积远小于 Electron。",
+      "tags": [
+        "桌面端",
+        "跨平台",
+        "Rust"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "winforms",
+      "title": "WinForms",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "desktop-dotnet-stack",
+      "deps": [
+        "desktop-dotnet-stack"
+      ],
+      "description": "经典的 .NET Windows Forms 框架，适合快速构建 Windows 桌面业务工具。",
+      "tags": [
+        "桌面端",
+        "Windows",
+        "业务工具"
+      ],
+      "category": "technology"
+    },
+    {
+      "id": "wpf",
+      "title": "WPF",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "desktop-dotnet-stack",
+      "deps": [
+        "desktop-dotnet-stack"
+      ],
+      "description": "基于 XAML 的 .NET Windows Presentation Foundation，支持矢量图形与数据绑定。",
+      "tags": [
+        "桌面端",
+        "Windows",
+        "XAML"
+      ],
+      "category": "technology"
     },
     {
       "id": "development-tools",
@@ -280,10 +884,20 @@
       "domain": "programming",
       "stage": 2,
       "parentId": "programming-root",
-      "deps": ["programming-root"],
-      "aliases": ["tools", "dev tools"],
+      "deps": [
+        "programming-root"
+      ],
+      "aliases": [
+        "tools",
+        "dev tools"
+      ],
       "description": "围绕开发流程的辅助能力，后续可继续拆分为版本控制、开发环境与工程化工具。",
-      "tags": ["工具", "工程化", "效率"]
+      "tags": [
+        "工具",
+        "工程化",
+        "效率"
+      ],
+      "category": "tooling"
     },
     {
       "id": "version-control",
@@ -291,9 +905,16 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "development-tools",
-      "deps": ["development-tools"],
+      "deps": [
+        "development-tools"
+      ],
       "description": "用于管理代码版本、协作与历史记录的基础工具能力。",
-      "tags": ["工具", "版本控制", "协作"]
+      "tags": [
+        "工具",
+        "版本控制",
+        "协作"
+      ],
+      "category": "tooling"
     },
     {
       "id": "dev-environment",
@@ -301,9 +922,16 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "development-tools",
-      "deps": ["development-tools"],
+      "deps": [
+        "development-tools"
+      ],
       "description": "支撑日常编码、调试与编辑体验的开发环境工具。",
-      "tags": ["工具", "环境", "编辑器"]
+      "tags": [
+        "工具",
+        "环境",
+        "编辑器"
+      ],
+      "category": "tooling"
     },
     {
       "id": "engineering-tools",
@@ -311,9 +939,16 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "development-tools",
-      "deps": ["development-tools"],
+      "deps": [
+        "development-tools"
+      ],
       "description": "支撑构建、部署与一致性环境的工程化工具集合。",
-      "tags": ["工具", "工程化", "部署"]
+      "tags": [
+        "工具",
+        "工程化",
+        "部署"
+      ],
+      "category": "tooling"
     },
     {
       "id": "git",
@@ -321,9 +956,16 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "version-control",
-      "deps": ["version-control"],
+      "deps": [
+        "version-control"
+      ],
       "description": "最常见的分布式版本控制工具，用于管理代码历史与协作流程。",
-      "tags": ["工具", "Git", "版本控制"]
+      "tags": [
+        "工具",
+        "Git",
+        "版本控制"
+      ],
+      "category": "tooling"
     },
     {
       "id": "github",
@@ -331,9 +973,33 @@
       "domain": "programming",
       "stage": 5,
       "parentId": "git",
-      "deps": ["git"],
+      "deps": [
+        "git"
+      ],
       "description": "围绕 Git 的代码托管与协作平台，常用于开源协作与项目管理。",
-      "tags": ["工具", "Git 生态", "托管平台"]
+      "tags": [
+        "工具",
+        "Git 生态",
+        "托管平台"
+      ],
+      "category": "platform"
+    },
+    {
+      "id": "gitlab",
+      "title": "GitLab",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "git",
+      "deps": [
+        "git"
+      ],
+      "description": "从代码托管到 CI/CD、DevSecOps 的完整平台，适合企业级自托管 Git 仓库。",
+      "tags": [
+        "工具",
+        "Git 生态",
+        "DevOps"
+      ],
+      "category": "platform"
     },
     {
       "id": "vscode",
@@ -341,9 +1007,84 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "dev-environment",
-      "deps": ["dev-environment"],
+      "deps": [
+        "dev-environment"
+      ],
       "description": "常见的现代代码编辑器，兼顾轻量性与丰富插件生态。",
-      "tags": ["工具", "编辑器", "开发环境"]
+      "tags": [
+        "工具",
+        "编辑器",
+        "开发环境"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "intellij",
+      "title": "IntelliJ IDEA",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "dev-environment",
+      "deps": [
+        "dev-environment"
+      ],
+      "description": "JetBrains 出品的 Java/Kotlin 专业 IDE，智能代码分析与重构能力业界领先。",
+      "tags": [
+        "工具",
+        "IDE",
+        "Java"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "pycharm",
+      "title": "PyCharm",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "dev-environment",
+      "deps": [
+        "dev-environment"
+      ],
+      "description": "JetBrains 出品的专业 Python IDE，适合大型 Python 项目与数据科学开发。",
+      "tags": [
+        "工具",
+        "IDE",
+        "Python"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "webstorm",
+      "title": "WebStorm",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "dev-environment",
+      "deps": [
+        "dev-environment"
+      ],
+      "description": "JetBrains 出品的专业 JavaScript/TypeScript IDE，前端开发者的强力工具。",
+      "tags": [
+        "工具",
+        "IDE",
+        "前端"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "vim",
+      "title": "Vim",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "dev-environment",
+      "deps": [
+        "dev-environment"
+      ],
+      "description": "经典的高效终端文本编辑器，以键盘驱动与模式切换为核心。",
+      "tags": [
+        "工具",
+        "编辑器",
+        "终端"
+      ],
+      "category": "technology"
     },
     {
       "id": "docker",
@@ -351,9 +1092,84 @@
       "domain": "programming",
       "stage": 4,
       "parentId": "engineering-tools",
-      "deps": ["engineering-tools"],
+      "deps": [
+        "engineering-tools"
+      ],
       "description": "常见的容器化工具，用于构建统一的开发与部署环境。",
-      "tags": ["工具", "容器", "工程化"]
+      "tags": [
+        "工具",
+        "容器",
+        "工程化"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "kubernetes",
+      "title": "Kubernetes",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "engineering-tools",
+      "deps": [
+        "engineering-tools"
+      ],
+      "description": "容器编排平台的事实标准，用于自动化部署、扩缩容与管理容器化应用。",
+      "tags": [
+        "工具",
+        "容器编排",
+        "DevOps"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "vite",
+      "title": "Vite",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "engineering-tools",
+      "deps": [
+        "engineering-tools"
+      ],
+      "description": "基于 ESM 的新一代前端构建工具，启动速度极快，支持热更新。",
+      "tags": [
+        "工具",
+        "构建",
+        "前端"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "cmake",
+      "title": "CMake",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "engineering-tools",
+      "deps": [
+        "engineering-tools"
+      ],
+      "description": "跨平台的 C/C++ 项目构建工具，通过 CMakeLists.txt 生成平台原生构建文件。",
+      "tags": [
+        "工具",
+        "构建",
+        "C++"
+      ],
+      "category": "tooling"
+    },
+    {
+      "id": "gradle",
+      "title": "Gradle",
+      "domain": "programming",
+      "stage": 5,
+      "parentId": "engineering-tools",
+      "deps": [
+        "engineering-tools"
+      ],
+      "description": "灵活的任务自动化构建工具，以 Groovy 或 Kotlin DSL 配置，是 Android 项目的标准构建工具。",
+      "tags": [
+        "工具",
+        "构建",
+        "Java"
+      ],
+      "category": "tooling"
     },
     {
       "id": "architecture-design",
@@ -361,9 +1177,16 @@
       "domain": "programming",
       "stage": 2,
       "parentId": "programming-root",
-      "deps": ["programming-root"],
+      "deps": [
+        "programming-root"
+      ],
       "description": "从系统组织与设计视角理解程序开发，后续可继续补充分层架构、设计模式与接口设计。",
-      "tags": ["架构", "设计", "系统"]
+      "tags": [
+        "架构",
+        "设计",
+        "系统"
+      ],
+      "category": "architecture"
     },
     {
       "id": "layered-architecture",
@@ -371,9 +1194,16 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "architecture-design",
-      "deps": ["architecture-design"],
+      "deps": [
+        "architecture-design"
+      ],
       "description": "将系统拆分为职责清晰的层次结构，便于维护与协作。",
-      "tags": ["架构", "分层", "系统设计"]
+      "tags": [
+        "架构",
+        "分层",
+        "系统设计"
+      ],
+      "category": "architecture"
     },
     {
       "id": "design-patterns",
@@ -381,9 +1211,16 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "architecture-design",
-      "deps": ["architecture-design"],
+      "deps": [
+        "architecture-design"
+      ],
       "description": "沉淀常见问题的经典设计经验，用于提升系统组织能力。",
-      "tags": ["架构", "设计模式", "抽象"]
+      "tags": [
+        "架构",
+        "设计模式",
+        "抽象"
+      ],
+      "category": "architecture"
     },
     {
       "id": "frontend-backend-separation",
@@ -391,9 +1228,16 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "architecture-design",
-      "deps": ["architecture-design"],
+      "deps": [
+        "architecture-design"
+      ],
       "description": "将前端界面与后端服务解耦，提升协作效率与系统独立性。",
-      "tags": ["架构", "前后端", "协作"]
+      "tags": [
+        "架构",
+        "前后端",
+        "协作"
+      ],
+      "category": "architecture"
     },
     {
       "id": "restful-api",
@@ -401,9 +1245,152 @@
       "domain": "programming",
       "stage": 3,
       "parentId": "architecture-design",
-      "deps": ["architecture-design"],
+      "deps": [
+        "architecture-design"
+      ],
       "description": "围绕资源与接口约定组织后端服务，是常见的 Web API 设计方式。",
-      "tags": ["架构", "API", "接口设计"]
+      "tags": [
+        "架构",
+        "API",
+        "接口设计"
+      ],
+      "category": "architecture"
+    },
+    {
+      "id": "microservices",
+      "title": "微服务架构",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "layered-architecture",
+      "deps": [
+        "layered-architecture"
+      ],
+      "description": "将大型单体应用拆分为多个独立部署的服务，每个服务负责单一业务能力。",
+      "tags": [
+        "架构",
+        "微服务",
+        "分布式"
+      ],
+      "category": "architecture"
+    },
+    {
+      "id": "event-driven",
+      "title": "事件驱动架构",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "layered-architecture",
+      "deps": [
+        "layered-architecture"
+      ],
+      "description": "以事件为核心的系统组织方式，服务间通过事件总线异步通信。",
+      "tags": [
+        "架构",
+        "事件",
+        "异步"
+      ],
+      "category": "architecture"
+    },
+    {
+      "id": "cqrs",
+      "title": "CQRS",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "layered-architecture",
+      "deps": [
+        "layered-architecture"
+      ],
+      "description": "命令查询职责分离模式，将读操作与写操作分离到不同模型。",
+      "tags": [
+        "架构",
+        "读写分离",
+        "模式"
+      ],
+      "category": "architecture"
+    },
+    {
+      "id": "mvc",
+      "title": "MVC 模式",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "design-patterns",
+      "deps": [
+        "design-patterns"
+      ],
+      "description": "模型-视图-控制器分离模式，是 Web 应用中最经典的分层设计。",
+      "tags": [
+        "架构",
+        "设计模式",
+        "MVC"
+      ],
+      "category": "architecture"
+    },
+    {
+      "id": "mvvm",
+      "title": "MVVM 模式",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "design-patterns",
+      "deps": [
+        "design-patterns"
+      ],
+      "description": "模型-视图-视图模型分离模式，数据绑定减少了界面与逻辑的耦合。",
+      "tags": [
+        "架构",
+        "设计模式",
+        "MVVM"
+      ],
+      "category": "architecture"
+    },
+    {
+      "id": "jwt",
+      "title": "JWT",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "architecture-design",
+      "deps": [
+        "architecture-design"
+      ],
+      "description": "JSON Web Token，自包含的身份验证标准，适合分布式系统的无状态认证。",
+      "tags": [
+        "架构",
+        "认证",
+        "Token"
+      ],
+      "category": "architecture"
+    },
+    {
+      "id": "webhook",
+      "title": "Webhook",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "architecture-design",
+      "deps": [
+        "architecture-design"
+      ],
+      "description": "服务端向指定 URL 主动推送事件通知的机制，常用于第三方集成与实时回调。",
+      "tags": [
+        "架构",
+        "实时",
+        "回调"
+      ],
+      "category": "architecture"
+    },
+    {
+      "id": "oauth2",
+      "title": "OAuth 2.0",
+      "domain": "programming",
+      "stage": 4,
+      "parentId": "architecture-design",
+      "deps": [
+        "architecture-design"
+      ],
+      "description": "开放授权标准，允许第三方应用在用户授权后访问其资源。",
+      "tags": [
+        "架构",
+        "授权",
+        "安全"
+      ],
+      "category": "architecture"
     }
   ]
 }

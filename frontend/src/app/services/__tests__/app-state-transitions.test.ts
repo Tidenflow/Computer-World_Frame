@@ -1,39 +1,75 @@
 import { describe, expect, test } from 'vitest'
 
-import type { Domain, Node } from '../../types'
+import type { Node, NodeCategory } from '../../types'
 import {
   autoUnlockNodeOnSelect,
   closeSelectedNode,
-  createAllDomainSelection,
-  createEmptyDomainSelection,
-  toggleDomainSelection,
+  createAllCategorySelection,
+  createEmptyCategorySelection,
+  reconcileSelectedNodeWithCategories,
+  toggleCategorySelection,
   toggleNodeLock,
+  unlockNodes,
 } from '../app-state-transitions'
 
 describe('app state transitions', () => {
-  test('creates a default selection that includes all domains', () => {
-    expect(createAllDomainSelection()).toEqual(
-      new Set(['hardware', 'software', 'programming', 'theory', 'ai', 'network']),
+  test('creates a default selection that includes all categories', () => {
+    expect(createAllCategorySelection()).toEqual(
+      new Set(['fundamentals', 'language', 'technology', 'tooling', 'product', 'architecture', 'platform']),
     )
   })
 
-  test('creates an empty domain selection for clear filters', () => {
-    expect(createEmptyDomainSelection()).toEqual(new Set())
+  test('creates an empty category selection for clear filters', () => {
+    expect(createEmptyCategorySelection()).toEqual(new Set())
   })
 
-  test('toggles domain selection without mutating the previous set', () => {
-    const selectedDomains = new Set<Domain>(['hardware'])
+  test('toggles category selection without mutating the previous set', () => {
+    const selectedCategories = new Set<NodeCategory>(['fundamentals'])
 
-    const nextSelection = toggleDomainSelection(selectedDomains, 'software')
+    const nextSelection = toggleCategorySelection(selectedCategories, 'product')
 
-    expect(selectedDomains).toEqual(new Set(['hardware']))
-    expect(nextSelection).toEqual(new Set(['hardware', 'software']))
-    expect(toggleDomainSelection(nextSelection, 'hardware')).toEqual(new Set(['software']))
+    expect(selectedCategories).toEqual(new Set(['fundamentals']))
+    expect(nextSelection).toEqual(new Set(['fundamentals', 'product']))
+    expect(toggleCategorySelection(nextSelection, 'fundamentals')).toEqual(new Set(['product']))
+  })
+
+  test('clears the selected node when its category is no longer visible', () => {
+    const selectedNode = {
+      id: 'react',
+      title: 'React',
+      domain: 'programming',
+      category: 'tooling',
+      parentId: 'frontend-frameworks',
+    } as Node
+
+    expect(reconcileSelectedNodeWithCategories(selectedNode, new Set<NodeCategory>(['tooling']))).toBe(
+      selectedNode,
+    )
+    expect(
+      reconcileSelectedNodeWithCategories(selectedNode, new Set<NodeCategory>(['language', 'technology'])),
+    ).toBeNull()
+  })
+
+  test('keeps root nodes selected even when category filters are cleared', () => {
+    const selectedRootNode = {
+      id: 'programming-root',
+      title: '程序开发',
+      domain: 'programming',
+    } as Node
+
+    expect(reconcileSelectedNodeWithCategories(selectedRootNode, createEmptyCategorySelection())).toBe(
+      selectedRootNode,
+    )
   })
 
   test('auto unlocks a node when it is selected for the first time', () => {
     const unlockedNodes = new Set<string>(['fundamentals'])
-    const node = { id: 'python', title: 'Python', domain: 'programming' } as Node
+    const node = {
+      id: 'python',
+      title: 'Python',
+      domain: 'programming',
+      parentId: 'backend-python-stack',
+    } as Node
 
     const nextUnlockedNodes = autoUnlockNodeOnSelect(unlockedNodes, node)
 
@@ -48,12 +84,32 @@ describe('app state transitions', () => {
     expect(autoUnlockNodeOnSelect(unlockedNodes, node)).toBe(unlockedNodes)
   })
 
+  test('does not unlock root nodes when they are selected', () => {
+    const unlockedNodes = new Set<string>(['fundamentals'])
+    const node = { id: 'programming-root', title: '程序开发', domain: 'programming' } as Node
+
+    expect(autoUnlockNodeOnSelect(unlockedNodes, node)).toBe(unlockedNodes)
+  })
+
   test('toggles a node lock state', () => {
     expect(toggleNodeLock(new Set(['fundamentals']), 'python')).toEqual(
       new Set(['fundamentals', 'python']),
     )
     expect(toggleNodeLock(new Set(['fundamentals', 'python']), 'python')).toEqual(
       new Set(['fundamentals']),
+    )
+  })
+
+  test('unlocks every matched non-root node from a search submission', () => {
+    const unlockedNodes = new Set<string>(['fundamentals'])
+    const matches = [
+      { id: 'python', title: 'Python', domain: 'programming', parentId: 'backend-python-stack' },
+      { id: 'javascript', title: 'JavaScript', domain: 'programming', parentId: 'frontend-languages' },
+      { id: 'root', title: 'Root', domain: 'theory' },
+    ] as Node[]
+
+    expect(unlockNodes(unlockedNodes, matches)).toEqual(
+      new Set(['fundamentals', 'python', 'javascript']),
     )
   })
 

@@ -1,4 +1,8 @@
-import type { GraphData, Node } from '../types'
+import type { GraphData, Node, SearchMatch } from '../types'
+
+function isProgressTrackableNode(node: Node): boolean {
+  return Boolean(node.parentId)
+}
 
 export function buildNodesWithUnlockedStatus(
   currentMap: GraphData,
@@ -77,13 +81,13 @@ export function searchNodesAcrossMaps(
   maps: Record<string, GraphData>,
   query: string,
   unlockedNodes: Set<string>,
-): Node[] {
+): SearchMatch[] {
   if (!query) {
     return []
   }
 
   const normalizedQuery = query.toLowerCase()
-  const results: Node[] = []
+  const results: SearchMatch[] = []
 
   Object.values(maps).forEach((map) => {
     map.nodes.forEach((node) => {
@@ -94,6 +98,8 @@ export function searchNodesAcrossMaps(
       ) {
         results.push({
           ...node,
+          mapId: map.id,
+          mapTitle: map.title,
           unlocked: unlockedNodes.has(node.id),
         })
       }
@@ -111,11 +117,23 @@ export function computeUnlockedStats(
   let unlocked = 0
 
   Object.values(maps).forEach((map) => {
-    total += map.nodes.length
-    unlocked += map.nodes.filter((node) => unlockedNodes.has(node.id)).length
+    total += map.nodes.filter(isProgressTrackableNode).length
+    unlocked += map.nodes.filter((node) => isProgressTrackableNode(node) && unlockedNodes.has(node.id)).length
   })
 
   return { total, unlocked }
+}
+
+export function computeMapUnlockedStats(
+  map: GraphData,
+  unlockedNodes: Set<string>,
+): { total: number; unlocked: number } {
+  const trackableNodes = map.nodes.filter(isProgressTrackableNode)
+
+  return {
+    total: trackableNodes.length,
+    unlocked: trackableNodes.filter((node) => unlockedNodes.has(node.id)).length,
+  }
 }
 
 export function buildBreadcrumbs(

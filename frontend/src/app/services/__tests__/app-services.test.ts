@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'vitest'
 
 import { allMaps } from '../../data'
-import type { Node } from '../../types'
+import { getNodeCategory, type Node } from '../../types'
 import {
   buildBreadcrumbs,
   buildNodesWithUnlockedStatus,
   buildVisibleGraphNodes,
+  computeMapUnlockedStats,
   computeUnlockedStats,
   filterNodesByQuery,
   searchNodesAcrossMaps,
@@ -20,6 +21,21 @@ describe('app services', () => {
 
     expect(nodes.find((node) => node.id === 'fundamentals')?.unlocked).toBe(true)
     expect(nodes.find((node) => node.id === 'software')?.unlocked).toBe(false)
+  })
+
+  test('enriches loaded map nodes with semantic categories', () => {
+    expect(getNodeCategory(allMaps.programming.nodes.find((node) => node.id === 'javascript')!)).toBe(
+      'language',
+    )
+    expect(getNodeCategory(allMaps.programming.nodes.find((node) => node.id === 'react')!)).toBe(
+      'tooling',
+    )
+    expect(getNodeCategory(allMaps.network.nodes.find((node) => node.id === 'dns')!)).toBe(
+      'platform',
+    )
+    expect(getNodeCategory(allMaps.ai.nodes.find((node) => node.id === 'rag')!)).toBe(
+      'technology',
+    )
   })
 
   test('filters nodes by title, tags, or aliases using a case-insensitive query', () => {
@@ -39,6 +55,8 @@ describe('app services', () => {
     expect(results).toHaveLength(1)
     expect(results[0]?.id).toBe('web-frontend')
     expect(results[0]?.unlocked).toBe(true)
+    expect(results[0]?.mapId).toBe('programming')
+    expect(results[0]?.mapTitle).toBe(allMaps.programming.title)
   })
 
   test('shows only the root level before a tree branch is expanded', () => {
@@ -65,6 +83,7 @@ describe('app services', () => {
       'web-frontend',
       'frontend-languages',
       'frontend-frameworks',
+      'frontend-styling',
       'web-backend',
       'desktop-development',
       'development-tools',
@@ -76,8 +95,13 @@ describe('app services', () => {
       'web-frontend',
       'frontend-languages',
       'frontend-frameworks',
+      'frontend-styling',
       'react',
       'vue',
+      'angular',
+      'svelte',
+      'astro',
+      'remix',
       'web-backend',
       'desktop-development',
       'development-tools',
@@ -90,7 +114,9 @@ describe('app services', () => {
       'web-backend',
       'backend-python-stack',
       'backend-js-stack',
+      'backend-java-stack',
       'backend-data-storage',
+      'backend-middleware',
       'desktop-development',
       'development-tools',
       'architecture-design',
@@ -115,6 +141,8 @@ describe('app services', () => {
       'industrial-software',
       'communication-software',
       'entertainment-software',
+      'database-software',
+      'browser-software',
     ])
   })
 
@@ -140,7 +168,9 @@ describe('app services', () => {
       'http',
       'https',
       'websocket',
+      'sse',
       'rpc',
+      'mqtt',
     ])
 
     expect(buildVisibleGraphNodes(nodes, 'network-services').map((node) => node.id)).toEqual([
@@ -155,6 +185,9 @@ describe('app services', () => {
       'rest-api',
       'graphql',
       'proxy-service',
+      'load-balancer',
+      'service-mesh',
+      'observability',
     ])
   })
 
@@ -178,6 +211,7 @@ describe('app services', () => {
       'ai-frameworks',
       'llm-applications',
       'machine-learning',
+      'optimization-theory',
     ])
 
     expect(buildVisibleGraphNodes(nodes, 'llm-applications').map((node) => node.id)).toEqual([
@@ -187,7 +221,9 @@ describe('app services', () => {
       'ai-domains',
       'ai-frameworks',
       'llm-applications',
+      'langchain',
       'llm',
+      'ai-agent',
     ])
   })
 
@@ -199,10 +235,34 @@ describe('app services', () => {
       'fundamentals',
       'hardware',
       'software',
+      'programming-languages',
       'programming',
       'network',
-      'data',
       'ai',
+    ])
+  })
+
+  test('supports the same progressive tree expansion for the fundamentals map', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.fundamentals, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, null).map((node) => node.id)).toEqual([
+      'fundamentals-root',
+      'computer-organization',
+      'operating-systems-fundamentals',
+      'data-structures',
+      'algorithms',
+    ])
+  })
+
+  test('supports the same progressive tree expansion for the hardware map', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.hardware, new Set<string>())
+
+    expect(buildVisibleGraphNodes(nodes, null).map((node) => node.id)).toEqual([
+      'hardware-root',
+      'cpu',
+      'memory',
+      'storage-devices',
+      'input-output-devices',
     ])
   })
 
@@ -211,6 +271,18 @@ describe('app services', () => {
 
     expect(stats.total).toBeGreaterThan(stats.unlocked)
     expect(stats.unlocked).toBe(2)
+    expect(stats.total).toBe(
+      Object.values(allMaps).reduce((sum, map) => sum + map.nodes.filter((node) => node.parentId).length, 0),
+    )
+  })
+
+  test('computes current map progress without counting the root node', () => {
+    const stats = computeMapUnlockedStats(allMaps.root, unlockedNodes)
+
+    expect(stats).toEqual({
+      total: 7,
+      unlocked: 2,
+    })
   })
 
   test('builds breadcrumbs for root and nested maps', () => {

@@ -1,85 +1,80 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-import { DOMAIN_COLORS, DOMAIN_NAMES, Domain } from '../types';
-import { Button } from './ui/button';
-import { Separator } from './ui/separator';
+import type { SearchMatch } from '../types'
+import { Button } from './ui/button'
+import { Separator } from './ui/separator'
 
 interface SidebarProps {
-  selectedDomains: Set<Domain>;
-  onDomainToggle: (domain: Domain) => void;
-  onSelectAllDomains: () => void;
-  onClearDomains: () => void;
-  totalNodes: number;
-  unlockedCount: number;
-  currentMap: string;
-  onMapChange: (mapId: string) => void;
+  currentMap: string
+  selectedNodeId: string | null
+  recentSearchMatches: SearchMatch[]
+  onMapChange: (mapId: string) => void
+  onSelectRecentMatch: (match: SearchMatch) => void
 }
 
 export const Sidebar = ({
-  selectedDomains,
-  onDomainToggle,
-  onSelectAllDomains,
-  onClearDomains,
-  totalNodes,
-  unlockedCount,
   currentMap,
+  selectedNodeId,
+  recentSearchMatches,
   onMapChange,
+  onSelectRecentMatch,
 }: SidebarProps) => {
-  const [collapsed, setCollapsed] = useState(false);
-
-  const domains: Domain[] = ['hardware', 'software', 'programming', 'theory', 'ai', 'network'];
+  const [collapsed, setCollapsed] = useState(false)
 
   const maps = [
-    { id: 'root', name: '总览地图' },
+    { id: 'root', name: '计算机世界框架' },
+    { id: 'fundamentals', name: '计算机基础' },
+    { id: 'hardware', name: '硬件' },
     { id: 'software', name: '软件系统' },
+    { id: 'programming-languages', name: '编程语言' },
     { id: 'programming', name: '程序开发' },
-    { id: 'ai', name: 'AI 人工智能' },
     { id: 'network', name: '网络通信' },
-  ];
+    { id: 'ai', name: 'AI 人工智能' },
+  ]
 
   if (collapsed) {
     return (
-      <div className="w-12 border-r border-[#E5E7EB] bg-white flex flex-col items-center py-4">
+      <div className="flex w-12 flex-col items-center border-r border-[#E5E7EB] bg-white py-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setCollapsed(false)}
-          className="w-8 h-8 p-0"
+          className="h-8 w-8 p-0"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-    );
+    )
   }
 
   return (
-    <aside className="w-60 border-r border-[#E5E7EB] bg-white flex flex-col">
-      <div className="p-4 flex justify-between items-center">
-        <span className="font-medium text-[#111827]">控制面板</span>
+    <aside className="flex w-72 flex-col border-r border-[#E5E7EB] bg-white">
+      <div className="flex items-center justify-between p-4">
+        <span className="font-medium text-[#111827]">地图导航</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setCollapsed(true)}
-          className="w-8 h-8 p-0"
+          className="h-8 w-8 p-0"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="h-4 w-4" />
         </Button>
       </div>
 
       <Separator />
 
-      <div className="p-4 space-y-3">
+      <div className="space-y-3 p-4">
         <div className="text-sm font-medium text-[#111827]">地图切换</div>
         <div className="space-y-1">
           {maps.map((map) => (
             <button
               key={map.id}
               onClick={() => onMapChange(map.id)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+              className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
                 currentMap === map.id
                   ? 'bg-[#3B82F6] text-white'
-                  : 'hover:bg-[#F9FAFB] text-[#6B7280]'
+                  : 'text-[#6B7280] hover:bg-[#F9FAFB]'
               }`}
             >
               {map.name}
@@ -90,67 +85,44 @@ export const Sidebar = ({
 
       <Separator />
 
-      <div className="p-4 space-y-3 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <div className="text-sm font-medium text-[#111827]">分类过滤</div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onSelectAllDomains}
-              className="h-7 px-2 text-xs"
-            >
-              All
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClearDomains}
-              className="h-7 px-2 text-xs"
-            >
-              Clear
-            </Button>
-          </div>
+      <div className="flex min-h-0 flex-1 flex-col space-y-3 p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-[#111827]">最近一次搜索解锁</div>
+          <span className="text-xs text-[#6B7280]">{recentSearchMatches.length} 个</span>
         </div>
-        <div className="space-y-2">
-          {domains.map((domain) => {
-            const isSelected = selectedDomains.has(domain);
-            return (
+        {recentSearchMatches.length > 0 ? (
+          <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+            {recentSearchMatches.map((match) => (
+              (() => {
+                const isSelected = currentMap === match.mapId && selectedNodeId === match.id
+
+                return (
               <button
-                key={domain}
-                onClick={() => onDomainToggle(domain)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
-                  isSelected ? 'bg-[#F9FAFB]' : ''
+                key={`${match.mapId}:${match.id}`}
+                onClick={() => onSelectRecentMatch(match)}
+                className={`w-full rounded-md border px-3 py-2 text-left transition-colors ${
+                  isSelected
+                    ? 'border-[#93C5FD] bg-[#EFF6FF]'
+                    : 'border-[#E5E7EB] hover:border-[#BFDBFE] hover:bg-[#F8FBFF]'
                 }`}
               >
-                <div
-                  className="w-3 h-3 rounded-full transition-all"
-                  style={{
-                    backgroundColor: isSelected ? DOMAIN_COLORS[domain] : '#D1D5DB',
-                  }}
-                />
-                <span className="text-sm text-[#111827] flex-1">{DOMAIN_NAMES[domain]}</span>
+                <div className={`text-sm font-medium ${isSelected ? 'text-[#1D4ED8]' : 'text-[#111827]'}`}>
+                  {match.title}
+                </div>
+                <div className={`mt-1 text-xs ${isSelected ? 'text-[#3B82F6]' : 'text-[#6B7280]'}`}>
+                  {match.mapTitle}
+                </div>
               </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="p-4 space-y-2">
-        <div className="text-xs text-[#6B7280]">节点解锁进度</div>
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-semibold text-[#111827]">{unlockedCount}</span>
-          <span className="text-sm text-[#6B7280]">/ {totalNodes}</span>
-        </div>
-        <div className="h-2 bg-[#E5E7EB] rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] transition-all duration-500"
-            style={{ width: `${(unlockedCount / totalNodes) * 100}%` }}
-          />
-        </div>
+                )
+              })()
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-1 items-start rounded-md border border-dashed border-[#E5E7EB] px-3 py-4 text-sm text-[#9CA3AF]">
+            输入关键词并按回车后，命中的节点会在这里展示。
+          </div>
+        )}
       </div>
     </aside>
-  );
-};
+  )
+}

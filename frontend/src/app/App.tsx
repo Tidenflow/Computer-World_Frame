@@ -1,8 +1,8 @@
 import { DetailPanel } from './components/DetailPanel'
+import { GraphFilterBar } from './components/GraphFilterBar'
 import { Graph2D } from './components/Graph2D'
 import { Graph3D } from './components/Graph3D'
 import { Header } from './components/Header'
-import { SearchResults } from './components/SearchResults'
 import { Sidebar } from './components/Sidebar'
 import { WelcomeTooltip } from './components/WelcomeTooltip'
 import { useCwfApp } from './hooks/use-cwf-app'
@@ -13,23 +13,24 @@ function App() {
     setViewMode,
     searchQuery,
     setSearchQuery,
-    debouncedSearch,
-    selectedDomains,
+    selectedCategories,
     currentMapId,
     selectedNode,
     currentMap,
     filteredNodes,
-    searchResults,
     totalUnlockedCount,
+    currentMapUnlockedCount,
+    recentSearchMatches,
     breadcrumbs,
-    unlockedNodes,
-    handleDomainToggle,
+    handleCategoryToggle,
     handleNodeClick,
     handleToggleLock,
     handleNodeDoubleClick,
     handleNavigateToMap,
-    selectAllDomains,
-    clearDomains,
+    handleSearchSubmit,
+    handleSelectRecentMatch,
+    selectAllCategories,
+    clearCategories,
     closeDetailPanel,
   } = useCwfApp()
 
@@ -42,37 +43,36 @@ function App() {
         onViewModeChange={setViewMode}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onSearchSubmit={handleSearchSubmit}
         breadcrumbs={breadcrumbs}
       />
 
-      {debouncedSearch && (
-        <SearchResults
-          results={searchResults}
-          query={debouncedSearch}
-          onSelectNode={handleNodeClick}
-        />
-      )}
-
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar
-          selectedDomains={selectedDomains}
-          onDomainToggle={handleDomainToggle}
-          onSelectAllDomains={selectAllDomains}
-          onClearDomains={clearDomains}
-          totalNodes={currentMap.nodes.length}
-          unlockedCount={currentMap.nodes.filter((node) => unlockedNodes.has(node.id)).length}
           currentMap={currentMapId}
+          selectedNodeId={selectedNode?.id ?? null}
+          recentSearchMatches={recentSearchMatches}
           onMapChange={handleNavigateToMap}
+          onSelectRecentMatch={handleSelectRecentMatch}
         />
 
         <main className="flex-1 relative">
+          <GraphFilterBar
+            selectedCategories={selectedCategories}
+            unlockedCount={currentMapUnlockedCount.unlocked}
+            totalNodes={currentMapUnlockedCount.total}
+            onCategoryToggle={handleCategoryToggle}
+            onSelectAllCategories={selectAllCategories}
+            onClearCategories={clearCategories}
+          />
+
           {viewMode === '2d' ? (
             <Graph2D
               nodes={filteredNodes}
               selectedNode={selectedNode}
               onNodeClick={handleNodeClick}
               onNodeDoubleClick={handleNodeDoubleClick}
-              selectedDomains={selectedDomains}
+              selectedCategories={selectedCategories}
               onToggleLock={handleToggleLock}
             />
           ) : (
@@ -80,7 +80,7 @@ function App() {
               nodes={filteredNodes}
               selectedNode={selectedNode}
               onNodeClick={handleNodeClick}
-              selectedDomains={selectedDomains}
+              selectedCategories={selectedCategories}
               unlockedCount={totalUnlockedCount.unlocked}
               totalNodes={totalUnlockedCount.total}
             />
@@ -91,6 +91,7 @@ function App() {
           <DetailPanel
             node={selectedNode}
             onClose={closeDetailPanel}
+            onToggleLock={handleToggleLock}
             onNavigateToMap={handleNavigateToMap}
           />
         )}

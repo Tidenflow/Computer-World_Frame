@@ -102,6 +102,56 @@ describe('graph layout', () => {
     expect(Math.abs((root?.y ?? 0) - (child?.y ?? 0))).toBeLessThanOrEqual(220)
   })
 
+  test('keeps sibling nodes centered around their parent instead of collapsing toward the global midpoint', () => {
+    const treeNodes: Node[] = [
+      { id: 'programming-root', title: '程序开发', domain: 'programming', stage: 1 },
+      { id: 'architecture-design', title: '架构设计', domain: 'programming', stage: 2, parentId: 'programming-root', deps: ['programming-root'] },
+      { id: 'web-frontend', title: 'Web 前端', domain: 'programming', stage: 2, parentId: 'programming-root', deps: ['programming-root'] },
+      { id: 'design-patterns', title: '设计模式', domain: 'programming', stage: 3, parentId: 'architecture-design', deps: ['architecture-design'] },
+      { id: 'frontend-backend-separation', title: '前后端分离', domain: 'programming', stage: 3, parentId: 'architecture-design', deps: ['architecture-design'] },
+      { id: 'layered-architecture', title: '分层架构', domain: 'programming', stage: 3, parentId: 'architecture-design', deps: ['architecture-design'] },
+      { id: 'restful-api', title: 'RESTful API', domain: 'programming', stage: 3, parentId: 'architecture-design', deps: ['architecture-design'] },
+    ]
+
+    const positions = createStableNodePositions({
+      nodes: treeNodes,
+      width: 1200,
+      height: 900,
+    })
+
+    const parent = positions.find((node) => node.id === 'architecture-design')
+    const siblings = positions.filter((node) => node.parentId === 'architecture-design')
+    const siblingCenter =
+      siblings.reduce((sum, node) => sum + node.x, 0) / Math.max(siblings.length, 1)
+
+    expect(parent).toBeTruthy()
+    expect(siblings).toHaveLength(4)
+    expect(Math.abs(siblingCenter - (parent?.x ?? 0))).toBeLessThanOrEqual(35)
+  })
+
+  test('keeps direct children of the same parent on the same horizontal row even if their stages differ', () => {
+    const treeNodes: Node[] = [
+      { id: 'programming-root', title: '程序开发', domain: 'programming', stage: 1 },
+      { id: 'architecture-design', title: '架构设计', domain: 'programming', stage: 2, parentId: 'programming-root', deps: ['programming-root'] },
+      { id: 'design-patterns', title: '设计模式', domain: 'programming', stage: 3, parentId: 'architecture-design', deps: ['architecture-design'] },
+      { id: 'restful-api', title: 'RESTful API', domain: 'programming', stage: 3, parentId: 'architecture-design', deps: ['architecture-design'] },
+      { id: 'jwt', title: 'JWT', domain: 'programming', stage: 4, parentId: 'architecture-design', deps: ['architecture-design'] },
+      { id: 'oauth2', title: 'OAuth 2.0', domain: 'programming', stage: 4, parentId: 'architecture-design', deps: ['architecture-design'] },
+    ]
+
+    const positions = createStableNodePositions({
+      nodes: treeNodes,
+      width: 1200,
+      height: 900,
+    })
+
+    const directChildren = positions.filter((node) => node.parentId === 'architecture-design')
+    const childRows = new Set(directChildren.map((node) => node.y))
+
+    expect(directChildren).toHaveLength(4)
+    expect(childRows.size).toBe(1)
+  })
+
   test('uses vertical-first tree edge curves instead of wide sideways arcs', () => {
     const curve = createTreeEdgeCurve({
       child: { x: 140, y: 120, radius: 12 },
