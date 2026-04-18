@@ -113,8 +113,6 @@ export const Graph2D = ({
     for (const node of visibleNodes) {
       const isSelected = selectedNode?.id === node.id;
       const isHovered = hoveredNode?.id === node.id;
-      const isPrimaryRelation =
-        selectedNode?.parentId === node.id || node.parentId === selectedNode?.id;
       const nodeScale = isHovered ? 1.15 : 1;
       const radius = node.radius * nodeScale;
 
@@ -128,9 +126,7 @@ export const Graph2D = ({
 
       // Fill
       if (node.unlocked) {
-        ctx.fillStyle = isPrimaryRelation && selectedNode
-          ? `${DOMAIN_COLORS[node.domain]}66`
-          : DOMAIN_COLORS[node.domain];
+        ctx.fillStyle = DOMAIN_COLORS[node.domain];
       } else {
         ctx.fillStyle = '#D1D5DB';
       }
