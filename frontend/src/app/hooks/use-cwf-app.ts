@@ -15,6 +15,7 @@ import {
   closeSelectedNode,
   createAllCategorySelection,
   createEmptyCategorySelection,
+  reconcileSelectedNodeWithCategories,
   toggleCategorySelection,
   toggleNodeLock,
   unlockNodes,
@@ -67,9 +68,13 @@ export function useCwfApp() {
   )
 
   const handleCategoryToggle = (category: NodeCategory) => {
-    setSelectedCategories((previousCategories) =>
-      toggleCategorySelection(previousCategories, category),
-    )
+    setSelectedCategories((previousCategories) => {
+      const nextCategories = toggleCategorySelection(previousCategories, category)
+      setSelectedNode((previousSelectedNode) =>
+        reconcileSelectedNodeWithCategories(previousSelectedNode, nextCategories),
+      )
+      return nextCategories
+    })
   }
 
   const handleNodeClick = (node: Node) => {
@@ -157,7 +162,11 @@ export function useCwfApp() {
       setSelectedCategories(createAllCategorySelection())
     },
     clearCategories() {
-      setSelectedCategories(createEmptyCategorySelection())
+      const nextCategories = createEmptyCategorySelection()
+      setSelectedCategories(nextCategories)
+      setSelectedNode((previousSelectedNode) =>
+        reconcileSelectedNodeWithCategories(previousSelectedNode, nextCategories),
+      )
     },
     closeDetailPanel() {
       setSelectedNode(closeSelectedNode())

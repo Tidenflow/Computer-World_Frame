@@ -6,6 +6,7 @@ import {
   closeSelectedNode,
   createAllCategorySelection,
   createEmptyCategorySelection,
+  reconcileSelectedNodeWithCategories,
   toggleCategorySelection,
   toggleNodeLock,
   unlockNodes,
@@ -30,6 +31,35 @@ describe('app state transitions', () => {
     expect(selectedCategories).toEqual(new Set(['fundamentals']))
     expect(nextSelection).toEqual(new Set(['fundamentals', 'product']))
     expect(toggleCategorySelection(nextSelection, 'fundamentals')).toEqual(new Set(['product']))
+  })
+
+  test('clears the selected node when its category is no longer visible', () => {
+    const selectedNode = {
+      id: 'react',
+      title: 'React',
+      domain: 'programming',
+      category: 'tooling',
+      parentId: 'frontend-frameworks',
+    } as Node
+
+    expect(reconcileSelectedNodeWithCategories(selectedNode, new Set<NodeCategory>(['tooling']))).toBe(
+      selectedNode,
+    )
+    expect(
+      reconcileSelectedNodeWithCategories(selectedNode, new Set<NodeCategory>(['language', 'technology'])),
+    ).toBeNull()
+  })
+
+  test('keeps root nodes selected even when category filters are cleared', () => {
+    const selectedRootNode = {
+      id: 'programming-root',
+      title: '程序开发',
+      domain: 'programming',
+    } as Node
+
+    expect(reconcileSelectedNodeWithCategories(selectedRootNode, createEmptyCategorySelection())).toBe(
+      selectedRootNode,
+    )
   })
 
   test('auto unlocks a node when it is selected for the first time', () => {

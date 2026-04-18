@@ -6,8 +6,6 @@ import { Button } from './ui/button'
 import { Separator } from './ui/separator'
 
 interface SidebarProps {
-  totalNodes: number
-  unlockedCount: number
   currentMap: string
   recentSearchMatches: SearchMatch[]
   onMapChange: (mapId: string) => void
@@ -15,8 +13,6 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({
-  totalNodes,
-  unlockedCount,
   currentMap,
   recentSearchMatches,
   onMapChange,
@@ -110,22 +106,6 @@ export const Sidebar = ({
             输入关键词并按回车后，命中的节点会在这里展示。
           </div>
         )}
-      </div>
-
-      <Separator />
-
-      <div className="space-y-2 p-4">
-        <div className="text-xs text-[#6B7280]">当前地图解锁进度</div>
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-semibold text-[#111827]">{unlockedCount}</span>
-          <span className="text-sm text-[#6B7280]">/ {totalNodes}</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-[#E5E7EB]">
-          <div
-            className="h-full bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] transition-all duration-500"
-            style={{ width: totalNodes > 0 ? `${(unlockedCount / totalNodes) * 100}%` : '0%' }}
-          />
-        </div>
       </div>
     </aside>
   )

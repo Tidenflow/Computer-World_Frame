@@ -49,8 +49,6 @@ function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar
-          totalNodes={currentMapUnlockedCount.total}
-          unlockedCount={currentMapUnlockedCount.unlocked}
           currentMap={currentMapId}
           recentSearchMatches={recentSearchMatches}
           onMapChange={handleNavigateToMap}
@@ -60,6 +58,8 @@ function App() {
         <main className="flex-1 relative">
           <GraphFilterBar
             selectedCategories={selectedCategories}
+            unlockedCount={currentMapUnlockedCount.unlocked}
+            totalNodes={currentMapUnlockedCount.total}
             onCategoryToggle={handleCategoryToggle}
             onSelectAllCategories={selectAllCategories}
             onClearCategories={clearCategories}
