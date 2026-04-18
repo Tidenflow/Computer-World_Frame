@@ -83,13 +83,13 @@ export const Sidebar = ({
 
       <Separator />
 
-      <div className="space-y-3 p-4">
+      <div className="flex min-h-0 flex-1 flex-col space-y-3 p-4">
         <div className="flex items-center justify-between">
           <div className="text-sm font-medium text-[#111827]">最近一次搜索解锁</div>
           <span className="text-xs text-[#6B7280]">{recentSearchMatches.length} 个</span>
         </div>
         {recentSearchMatches.length > 0 ? (
-          <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
+          <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
             {recentSearchMatches.map((match) => (
               <button
                 key={`${match.mapId}:${match.id}`}
@@ -102,7 +102,7 @@ export const Sidebar = ({
             ))}
           </div>
         ) : (
-          <div className="rounded-md border border-dashed border-[#E5E7EB] px-3 py-4 text-sm text-[#9CA3AF]">
+          <div className="flex flex-1 items-start rounded-md border border-dashed border-[#E5E7EB] px-3 py-4 text-sm text-[#9CA3AF]">
             输入关键词并按回车后，命中的节点会在这里展示。
           </div>
         )}
