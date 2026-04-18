@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
+import type { SearchMatch } from '../types'
 import { Button } from './ui/button'
 import { Separator } from './ui/separator'
 
@@ -8,14 +9,18 @@ interface SidebarProps {
   totalNodes: number
   unlockedCount: number
   currentMap: string
+  recentSearchMatches: SearchMatch[]
   onMapChange: (mapId: string) => void
+  onSelectRecentMatch: (match: SearchMatch) => void
 }
 
 export const Sidebar = ({
   totalNodes,
   unlockedCount,
   currentMap,
+  recentSearchMatches,
   onMapChange,
+  onSelectRecentMatch,
 }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false)
 
@@ -46,7 +51,7 @@ export const Sidebar = ({
   }
 
   return (
-    <aside className="flex w-60 flex-col border-r border-[#E5E7EB] bg-white">
+    <aside className="flex w-72 flex-col border-r border-[#E5E7EB] bg-white">
       <div className="flex items-center justify-between p-4">
         <span className="font-medium text-[#111827]">地图导航</span>
         <Button
@@ -61,7 +66,7 @@ export const Sidebar = ({
 
       <Separator />
 
-      <div className="flex-1 space-y-3 p-4">
+      <div className="space-y-3 p-4">
         <div className="text-sm font-medium text-[#111827]">地图切换</div>
         <div className="space-y-1">
           {maps.map((map) => (
@@ -78,6 +83,33 @@ export const Sidebar = ({
             </button>
           ))}
         </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-3 p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-[#111827]">最近一次搜索解锁</div>
+          <span className="text-xs text-[#6B7280]">{recentSearchMatches.length} 个</span>
+        </div>
+        {recentSearchMatches.length > 0 ? (
+          <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
+            {recentSearchMatches.map((match) => (
+              <button
+                key={`${match.mapId}:${match.id}`}
+                onClick={() => onSelectRecentMatch(match)}
+                className="w-full rounded-md border border-[#E5E7EB] px-3 py-2 text-left transition-colors hover:border-[#BFDBFE] hover:bg-[#F8FBFF]"
+              >
+                <div className="text-sm font-medium text-[#111827]">{match.title}</div>
+                <div className="mt-1 text-xs text-[#6B7280]">{match.mapTitle}</div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-md border border-dashed border-[#E5E7EB] px-3 py-4 text-sm text-[#9CA3AF]">
+            输入关键词并按回车后，命中的节点会在这里展示。
+          </div>
+        )}
       </div>
 
       <Separator />

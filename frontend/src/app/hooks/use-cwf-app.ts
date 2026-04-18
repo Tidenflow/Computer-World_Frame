@@ -8,7 +8,6 @@ import {
   buildVisibleGraphNodes,
   computeMapUnlockedStats,
   computeUnlockedStats,
-  filterNodesByQuery,
   searchNodesAcrossMaps,
 } from '../services/app-services'
 import {
@@ -18,12 +17,20 @@ import {
   createEmptyCategorySelection,
   toggleCategorySelection,
   toggleNodeLock,
+  unlockNodes,
 } from '../services/app-state-transitions'
-import type { Node, NodeCategory } from '../types'
+import type { Node, NodeCategory, SearchMatch } from '../types'
 import { useProgressState } from './use-progress-state'
 import { useSearchState } from './use-search-state'
 
 type ViewMode = '2d' | '3d'
+
+function withUnlockedState(node: Node, unlockedNodes: Set<string>): Node {
+  return {
+    ...node,
+    unlocked: unlockedNodes.has(node.id),
+  }
+}
 
 export function useCwfApp() {
   const [viewMode, setViewMode] = useState<ViewMode>('2d')
@@ -32,25 +39,17 @@ export function useCwfApp() {
   )
   const [currentMapId, setCurrentMapId] = useState('root')
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
+  const [recentSearchMatches, setRecentSearchMatches] = useState<SearchMatch[]>([])
 
   const { unlockedNodes, saveUnlockedNodeSet } = useProgressState(localStorageProgressRepository)
-  const { searchQuery, setSearchQuery, debouncedSearch, clearSearch } = useSearchState()
+  const { searchQuery, setSearchQuery, clearSearch } = useSearchState()
 
   const currentMap = allMaps[currentMapId]
 
   const filteredNodes = useMemo(() => {
     const nodesWithStatus = buildNodesWithUnlockedStatus(currentMap, unlockedNodes)
-    if (debouncedSearch) {
-      return filterNodesByQuery(nodesWithStatus, debouncedSearch)
-    }
-
     return buildVisibleGraphNodes(nodesWithStatus, selectedNode?.id ?? null)
-  }, [currentMap, debouncedSearch, selectedNode?.id, unlockedNodes])
-
-  const searchResults = useMemo(
-    () => searchNodesAcrossMaps(allMaps, debouncedSearch, unlockedNodes),
-    [debouncedSearch, unlockedNodes],
-  )
+  }, [currentMap, selectedNode?.id, unlockedNodes])
 
   const totalUnlockedCount = useMemo(
     () => computeUnlockedStats(allMaps, unlockedNodes),
@@ -96,20 +95,55 @@ export function useCwfApp() {
     setSelectedNode(null)
   }
 
+  const handleSearchSubmit = () => {
+    const normalizedQuery = searchQuery.trim()
+
+    if (!normalizedQuery) {
+      setRecentSearchMatches([])
+      return
+    }
+
+    const matches = searchNodesAcrossMaps(allMaps, normalizedQuery, unlockedNodes)
+    const nextUnlockedNodes = unlockNodes(unlockedNodes, matches)
+
+    if (nextUnlockedNodes !== unlockedNodes) {
+      saveUnlockedNodeSet(nextUnlockedNodes)
+    }
+
+    setRecentSearchMatches(
+      matches.map((match) => ({
+        ...match,
+        unlocked: nextUnlockedNodes.has(match.id),
+      })),
+    )
+  }
+
+  const handleSelectRecentMatch = (match: SearchMatch) => {
+    const targetMap = allMaps[match.mapId]
+    const targetNode = targetMap.nodes.find((node) => node.id === match.id)
+
+    if (!targetNode) {
+      return
+    }
+
+    setCurrentMapId(match.mapId)
+    setSelectedNode(withUnlockedState(targetNode, unlockedNodes))
+    clearSearch()
+  }
+
   return {
     viewMode,
     setViewMode,
     searchQuery,
     setSearchQuery,
-    debouncedSearch,
     selectedCategories,
     currentMapId,
     selectedNode,
     currentMap,
     filteredNodes,
-    searchResults,
     totalUnlockedCount,
     currentMapUnlockedCount,
+    recentSearchMatches,
     breadcrumbs,
     unlockedNodes,
     handleCategoryToggle,
@@ -117,6 +151,8 @@ export function useCwfApp() {
     handleToggleLock,
     handleNodeDoubleClick,
     handleNavigateToMap,
+    handleSearchSubmit,
+    handleSelectRecentMatch,
     selectAllCategories() {
       setSelectedCategories(createAllCategorySelection())
     },

@@ -43,6 +43,22 @@ export function autoUnlockNodeOnSelect(unlockedNodes: Set<string>, node: Node): 
   return nextUnlockedNodes
 }
 
+export function unlockNodes(unlockedNodes: Set<string>, nodes: Node[]): Set<string> {
+  const nextUnlockedNodes = new Set(unlockedNodes)
+  let didChange = false
+
+  nodes.forEach((node) => {
+    if (isRootNode(node) || nextUnlockedNodes.has(node.id)) {
+      return
+    }
+
+    nextUnlockedNodes.add(node.id)
+    didChange = true
+  })
+
+  return didChange ? nextUnlockedNodes : unlockedNodes
+}
+
 export function toggleNodeLock(unlockedNodes: Set<string>, nodeId: string): Set<string> {
   const nextUnlockedNodes = new Set(unlockedNodes)
 

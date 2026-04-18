@@ -53,6 +53,22 @@ export const Graph2D = ({
     nodesRef.current = nodes;
   }, [nodes]);
 
+  useEffect(() => {
+    if (!selectedNode || positions.length === 0 || !containerRef.current) {
+      return;
+    }
+
+    const targetNode = positions.find((node) => node.id === selectedNode.id);
+    if (!targetNode) {
+      return;
+    }
+
+    setOffset({
+      x: containerRef.current.clientWidth / 2 - targetNode.x * scale,
+      y: containerRef.current.clientHeight / 2 - targetNode.y * scale,
+    });
+  }, [positions, scale, selectedNode]);
+
   const syncStableLayout = (nextNodes: Node[] = nodesRef.current) => {
     const width = containerRef.current?.clientWidth || 800;
     const height = containerRef.current?.clientHeight || 600;
@@ -79,7 +95,10 @@ export const Graph2D = ({
 
     // Filter nodes by selected domains
     const visibleNodes = positions.filter(
-      (node) => isRootNode(node) || selectedCategories.has(getNodeCategory(node)),
+      (node) =>
+        isRootNode(node) ||
+        selectedNode?.id === node.id ||
+        selectedCategories.has(getNodeCategory(node)),
     );
 
     // Draw connections
@@ -214,7 +233,12 @@ export const Graph2D = ({
     }
 
     const hovered = positions
-      .filter((node) => isRootNode(node) || selectedCategories.has(getNodeCategory(node)))
+      .filter(
+        (node) =>
+          isRootNode(node) ||
+          selectedNode?.id === node.id ||
+          selectedCategories.has(getNodeCategory(node)),
+      )
       .find((node) => {
       const dx = node.x - x;
       const dy = node.y - y;

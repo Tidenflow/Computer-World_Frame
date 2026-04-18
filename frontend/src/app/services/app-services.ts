@@ -1,4 +1,4 @@
-import type { GraphData, Node } from '../types'
+import type { GraphData, Node, SearchMatch } from '../types'
 
 function isProgressTrackableNode(node: Node): boolean {
   return Boolean(node.parentId)
@@ -81,13 +81,13 @@ export function searchNodesAcrossMaps(
   maps: Record<string, GraphData>,
   query: string,
   unlockedNodes: Set<string>,
-): Node[] {
+): SearchMatch[] {
   if (!query) {
     return []
   }
 
   const normalizedQuery = query.toLowerCase()
-  const results: Node[] = []
+  const results: SearchMatch[] = []
 
   Object.values(maps).forEach((map) => {
     map.nodes.forEach((node) => {
@@ -98,6 +98,8 @@ export function searchNodesAcrossMaps(
       ) {
         results.push({
           ...node,
+          mapId: map.id,
+          mapTitle: map.title,
           unlocked: unlockedNodes.has(node.id),
         })
       }

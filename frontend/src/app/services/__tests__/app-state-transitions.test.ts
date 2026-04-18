@@ -8,6 +8,7 @@ import {
   createEmptyCategorySelection,
   toggleCategorySelection,
   toggleNodeLock,
+  unlockNodes,
 } from '../app-state-transitions'
 
 describe('app state transitions', () => {
@@ -66,6 +67,19 @@ describe('app state transitions', () => {
     )
     expect(toggleNodeLock(new Set(['fundamentals', 'python']), 'python')).toEqual(
       new Set(['fundamentals']),
+    )
+  })
+
+  test('unlocks every matched non-root node from a search submission', () => {
+    const unlockedNodes = new Set<string>(['fundamentals'])
+    const matches = [
+      { id: 'python', title: 'Python', domain: 'programming', parentId: 'backend-python-stack' },
+      { id: 'javascript', title: 'JavaScript', domain: 'programming', parentId: 'frontend-languages' },
+      { id: 'root', title: 'Root', domain: 'theory' },
+    ] as Node[]
+
+    expect(unlockNodes(unlockedNodes, matches)).toEqual(
+      new Set(['fundamentals', 'python', 'javascript']),
     )
   })
 

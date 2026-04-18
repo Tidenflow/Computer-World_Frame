@@ -35,6 +35,11 @@ export interface NodeViewState {
 
 export type Node = NodeDefinition & NodeViewState
 
+export interface SearchMatch extends Node {
+  mapId: string
+  mapTitle: string
+}
+
 export interface GraphData<TNode = NodeDefinition> {
   id: string
   title: string

@@ -3,7 +3,6 @@ import { GraphFilterBar } from './components/GraphFilterBar'
 import { Graph2D } from './components/Graph2D'
 import { Graph3D } from './components/Graph3D'
 import { Header } from './components/Header'
-import { SearchResults } from './components/SearchResults'
 import { Sidebar } from './components/Sidebar'
 import { WelcomeTooltip } from './components/WelcomeTooltip'
 import { useCwfApp } from './hooks/use-cwf-app'
@@ -14,22 +13,22 @@ function App() {
     setViewMode,
     searchQuery,
     setSearchQuery,
-    debouncedSearch,
     selectedCategories,
     currentMapId,
     selectedNode,
     currentMap,
     filteredNodes,
-    searchResults,
     totalUnlockedCount,
     currentMapUnlockedCount,
+    recentSearchMatches,
     breadcrumbs,
-    unlockedNodes,
     handleCategoryToggle,
     handleNodeClick,
     handleToggleLock,
     handleNodeDoubleClick,
     handleNavigateToMap,
+    handleSearchSubmit,
+    handleSelectRecentMatch,
     selectAllCategories,
     clearCategories,
     closeDetailPanel,
@@ -44,23 +43,18 @@ function App() {
         onViewModeChange={setViewMode}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onSearchSubmit={handleSearchSubmit}
         breadcrumbs={breadcrumbs}
       />
-
-      {debouncedSearch && (
-        <SearchResults
-          results={searchResults}
-          query={debouncedSearch}
-          onSelectNode={handleNodeClick}
-        />
-      )}
 
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar
           totalNodes={currentMapUnlockedCount.total}
           unlockedCount={currentMapUnlockedCount.unlocked}
           currentMap={currentMapId}
+          recentSearchMatches={recentSearchMatches}
           onMapChange={handleNavigateToMap}
+          onSelectRecentMatch={handleSelectRecentMatch}
         />
 
         <main className="flex-1 relative">

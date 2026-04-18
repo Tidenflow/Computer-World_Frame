@@ -55,6 +55,8 @@ describe('app services', () => {
     expect(results).toHaveLength(1)
     expect(results[0]?.id).toBe('web-frontend')
     expect(results[0]?.unlocked).toBe(true)
+    expect(results[0]?.mapId).toBe('programming')
+    expect(results[0]?.mapTitle).toBe(allMaps.programming.title)
   })
 
   test('shows only the root level before a tree branch is expanded', () => {
