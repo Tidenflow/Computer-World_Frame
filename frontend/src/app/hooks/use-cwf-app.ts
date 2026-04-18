@@ -6,6 +6,7 @@ import {
   buildBreadcrumbs,
   buildNodesWithUnlockedStatus,
   buildVisibleGraphNodes,
+  computeMapUnlockedStats,
   computeUnlockedStats,
   filterNodesByQuery,
   searchNodesAcrossMaps,
@@ -56,6 +57,11 @@ export function useCwfApp() {
     [unlockedNodes],
   )
 
+  const currentMapUnlockedCount = useMemo(
+    () => computeMapUnlockedStats(currentMap, unlockedNodes),
+    [currentMap, unlockedNodes],
+  )
+
   const breadcrumbs = useMemo(
     () => buildBreadcrumbs(currentMapId, currentMap, allMaps.root.title),
     [currentMap, currentMapId],
@@ -103,6 +109,7 @@ export function useCwfApp() {
     filteredNodes,
     searchResults,
     totalUnlockedCount,
+    currentMapUnlockedCount,
     breadcrumbs,
     unlockedNodes,
     handleCategoryToggle,

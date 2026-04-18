@@ -22,6 +22,7 @@ function App() {
     filteredNodes,
     searchResults,
     totalUnlockedCount,
+    currentMapUnlockedCount,
     breadcrumbs,
     unlockedNodes,
     handleCategoryToggle,
@@ -56,8 +57,8 @@ function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         <Sidebar
-          totalNodes={currentMap.nodes.length}
-          unlockedCount={currentMap.nodes.filter((node) => unlockedNodes.has(node.id)).length}
+          totalNodes={currentMapUnlockedCount.total}
+          unlockedCount={currentMapUnlockedCount.unlocked}
           currentMap={currentMapId}
           onMapChange={handleNavigateToMap}
         />

@@ -1,5 +1,9 @@
 import type { GraphData, Node } from '../types'
 
+function isProgressTrackableNode(node: Node): boolean {
+  return Boolean(node.parentId)
+}
+
 export function buildNodesWithUnlockedStatus(
   currentMap: GraphData,
   unlockedNodes: Set<string>,
@@ -111,11 +115,23 @@ export function computeUnlockedStats(
   let unlocked = 0
 
   Object.values(maps).forEach((map) => {
-    total += map.nodes.length
-    unlocked += map.nodes.filter((node) => unlockedNodes.has(node.id)).length
+    total += map.nodes.filter(isProgressTrackableNode).length
+    unlocked += map.nodes.filter((node) => isProgressTrackableNode(node) && unlockedNodes.has(node.id)).length
   })
 
   return { total, unlocked }
+}
+
+export function computeMapUnlockedStats(
+  map: GraphData,
+  unlockedNodes: Set<string>,
+): { total: number; unlocked: number } {
+  const trackableNodes = map.nodes.filter(isProgressTrackableNode)
+
+  return {
+    total: trackableNodes.length,
+    unlocked: trackableNodes.filter((node) => unlockedNodes.has(node.id)).length,
+  }
 }
 
 export function buildBreadcrumbs(

@@ -6,6 +6,7 @@ import {
   buildBreadcrumbs,
   buildNodesWithUnlockedStatus,
   buildVisibleGraphNodes,
+  computeMapUnlockedStats,
   computeUnlockedStats,
   filterNodesByQuery,
   searchNodesAcrossMaps,
@@ -268,6 +269,18 @@ describe('app services', () => {
 
     expect(stats.total).toBeGreaterThan(stats.unlocked)
     expect(stats.unlocked).toBe(2)
+    expect(stats.total).toBe(
+      Object.values(allMaps).reduce((sum, map) => sum + map.nodes.filter((node) => node.parentId).length, 0),
+    )
+  })
+
+  test('computes current map progress without counting the root node', () => {
+    const stats = computeMapUnlockedStats(allMaps.root, unlockedNodes)
+
+    expect(stats).toEqual({
+      total: 7,
+      unlocked: 2,
+    })
   })
 
   test('builds breadcrumbs for root and nested maps', () => {
