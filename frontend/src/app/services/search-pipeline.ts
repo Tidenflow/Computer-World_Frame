@@ -134,7 +134,11 @@ const WEB_UI_QUERY_TERMS = [
 ]
 
 const AI_QUERY_TERMS = ['ai', '人工智能', '模型', '大模型', 'llm', '生成', '绘图', '画图']
-const SEMANTIC_MATCH_LIMIT = 5
+const SEARCH_MATCH_LIMIT = 5
+
+function limitSearchMatches(matches: SearchMatch[]): SearchMatch[] {
+  return matches.slice(0, SEARCH_MATCH_LIMIT)
+}
 
 function isWebUiQuery(query: string): boolean {
   const normalizedQuery = query.toLowerCase()
@@ -204,7 +208,7 @@ export async function searchWithSemanticFallback(
   if (!isModelReady) {
     console.log('[CWF] Model not ready — skipping semantic search. Rule results:', stage1Results.length)
     return {
-      matches: stage1Results,
+      matches: limitSearchMatches(stage1Results),
       usedSemantic: false,
       isLoadingModel: true,
     }
@@ -253,7 +257,7 @@ export async function searchWithSemanticFallback(
     }
 
     return {
-      matches: stage1Results.slice(0, SEMANTIC_MATCH_LIMIT),
+      matches: limitSearchMatches(stage1Results),
       usedSemantic: true,
       isLoadingModel: false,
     }
@@ -261,7 +265,7 @@ export async function searchWithSemanticFallback(
     // Semantic search failed (model not loaded, network error, etc.)
     // Return whatever rule-based results we have
     return {
-      matches: stage1Results,
+      matches: limitSearchMatches(stage1Results),
       usedSemantic: false,
       isLoadingModel: false,
     }
