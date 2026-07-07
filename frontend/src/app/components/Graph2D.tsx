@@ -29,6 +29,86 @@ interface PointerPosition {
   y: number;
 }
 
+const LABEL_FONT = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+const ROOT_LABEL_FONT = '600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
+
+function getCanvasScale() {
+  return typeof window === 'undefined' ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+}
+
+function shouldShowNodeLabel({
+  node,
+  selectedNode,
+  hoveredNode,
+}: {
+  node: StableNodePosition;
+  selectedNode: Node | null;
+  hoveredNode: StableNodePosition | null;
+}) {
+  return (
+    isRootNode(node) ||
+    node.parentId === selectedNode?.id ||
+    selectedNode?.parentId === node.parentId ||
+    selectedNode?.id === node.id ||
+    hoveredNode?.id === node.id
+  );
+}
+
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+
+  ctx.beginPath();
+  ctx.moveTo(x + safeRadius, y);
+  ctx.lineTo(x + width - safeRadius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
+  ctx.lineTo(x + width, y + height - safeRadius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
+  ctx.lineTo(x + safeRadius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
+  ctx.lineTo(x, y + safeRadius);
+  ctx.quadraticCurveTo(x, y, x + safeRadius, y);
+  ctx.closePath();
+}
+
+function drawNodeLabel(ctx: CanvasRenderingContext2D, node: StableNodePosition, radius: number) {
+  const text = node.title;
+  const font = isRootNode(node) ? ROOT_LABEL_FONT : LABEL_FONT;
+  ctx.font = font;
+  const metrics = ctx.measureText(text);
+  const paddingX = 7;
+  const labelWidth = Math.ceil(metrics.width + paddingX * 2);
+  const labelHeight = 22;
+  const labelX = node.x - labelWidth / 2;
+  const labelY = node.y + radius + 7;
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(15, 23, 42, 0.08)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 2;
+  drawRoundedRect(ctx, labelX, labelY, labelWidth, labelHeight, 6);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+  ctx.fill();
+  ctx.restore();
+
+  ctx.strokeStyle = 'rgba(203, 213, 225, 0.9)';
+  ctx.lineWidth = 1;
+  drawRoundedRect(ctx, labelX, labelY, labelWidth, labelHeight, 6);
+  ctx.stroke();
+
+  ctx.fillStyle = '#0F172A';
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, node.x, labelY + labelHeight / 2 + 0.5);
+}
+
 export const Graph2D = ({
   nodes,
   selectedNode,
@@ -88,10 +168,16 @@ export const Graph2D = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const width = canvas.width;
-    const height = canvas.height;
+    const scaleFactor = getCanvasScale();
+    const width = canvas.width / scaleFactor;
+    const height = canvas.height / scaleFactor;
 
     ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
     // Filter nodes by selected domains
     const visibleNodes = positions.filter(
@@ -102,7 +188,6 @@ export const Graph2D = ({
     );
 
     // Draw connections
-    ctx.save();
     ctx.translate(offset.x, offset.y);
     ctx.scale(scale, scale);
 
@@ -113,12 +198,16 @@ export const Graph2D = ({
       if (!parent) continue;
 
       const isHighlighted =
-        selectedNode && (selectedNode.id === node.id || selectedNode.id === parent.id);
+        selectedNode &&
+        (selectedNode.id === node.id ||
+          selectedNode.id === parent.id ||
+          selectedNode.parentId === node.id ||
+          selectedNode.parentId === parent.id);
       const color = isRootNode(node) ? ROOT_NODE_COLOR : getNodeCategoryColor(node);
 
       ctx.strokeStyle = isHighlighted ? color : `${color}66`;
-      ctx.lineWidth = isHighlighted ? 2 : 1;
-      ctx.globalAlpha = 0.4;
+      ctx.lineWidth = isHighlighted ? 2.2 : 1;
+      ctx.globalAlpha = selectedNode ? (isHighlighted ? 0.8 : 0.18) : 0.34;
 
       const curve = createTreeEdgeCurve({ child: node, parent });
 
@@ -141,13 +230,19 @@ export const Graph2D = ({
     for (const node of visibleNodes) {
       const isSelected = selectedNode?.id === node.id;
       const isHovered = hoveredNode?.id === node.id;
+      const isNeighbor =
+        selectedNode &&
+        (selectedNode.parentId === node.id ||
+          node.parentId === selectedNode.id ||
+          (selectedNode.parentId && selectedNode.parentId === node.parentId));
+      const isDimmed = Boolean(selectedNode && !isSelected && !isHovered && !isNeighbor && !isRootNode(node));
       const nodeScale = isHovered ? 1.15 : 1;
       const radius = node.radius * nodeScale;
 
       // Glow for selected/hovered
       if (isSelected || isHovered) {
         ctx.shadowColor = isRootNode(node) ? ROOT_NODE_COLOR : getNodeCategoryColor(node);
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = isSelected ? 18 : 12;
       } else {
         ctx.shadowBlur = 0;
       }
@@ -159,10 +254,12 @@ export const Graph2D = ({
           ? getNodeCategoryColor(node)
           : '#D1D5DB';
 
+      ctx.globalAlpha = isDimmed ? 0.34 : 1;
       ctx.fillStyle = fillColor;
 
       if (isRootNode(node)) {
-        ctx.fillRect(node.x - radius, node.y - radius, radius * 2, radius * 2);
+        drawRoundedRect(ctx, node.x - radius, node.y - radius, radius * 2, radius * 2, 3);
+        ctx.fill();
       } else {
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
@@ -172,9 +269,10 @@ export const Graph2D = ({
       // Border
       if (node.unlocked || isRootNode(node)) {
         ctx.strokeStyle = isRootNode(node) ? ROOT_NODE_COLOR : getNodeCategoryColor(node);
-        ctx.lineWidth = 2;
+        ctx.lineWidth = isSelected ? 3 : 2;
         if (isRootNode(node)) {
-          ctx.strokeRect(node.x - radius, node.y - radius, radius * 2, radius * 2);
+          drawRoundedRect(ctx, node.x - radius, node.y - radius, radius * 2, radius * 2, 3);
+          ctx.stroke();
         } else {
           ctx.beginPath();
           ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
@@ -184,12 +282,12 @@ export const Graph2D = ({
 
       ctx.shadowBlur = 0;
 
-      // Label
-      ctx.fillStyle = '#111827';
-      ctx.font = '500 12px -apple-system, system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillText(node.title, node.x, node.y + radius + 4);
+      if (shouldShowNodeLabel({ node, selectedNode, hoveredNode })) {
+        ctx.globalAlpha = isDimmed ? 0.5 : 1;
+        drawNodeLabel(ctx, node, radius);
+      }
+
+      ctx.globalAlpha = 1;
     }
 
     ctx.restore();
@@ -242,7 +340,7 @@ export const Graph2D = ({
       .find((node) => {
       const dx = node.x - x;
       const dy = node.y - y;
-      return Math.sqrt(dx * dx + dy * dy) < node.radius;
+      return Math.sqrt(dx * dx + dy * dy) < node.radius + 7;
     });
 
     setHoveredNode(hovered || null);
@@ -339,16 +437,22 @@ export const Graph2D = ({
     if (!canvas) return;
 
     const resizeObserver = new ResizeObserver(() => {
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
+      const scaleFactor = getCanvasScale();
+      canvas.width = Math.floor(container.clientWidth * scaleFactor);
+      canvas.height = Math.floor(container.clientHeight * scaleFactor);
+      canvas.style.width = `${container.clientWidth}px`;
+      canvas.style.height = `${container.clientHeight}px`;
       setOffset({ x: 0, y: 0 });
       setScale(1);
       syncStableLayout();
     });
 
     resizeObserver.observe(container);
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
+    const scaleFactor = getCanvasScale();
+    canvas.width = Math.floor(container.clientWidth * scaleFactor);
+    canvas.height = Math.floor(container.clientHeight * scaleFactor);
+    canvas.style.width = `${container.clientWidth}px`;
+    canvas.style.height = `${container.clientHeight}px`;
     syncStableLayout();
 
     return () => resizeObserver.disconnect();
@@ -384,6 +488,20 @@ export const Graph2D = ({
           onToggleLock={onToggleLock}
           onShowInfo={onNodeClick}
         />
+      )}
+      {hoveredNode && (
+        <div
+          className="pointer-events-none absolute z-20 max-w-64 rounded-md border border-[#CBD5E1] bg-white px-3 py-2 text-xs leading-5 text-[#475569] shadow-lg"
+          style={{
+            left: `${hoveredNode.x * scale + offset.x + 14}px`,
+            top: `${hoveredNode.y * scale + offset.y + 14}px`,
+          }}
+        >
+          <div className="font-semibold text-[#111827]">{hoveredNode.title}</div>
+          {hoveredNode.description && (
+            <div className="mt-1 line-clamp-2">{hoveredNode.description}</div>
+          )}
+        </div>
       )}
     </div>
   );
