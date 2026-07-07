@@ -10,8 +10,16 @@ import { Sidebar } from './components/Sidebar'
 import { WelcomeTooltip } from './components/WelcomeTooltip'
 import { useCwfApp } from './hooks/use-cwf-app'
 
+const EXPLORER_INTRO_DISMISSED_KEY = 'cwf-explorer-intro-dismissed'
+
 function App() {
-  const [showExplorerIntro, setShowExplorerIntro] = useState(true)
+  const [showExplorerIntro, setShowExplorerIntro] = useState(() => {
+    if (typeof window === 'undefined') {
+      return true
+    }
+
+    return window.localStorage.getItem(EXPLORER_INTRO_DISMISSED_KEY) !== 'true'
+  })
   const {
     viewMode,
     setViewMode,
@@ -38,10 +46,21 @@ function App() {
     handleSearchSubmit,
     handleExploreExample,
     handleSelectRecentMatch,
+    handleSelectRelatedNode,
     selectAllCategories,
     clearCategories,
     closeDetailPanel,
   } = useCwfApp()
+
+  const dismissExplorerIntro = () => {
+    setShowExplorerIntro(false)
+
+    try {
+      window.localStorage.setItem(EXPLORER_INTRO_DISMISSED_KEY, 'true')
+    } catch {
+      // Optional preference; the app keeps working if storage is unavailable.
+    }
+  }
 
   return (
     <div className="h-screen flex flex-col bg-white">
@@ -54,8 +73,11 @@ function App() {
         onSearchChange={setSearchQuery}
         onSearchSubmit={handleSearchSubmit}
         breadcrumbs={breadcrumbs}
+        searchResults={recentSearchMatches}
+        searchResultQuery={recentSearchQuery}
         isSearching={isSearching}
         isModelReady={isModelReady}
+        onSelectSearchResult={handleSelectRecentMatch}
       />
 
       <div className="flex-1 flex overflow-hidden relative bg-[#F6F8FB]">
@@ -104,10 +126,10 @@ function App() {
               totalNodes={totalUnlockedCount.total}
               isModelReady={isModelReady}
               onExplore={(query) => {
-                setShowExplorerIntro(false)
+                dismissExplorerIntro()
                 handleExploreExample(query)
               }}
-              onClose={() => setShowExplorerIntro(false)}
+              onClose={dismissExplorerIntro}
             />
           )}
         </main>
@@ -120,6 +142,7 @@ function App() {
             onClose={closeDetailPanel}
             onToggleLock={handleToggleLock}
             onNavigateToMap={handleNavigateToMap}
+            onSelectNode={handleSelectRelatedNode}
           />
         )}
       </div>

@@ -32,6 +32,7 @@ interface DetailPanelProps {
   onClose: () => void
   onToggleLock?: (nodeId: string) => void
   onNavigateToMap?: (mapId: string) => void
+  onSelectNode?: (node: Node) => void
 }
 
 export const DetailPanel = ({
@@ -41,6 +42,7 @@ export const DetailPanel = ({
   onClose,
   onToggleLock,
   onNavigateToMap,
+  onSelectNode,
 }: DetailPanelProps) => {
   if (!node) return null
 
@@ -182,13 +184,18 @@ export const DetailPanel = ({
             </div>
             <div className="space-y-1">
               {learningContext.nextNodes.map((nextNode) => (
-                <div
+                <button
                   key={nextNode.id}
-                  className="flex items-center justify-between rounded-md border border-[#E5E7EB] bg-white px-3 py-2"
+                  type="button"
+                  onClick={() => onSelectNode?.(nextNode)}
+                  className="flex w-full items-center justify-between rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-left transition-colors hover:border-[#99F6E4] hover:bg-[#F8FAFC]"
                 >
                   <span className="text-sm text-[#475569]">{nextNode.title}</span>
-                  <span className="text-xs text-[#94A3B8]">{getNodeCategoryName(nextNode)}</span>
-                </div>
+                  <span className="flex items-center gap-1 text-xs text-[#94A3B8]">
+                    {getNodeCategoryName(nextNode)}
+                    <ArrowRight className="h-3 w-3" />
+                  </span>
+                </button>
               ))}
             </div>
           </div>

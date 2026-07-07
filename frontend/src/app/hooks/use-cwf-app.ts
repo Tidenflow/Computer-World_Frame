@@ -183,6 +183,17 @@ export function useCwfApp() {
     clearSearch()
   }
 
+  const handleSelectRelatedNode = (node: Node) => {
+    const nextNode = withUnlockedState(node, unlockedNodes)
+    setSelectedNode(nextNode)
+    clearSearch()
+
+    const nextUnlockedNodes = autoUnlockNodeOnSelect(unlockedNodes, nextNode)
+    if (nextUnlockedNodes !== unlockedNodes) {
+      saveUnlockedNodeSet(nextUnlockedNodes)
+    }
+  }
+
   return {
     viewMode,
     setViewMode,
@@ -210,6 +221,7 @@ export function useCwfApp() {
     handleSearchSubmit,
     handleExploreExample,
     handleSelectRecentMatch,
+    handleSelectRelatedNode,
     selectAllCategories() {
       setSelectedCategories(createAllCategorySelection())
     },
