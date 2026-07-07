@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { allMaps } from '../data'
 import { localStorageProgressRepository } from '../repositories/local-storage-progress.repository'
@@ -8,7 +8,6 @@ import {
   buildVisibleGraphNodes,
   computeMapUnlockedStats,
   computeUnlockedStats,
-  searchNodesAcrossMaps,
 } from '../services/app-services'
 import {
   autoUnlockNodeOnSelect,
@@ -20,6 +19,8 @@ import {
   toggleNodeLock,
   unlockNodes,
 } from '../services/app-state-transitions'
+import { searchWithSemanticFallback } from '../services/search-pipeline'
+import { preloadModel } from '../services/semantic-search'
 import type { Node, NodeCategory, SearchMatch } from '../types'
 import { useProgressState } from './use-progress-state'
 import { useSearchState } from './use-search-state'
@@ -41,6 +42,17 @@ export function useCwfApp() {
   const [currentMapId, setCurrentMapId] = useState('root')
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
   const [recentSearchMatches, setRecentSearchMatches] = useState<SearchMatch[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [isModelReady, setIsModelReady] = useState(false)
+
+  // Background preload: download and warm the embedding model on app startup.
+  // Does NOT block the UI — rule-based search works immediately.
+  // When done, semantic search becomes available without the 15s first-use wait.
+  useEffect(() => {
+    preloadModel(allMaps)
+      .then(() => setIsModelReady(true))
+      .catch(() => setIsModelReady(false)) // network error, etc. — semantic unavailable
+  }, [])
 
   const { unlockedNodes, saveUnlockedNodeSet } = useProgressState(localStorageProgressRepository)
   const { searchQuery, setSearchQuery, clearSearch } = useSearchState()
@@ -106,7 +118,7 @@ export function useCwfApp() {
     setSelectedNode(null)
   }
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = async () => {
     const normalizedQuery = searchQuery.trim()
 
     if (!normalizedQuery) {
@@ -114,19 +126,30 @@ export function useCwfApp() {
       return
     }
 
-    const matches = searchNodesAcrossMaps(allMaps, normalizedQuery, unlockedNodes)
-    const nextUnlockedNodes = unlockNodes(unlockedNodes, matches)
+    setIsSearching(true)
 
-    if (nextUnlockedNodes !== unlockedNodes) {
-      saveUnlockedNodeSet(nextUnlockedNodes)
+    try {
+      console.log('[CWF] Searching for:', normalizedQuery, 'modelReady:', isModelReady)
+      const { matches } = await searchWithSemanticFallback(normalizedQuery, allMaps, unlockedNodes, {
+        isModelReady,
+      })
+      console.log('[CWF] Total matches:', matches.length, matches.slice(0, 5).map(m => m.title))
+
+      const nextUnlockedNodes = unlockNodes(unlockedNodes, matches)
+
+      if (nextUnlockedNodes !== unlockedNodes) {
+        saveUnlockedNodeSet(nextUnlockedNodes)
+      }
+
+      setRecentSearchMatches(
+        matches.map((match) => ({
+          ...match,
+          unlocked: nextUnlockedNodes.has(match.id),
+        })),
+      )
+    } finally {
+      setIsSearching(false)
     }
-
-    setRecentSearchMatches(
-      matches.map((match) => ({
-        ...match,
-        unlocked: nextUnlockedNodes.has(match.id),
-      })),
-    )
   }
 
   const handleSelectRecentMatch = (match: SearchMatch) => {
@@ -155,6 +178,8 @@ export function useCwfApp() {
     totalUnlockedCount,
     currentMapUnlockedCount,
     recentSearchMatches,
+    isSearching,
+    isModelReady,
     breadcrumbs,
     unlockedNodes,
     handleCategoryToggle,
