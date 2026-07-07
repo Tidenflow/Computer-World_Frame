@@ -27,6 +27,13 @@ describe('synonym dictionary', () => {
     expect(variants).toContain('JavaScript')
   })
 
+  test('expands interface rendering queries to frontend primitives', () => {
+    const variants = expandQueryWithSynonyms('渲染界面的语言')
+    expect(variants).toContain('HTML')
+    expect(variants).toContain('CSS')
+    expect(variants).toContain('JavaScript')
+  })
+
   test('returns deduplicated results', () => {
     const variants = expandQueryWithSynonyms('网络')
     // All variants in the array are unique (Set guarantees this)

@@ -121,6 +121,39 @@ export interface SearchPipelineResult {
   isLoadingModel: boolean
 }
 
+const WEB_UI_QUERY_TERMS = [
+  '渲染',
+  '界面',
+  '页面',
+  '网页',
+  '前端',
+  '浏览器',
+  'ui',
+  '样式',
+  '布局',
+]
+
+const AI_QUERY_TERMS = ['ai', '人工智能', '模型', '大模型', 'llm', '生成', '绘图', '画图']
+const SEMANTIC_MATCH_LIMIT = 5
+
+function isWebUiQuery(query: string): boolean {
+  const normalizedQuery = query.toLowerCase()
+  return WEB_UI_QUERY_TERMS.some((term) => normalizedQuery.includes(term))
+}
+
+function isAiQuery(query: string): boolean {
+  const normalizedQuery = query.toLowerCase()
+  return AI_QUERY_TERMS.some((term) => normalizedQuery.includes(term))
+}
+
+function shouldIncludeSemanticMatch(query: string, match: SearchMatch): boolean {
+  if (!isWebUiQuery(query) || isAiQuery(query)) {
+    return true
+  }
+
+  return match.mapId === 'programming' || match.domain === 'programming'
+}
+
 /**
  * Main search entry point — two-stage pipeline:
  *
@@ -207,16 +240,20 @@ export async function searchWithSemanticFallback(
       const node = maps[mapId]!.nodes.find((n) => n.id === result.nodeId)
       if (!node) continue
 
-      stage1Results.push({
+      const match = {
         ...node,
         mapId,
         mapTitle,
         unlocked: unlockedNodes.has(node.id),
-      })
+      }
+
+      if (!shouldIncludeSemanticMatch(query, match)) continue
+
+      stage1Results.push(match)
     }
 
     return {
-      matches: stage1Results,
+      matches: stage1Results.slice(0, SEMANTIC_MATCH_LIMIT),
       usedSemantic: true,
       isLoadingModel: false,
     }

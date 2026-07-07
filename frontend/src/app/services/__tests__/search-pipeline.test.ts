@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest'
 
-import { looksLikePinyin, toPinyinInitials, matchNodesByPinyin } from '../search-pipeline'
+import {
+  looksLikePinyin,
+  toPinyinInitials,
+  matchNodesByPinyin,
+  searchWithSemanticFallback,
+} from '../search-pipeline'
 import type { GraphData, NodeDefinition } from '../../types'
 
 describe('pinyin matching', () => {
@@ -71,5 +76,37 @@ describe('pinyin matching', () => {
 
     expect(matchNodesByPinyin('React', maps)).toEqual([])
     expect(matchNodesByPinyin('中文', maps)).toEqual([])
+  })
+})
+
+describe('rule search expansion', () => {
+  test('anchors interface rendering queries to HTML, CSS, and JavaScript', async () => {
+    const maps: Record<string, GraphData<NodeDefinition>> = {
+      programming: {
+        id: 'programming',
+        title: '程序开发',
+        nodes: [
+          { id: 'html', title: 'HTML', domain: 'programming', tags: ['前端', '结构'] },
+          { id: 'css', title: 'CSS', domain: 'programming', tags: ['前端', '样式', '布局'] },
+          { id: 'javascript', title: 'JavaScript', domain: 'programming', tags: ['前端', '交互'] },
+          { id: 'qwen', title: '通义千问', domain: 'ai', tags: ['大模型'] },
+        ],
+      },
+    }
+
+    const { matches, usedSemantic } = await searchWithSemanticFallback(
+      '渲染界面的语言',
+      maps,
+      new Set(),
+      { isModelReady: false },
+    )
+
+    expect(usedSemantic).toBe(false)
+    expect(matches.map((match) => match.id).slice(0, 3)).toEqual([
+      'html',
+      'css',
+      'javascript',
+    ])
+    expect(matches.map((match) => match.id)).not.toContain('qwen')
   })
 })
