@@ -136,6 +136,45 @@ export function computeMapUnlockedStats(
   }
 }
 
+export interface UnlockedNodeRecord {
+  node: Node
+  mapId: string
+  mapTitle: string
+}
+
+export function buildUnlockedNodeCollection(
+  maps: Record<string, GraphData>,
+  unlockedNodes: Set<string>,
+): UnlockedNodeRecord[] {
+  const records: UnlockedNodeRecord[] = []
+  const seen = new Set<string>()
+
+  for (const map of Object.values(maps)) {
+    for (const node of map.nodes) {
+      if (!isProgressTrackableNode(node) || !unlockedNodes.has(node.id)) {
+        continue
+      }
+
+      const key = `${map.id}:${node.id}`
+      if (seen.has(key)) {
+        continue
+      }
+
+      seen.add(key)
+      records.push({
+        node: {
+          ...node,
+          unlocked: true,
+        },
+        mapId: map.id,
+        mapTitle: map.title,
+      })
+    }
+  }
+
+  return records
+}
+
 export function buildBreadcrumbs(
   currentMapId: string,
   currentMap: GraphData,

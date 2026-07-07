@@ -1,10 +1,12 @@
-import { Search, Layers, Box, Loader2 } from 'lucide-react'
+import { Search, Layers, Box, Loader2, CheckCircle2, Map } from 'lucide-react'
 
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { getNodeCategoryName, type SearchMatch } from '../types'
 
 interface HeaderProps {
+  activeWorkspace: 'map' | 'unlocked'
+  onWorkspaceChange: (workspace: 'map' | 'unlocked') => void
   viewMode: '2d' | '3d'
   onViewModeChange: (mode: '2d' | '3d') => void
   searchQuery: string
@@ -19,6 +21,8 @@ interface HeaderProps {
 }
 
 export const Header = ({
+  activeWorkspace,
+  onWorkspaceChange,
   viewMode,
   onViewModeChange,
   searchQuery,
@@ -67,6 +71,29 @@ export const Header = ({
       </div>
 
       <div className="flex items-center gap-4">
+        <div className="flex gap-1 rounded-md border border-[#D8DEE8] bg-[#F8FAFC] p-1">
+          <Button
+            type="button"
+            variant={activeWorkspace === 'map' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onWorkspaceChange('map')}
+            className="h-8 px-3 text-sm"
+          >
+            <Map className="mr-1.5 h-4 w-4" />
+            地图探索
+          </Button>
+          <Button
+            type="button"
+            variant={activeWorkspace === 'unlocked' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onWorkspaceChange('unlocked')}
+            className="h-8 px-3 text-sm"
+          >
+            <CheckCircle2 className="mr-1.5 h-4 w-4" />
+            已点亮节点
+          </Button>
+        </div>
+
         <div className="relative z-30">
           {isSearching ? (
             <Loader2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-[#3B82F6]" />
@@ -147,26 +174,28 @@ export const Header = ({
           )}
         </div>
 
-        <div className="flex gap-1 rounded-md border border-[#D8DEE8] bg-[#F8FAFC] p-1">
-          <Button
-            variant={viewMode === '2d' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onViewModeChange('2d')}
-            className="h-7 px-3"
-          >
-            <Layers className="mr-1 h-4 w-4" />
-            2D
-          </Button>
-          <Button
-            variant={viewMode === '3d' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onViewModeChange('3d')}
-            className="h-7 px-3"
-          >
-            <Box className="mr-1 h-4 w-4" />
-            3D
-          </Button>
-        </div>
+        {activeWorkspace === 'map' && (
+          <div className="flex gap-1 rounded-md border border-[#D8DEE8] bg-[#F8FAFC] p-1">
+            <Button
+              variant={viewMode === '2d' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onViewModeChange('2d')}
+              className="h-7 px-3"
+            >
+              <Layers className="mr-1 h-4 w-4" />
+              2D
+            </Button>
+            <Button
+              variant={viewMode === '3d' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onViewModeChange('3d')}
+              className="h-7 px-3"
+            >
+              <Box className="mr-1 h-4 w-4" />
+              3D
+            </Button>
+          </div>
+        )}
       </div>
     </header>
   )

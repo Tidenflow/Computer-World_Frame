@@ -5,10 +5,12 @@ import { localStorageProgressRepository } from '../repositories/local-storage-pr
 import {
   buildBreadcrumbs,
   buildNodeLearningContext,
+  buildUnlockedNodeCollection,
   buildNodesWithUnlockedStatus,
   buildVisibleGraphNodes,
   computeMapUnlockedStats,
   computeUnlockedStats,
+  type UnlockedNodeRecord,
 } from '../services/app-services'
 import {
   autoUnlockNodeOnSelect,
@@ -88,6 +90,11 @@ export function useCwfApp() {
         selectedNode,
       ),
     [currentMap, selectedNode, unlockedNodes],
+  )
+
+  const unlockedNodeCollection = useMemo(
+    () => buildUnlockedNodeCollection(allMaps, unlockedNodes),
+    [unlockedNodes],
   )
 
   const handleCategoryToggle = (category: NodeCategory) => {
@@ -194,6 +201,19 @@ export function useCwfApp() {
     }
   }
 
+  const handleSelectUnlockedRecord = (record: UnlockedNodeRecord) => {
+    const targetMap = allMaps[record.mapId]
+    const targetNode = targetMap.nodes.find((node) => node.id === record.node.id)
+
+    if (!targetNode) {
+      return
+    }
+
+    setCurrentMapId(record.mapId)
+    setSelectedNode(withUnlockedState(targetNode, unlockedNodes))
+    clearSearch()
+  }
+
   return {
     viewMode,
     setViewMode,
@@ -211,6 +231,7 @@ export function useCwfApp() {
     isSearching,
     isModelReady,
     selectedNodeLearningContext,
+    unlockedNodeCollection,
     breadcrumbs,
     unlockedNodes,
     handleCategoryToggle,
@@ -222,6 +243,7 @@ export function useCwfApp() {
     handleExploreExample,
     handleSelectRecentMatch,
     handleSelectRelatedNode,
+    handleSelectUnlockedRecord,
     selectAllCategories() {
       setSelectedCategories(createAllCategorySelection())
     },
