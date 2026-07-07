@@ -21,6 +21,7 @@ function App() {
     totalUnlockedCount,
     currentMapUnlockedCount,
     recentSearchMatches,
+    isSearching,
     breadcrumbs,
     handleCategoryToggle,
     handleNodeClick,
@@ -45,6 +46,7 @@ function App() {
         onSearchChange={setSearchQuery}
         onSearchSubmit={handleSearchSubmit}
         breadcrumbs={breadcrumbs}
+        isSearching={isSearching}
       />
 
       <div className="flex-1 flex overflow-hidden relative">

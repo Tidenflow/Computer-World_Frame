@@ -1,4 +1,4 @@
-import { Search, Layers, Box } from 'lucide-react'
+import { Search, Layers, Box, Loader2 } from 'lucide-react'
 
 import { Input } from './ui/input'
 import { Button } from './ui/button'
@@ -10,6 +10,7 @@ interface HeaderProps {
   onSearchChange: (query: string) => void
   onSearchSubmit: () => void
   breadcrumbs: string[]
+  isSearching?: boolean
 }
 
 export const Header = ({
@@ -19,6 +20,7 @@ export const Header = ({
   onSearchChange,
   onSearchSubmit,
   breadcrumbs,
+  isSearching = false,
 }: HeaderProps) => {
   return (
     <header className="flex h-14 items-center justify-between border-b border-[#E5E7EB] bg-white px-6">
@@ -39,7 +41,11 @@ export const Header = ({
 
       <div className="flex items-center gap-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+          {isSearching ? (
+            <Loader2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-[#3B82F6]" />
+          ) : (
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
+          )}
           <Input
             type="text"
             placeholder="搜索节点或标签，按回车解锁..."
@@ -52,6 +58,7 @@ export const Header = ({
               }
             }}
             className="h-9 w-[360px] border-[#E5E7EB] bg-[#F9FAFB] pl-10"
+            disabled={isSearching}
           />
         </div>
 
