@@ -4,6 +4,8 @@ import { allMaps } from '../../data'
 import { getNodeCategory, type Node } from '../../types'
 import {
   buildBreadcrumbs,
+  buildNodeLearningContext,
+  buildUnlockedNodeCollection,
   buildNodesWithUnlockedStatus,
   buildVisibleGraphNodes,
   computeMapUnlockedStats,
@@ -57,6 +59,34 @@ describe('app services', () => {
     expect(results[0]?.unlocked).toBe(true)
     expect(results[0]?.mapId).toBe('programming')
     expect(results[0]?.mapTitle).toBe(allMaps.programming.title)
+  })
+
+  test('builds a cross-map collection of unlocked progress nodes', () => {
+    const records = buildUnlockedNodeCollection(
+      allMaps,
+      new Set<string>(['fundamentals', 'hardware', 'programming-root']),
+    )
+
+    expect(records.map((record) => record.node.id)).toEqual(['fundamentals', 'hardware'])
+    expect(records[0]?.mapId).toBe('root')
+    expect(records[0]?.mapTitle).toBe(allMaps.root.title)
+    expect(records.every((record) => record.node.unlocked)).toBe(true)
+  })
+
+  test('builds learning context from dependencies, children, and siblings', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.programming, new Set<string>())
+    const context = buildNodeLearningContext(
+      { ...allMaps.programming, nodes },
+      nodes.find((node) => node.id === 'frontend-frameworks')!,
+    )
+
+    expect(context.nextNodes.map((node) => node.id)).toEqual([
+      'react',
+      'vue',
+      'angular',
+      'svelte',
+      'astro',
+    ])
   })
 
   test('shows only the root level before a tree branch is expanded', () => {

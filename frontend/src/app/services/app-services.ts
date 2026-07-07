@@ -136,6 +136,45 @@ export function computeMapUnlockedStats(
   }
 }
 
+export interface UnlockedNodeRecord {
+  node: Node
+  mapId: string
+  mapTitle: string
+}
+
+export function buildUnlockedNodeCollection(
+  maps: Record<string, GraphData>,
+  unlockedNodes: Set<string>,
+): UnlockedNodeRecord[] {
+  const records: UnlockedNodeRecord[] = []
+  const seen = new Set<string>()
+
+  for (const map of Object.values(maps)) {
+    for (const node of map.nodes) {
+      if (!isProgressTrackableNode(node) || !unlockedNodes.has(node.id)) {
+        continue
+      }
+
+      const key = `${map.id}:${node.id}`
+      if (seen.has(key)) {
+        continue
+      }
+
+      seen.add(key)
+      records.push({
+        node: {
+          ...node,
+          unlocked: true,
+        },
+        mapId: map.id,
+        mapTitle: map.title,
+      })
+    }
+  }
+
+  return records
+}
+
 export function buildBreadcrumbs(
   currentMapId: string,
   currentMap: GraphData,
@@ -148,4 +187,58 @@ export function buildBreadcrumbs(
   }
 
   return breadcrumbs
+}
+
+export interface NodeLearningContext {
+  prerequisiteLabels: string[]
+  nextNodes: Node[]
+}
+
+export function buildNodeLearningContext(
+  map: GraphData<Node>,
+  node: Node | null,
+  limit = 5,
+): NodeLearningContext {
+  if (!node) {
+    return {
+      prerequisiteLabels: [],
+      nextNodes: [],
+    }
+  }
+
+  const nodesById = new Map(map.nodes.map((candidate) => [candidate.id, candidate]))
+  const nodesByTitle = new Map(map.nodes.map((candidate) => [candidate.title.toLowerCase(), candidate]))
+
+  const prerequisiteLabels = (node.deps ?? []).map((dependency) => {
+    const normalizedDependency = dependency.toLowerCase()
+    return nodesById.get(dependency)?.title ?? nodesByTitle.get(normalizedDependency)?.title ?? dependency
+  })
+
+  const children = map.nodes.filter((candidate) => candidate.parentId === node.id)
+  const siblings = node.parentId
+    ? map.nodes.filter(
+        (candidate) => candidate.parentId === node.parentId && candidate.id !== node.id,
+      )
+    : []
+
+  const seen = new Set<string>()
+  const nextNodes: Node[] = []
+
+  for (const candidate of [...children, ...siblings]) {
+    if (seen.has(candidate.id)) {
+      continue
+    }
+
+    seen.add(candidate.id)
+    nextNodes.push(candidate)
+
+    if (nextNodes.length >= limit) {
+      break
+    }
+  }
+
+  return {
+    prerequisiteLabels,
+    nextNodes,
+  }
 }

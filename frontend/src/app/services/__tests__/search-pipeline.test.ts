@@ -89,6 +89,10 @@ describe('rule search expansion', () => {
           { id: 'html', title: 'HTML', domain: 'programming', tags: ['前端', '结构'] },
           { id: 'css', title: 'CSS', domain: 'programming', tags: ['前端', '样式', '布局'] },
           { id: 'javascript', title: 'JavaScript', domain: 'programming', tags: ['前端', '交互'] },
+          { id: 'web-frontend', title: 'Web 前端', domain: 'programming', tags: ['界面'] },
+          { id: 'react', title: 'React', domain: 'programming', tags: ['前端'] },
+          { id: 'vue', title: 'Vue', domain: 'programming', tags: ['前端'] },
+          { id: 'sass', title: 'Sass', domain: 'programming', tags: ['样式'] },
           { id: 'qwen', title: '通义千问', domain: 'ai', tags: ['大模型'] },
         ],
       },
@@ -102,6 +106,7 @@ describe('rule search expansion', () => {
     )
 
     expect(usedSemantic).toBe(false)
+    expect(matches).toHaveLength(5)
     expect(matches.map((match) => match.id).slice(0, 3)).toEqual([
       'html',
       'css',

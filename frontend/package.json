@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
+    "prebuild": "node scripts/ensure-model-assets.mjs",
     "build": "vite build",
     "dev": "vite",
     "precompute": "npx tsx scripts/precompute-embeddings.ts"

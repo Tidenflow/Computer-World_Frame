@@ -4,10 +4,13 @@ import { allMaps } from '../data'
 import { localStorageProgressRepository } from '../repositories/local-storage-progress.repository'
 import {
   buildBreadcrumbs,
+  buildNodeLearningContext,
+  buildUnlockedNodeCollection,
   buildNodesWithUnlockedStatus,
   buildVisibleGraphNodes,
   computeMapUnlockedStats,
   computeUnlockedStats,
+  type UnlockedNodeRecord,
 } from '../services/app-services'
 import {
   autoUnlockNodeOnSelect,
@@ -42,6 +45,7 @@ export function useCwfApp() {
   const [currentMapId, setCurrentMapId] = useState('root')
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
   const [recentSearchMatches, setRecentSearchMatches] = useState<SearchMatch[]>([])
+  const [recentSearchQuery, setRecentSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [isModelReady, setIsModelReady] = useState(false)
 
@@ -77,6 +81,20 @@ export function useCwfApp() {
   const breadcrumbs = useMemo(
     () => buildBreadcrumbs(currentMapId, currentMap, allMaps.root.title),
     [currentMap, currentMapId],
+  )
+
+  const selectedNodeLearningContext = useMemo(
+    () =>
+      buildNodeLearningContext(
+        { ...currentMap, nodes: buildNodesWithUnlockedStatus(currentMap, unlockedNodes) },
+        selectedNode,
+      ),
+    [currentMap, selectedNode, unlockedNodes],
+  )
+
+  const unlockedNodeCollection = useMemo(
+    () => buildUnlockedNodeCollection(allMaps, unlockedNodes),
+    [unlockedNodes],
   )
 
   const handleCategoryToggle = (category: NodeCategory) => {
@@ -118,14 +136,16 @@ export function useCwfApp() {
     setSelectedNode(null)
   }
 
-  const handleSearchSubmit = async () => {
-    const normalizedQuery = searchQuery.trim()
+  const runSearch = async (rawQuery: string) => {
+    const normalizedQuery = rawQuery.trim()
 
     if (!normalizedQuery) {
       setRecentSearchMatches([])
+      setRecentSearchQuery('')
       return
     }
 
+    setSearchQuery(normalizedQuery)
     setIsSearching(true)
 
     try {
@@ -147,10 +167,15 @@ export function useCwfApp() {
           unlocked: nextUnlockedNodes.has(match.id),
         })),
       )
+      setRecentSearchQuery(normalizedQuery)
     } finally {
       setIsSearching(false)
     }
   }
+
+  const handleSearchSubmit = () => runSearch(searchQuery)
+
+  const handleExploreExample = (query: string) => runSearch(query)
 
   const handleSelectRecentMatch = (match: SearchMatch) => {
     const targetMap = allMaps[match.mapId]
@@ -161,6 +186,30 @@ export function useCwfApp() {
     }
 
     setCurrentMapId(match.mapId)
+    setSelectedNode(withUnlockedState(targetNode, unlockedNodes))
+    clearSearch()
+  }
+
+  const handleSelectRelatedNode = (node: Node) => {
+    const nextNode = withUnlockedState(node, unlockedNodes)
+    setSelectedNode(nextNode)
+    clearSearch()
+
+    const nextUnlockedNodes = autoUnlockNodeOnSelect(unlockedNodes, nextNode)
+    if (nextUnlockedNodes !== unlockedNodes) {
+      saveUnlockedNodeSet(nextUnlockedNodes)
+    }
+  }
+
+  const handleSelectUnlockedRecord = (record: UnlockedNodeRecord) => {
+    const targetMap = allMaps[record.mapId]
+    const targetNode = targetMap.nodes.find((node) => node.id === record.node.id)
+
+    if (!targetNode) {
+      return
+    }
+
+    setCurrentMapId(record.mapId)
     setSelectedNode(withUnlockedState(targetNode, unlockedNodes))
     clearSearch()
   }
@@ -178,8 +227,11 @@ export function useCwfApp() {
     totalUnlockedCount,
     currentMapUnlockedCount,
     recentSearchMatches,
+    recentSearchQuery,
     isSearching,
     isModelReady,
+    selectedNodeLearningContext,
+    unlockedNodeCollection,
     breadcrumbs,
     unlockedNodes,
     handleCategoryToggle,
@@ -188,7 +240,10 @@ export function useCwfApp() {
     handleNodeDoubleClick,
     handleNavigateToMap,
     handleSearchSubmit,
+    handleExploreExample,
     handleSelectRecentMatch,
+    handleSelectRelatedNode,
+    handleSelectUnlockedRecord,
     selectAllCategories() {
       setSelectedCategories(createAllCategorySelection())
     },
