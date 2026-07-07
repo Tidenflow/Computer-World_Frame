@@ -4,6 +4,7 @@ import { allMaps } from '../../data'
 import { getNodeCategory, type Node } from '../../types'
 import {
   buildBreadcrumbs,
+  buildNodeLearningContext,
   buildNodesWithUnlockedStatus,
   buildVisibleGraphNodes,
   computeMapUnlockedStats,
@@ -57,6 +58,22 @@ describe('app services', () => {
     expect(results[0]?.unlocked).toBe(true)
     expect(results[0]?.mapId).toBe('programming')
     expect(results[0]?.mapTitle).toBe(allMaps.programming.title)
+  })
+
+  test('builds learning context from dependencies, children, and siblings', () => {
+    const nodes = buildNodesWithUnlockedStatus(allMaps.programming, new Set<string>())
+    const context = buildNodeLearningContext(
+      { ...allMaps.programming, nodes },
+      nodes.find((node) => node.id === 'frontend-frameworks')!,
+    )
+
+    expect(context.nextNodes.map((node) => node.id)).toEqual([
+      'react',
+      'vue',
+      'angular',
+      'svelte',
+      'astro',
+    ])
   })
 
   test('shows only the root level before a tree branch is expanded', () => {

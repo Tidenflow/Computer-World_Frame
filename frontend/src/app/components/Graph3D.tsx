@@ -42,7 +42,7 @@ export const Graph3D = ({
 
     // Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
+    scene.background = new THREE.Color(0xf8fafc);
     sceneRef.current = scene;
 
     // Camera
@@ -68,10 +68,10 @@ export const Graph3D = ({
     // Create sphere wireframe
     const sphereGeometry = new THREE.SphereGeometry(200, 32, 32);
     const sphereMaterial = new THREE.MeshBasicMaterial({
-      color: 0xe5e7eb,
+      color: 0xcbd5e1,
       wireframe: true,
       transparent: true,
-      opacity: 0.1,
+      opacity: 0.16,
     });
     const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     scene.add(sphere);
@@ -259,11 +259,11 @@ export const Graph3D = ({
   }, [selectedNode]);
 
   return (
-    <div ref={containerRef} className="w-full h-full relative bg-white">
-      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-sm border border-[#E5E7EB]">
-        <div className="text-xs text-[#6B7280]">已解锁</div>
+    <div ref={containerRef} className="relative h-full w-full bg-[#F8FAFC]">
+      <div className="absolute right-4 top-4 rounded-lg border border-[#D8DEE8] bg-white/90 px-4 py-2 shadow-sm backdrop-blur-sm">
+        <div className="text-xs text-[#64748B]">地图点亮</div>
         <div className="text-lg font-semibold text-[#111827]">
-          {unlockedCount} <span className="text-sm text-[#6B7280]">/ {totalNodes}</span>
+          {unlockedCount} <span className="text-sm text-[#64748B]">/ {totalNodes}</span>
         </div>
       </div>
     </div>

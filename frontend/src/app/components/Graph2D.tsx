@@ -355,7 +355,15 @@ export const Graph2D = ({
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full h-full relative bg-white">
+    <div
+      ref={containerRef}
+      className="relative h-full w-full bg-[#F8FAFC]"
+      style={{
+        backgroundImage:
+          'linear-gradient(#E2E8F0 1px, transparent 1px), linear-gradient(90deg, #E2E8F0 1px, transparent 1px)',
+        backgroundSize: '32px 32px',
+      }}
+    >
       <canvas
         ref={canvasRef}
         onMouseMove={handleMouseMove}

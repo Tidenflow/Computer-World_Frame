@@ -1,4 +1,7 @@
+import { useState } from 'react'
+
 import { DetailPanel } from './components/DetailPanel'
+import { ExplorerIntro } from './components/ExplorerIntro'
 import { GraphFilterBar } from './components/GraphFilterBar'
 import { Graph2D } from './components/Graph2D'
 import { Graph3D } from './components/Graph3D'
@@ -8,6 +11,7 @@ import { WelcomeTooltip } from './components/WelcomeTooltip'
 import { useCwfApp } from './hooks/use-cwf-app'
 
 function App() {
+  const [showExplorerIntro, setShowExplorerIntro] = useState(true)
   const {
     viewMode,
     setViewMode,
@@ -21,7 +25,10 @@ function App() {
     totalUnlockedCount,
     currentMapUnlockedCount,
     recentSearchMatches,
+    recentSearchQuery,
     isSearching,
+    isModelReady,
+    selectedNodeLearningContext,
     breadcrumbs,
     handleCategoryToggle,
     handleNodeClick,
@@ -29,6 +36,7 @@ function App() {
     handleNodeDoubleClick,
     handleNavigateToMap,
     handleSearchSubmit,
+    handleExploreExample,
     handleSelectRecentMatch,
     selectAllCategories,
     clearCategories,
@@ -47,13 +55,15 @@ function App() {
         onSearchSubmit={handleSearchSubmit}
         breadcrumbs={breadcrumbs}
         isSearching={isSearching}
+        isModelReady={isModelReady}
       />
 
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden relative bg-[#F6F8FB]">
         <Sidebar
           currentMap={currentMapId}
           selectedNodeId={selectedNode?.id ?? null}
           recentSearchMatches={recentSearchMatches}
+          recentSearchQuery={recentSearchQuery}
           onMapChange={handleNavigateToMap}
           onSelectRecentMatch={handleSelectRecentMatch}
         />
@@ -87,11 +97,26 @@ function App() {
               totalNodes={totalUnlockedCount.total}
             />
           )}
+
+          {showExplorerIntro && !selectedNode && recentSearchMatches.length === 0 && !isSearching && (
+            <ExplorerIntro
+              totalUnlocked={totalUnlockedCount.unlocked}
+              totalNodes={totalUnlockedCount.total}
+              isModelReady={isModelReady}
+              onExplore={(query) => {
+                setShowExplorerIntro(false)
+                handleExploreExample(query)
+              }}
+              onClose={() => setShowExplorerIntro(false)}
+            />
+          )}
         </main>
 
         {selectedNode && (
           <DetailPanel
             node={selectedNode}
+            mapTitle={currentMap.title}
+            learningContext={selectedNodeLearningContext}
             onClose={closeDetailPanel}
             onToggleLock={handleToggleLock}
             onNavigateToMap={handleNavigateToMap}
