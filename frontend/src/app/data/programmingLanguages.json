@@ -116,6 +116,22 @@
         "底层",
         "经典"
       ],
+      "resources": [
+        {
+          "title": "菜鸟教程：C 语言教程",
+          "url": "https://www.runoob.com/cprogramming/c-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        },
+        {
+          "title": "cppreference：C reference",
+          "url": "https://en.cppreference.com/w/c",
+          "source": "Other",
+          "type": "docs",
+          "language": "en"
+        }
+      ],
       "category": "language"
     },
     {
@@ -134,6 +150,22 @@
         "面向对象",
         "高性能"
       ],
+      "resources": [
+        {
+          "title": "菜鸟教程：C++ 教程",
+          "url": "https://www.runoob.com/cplusplus/cpp-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        },
+        {
+          "title": "cppreference：C++ reference",
+          "url": "https://en.cppreference.com/w/cpp",
+          "source": "Other",
+          "type": "docs",
+          "language": "en"
+        }
+      ],
       "category": "language"
     },
     {
@@ -150,6 +182,22 @@
         "系统",
         "安全",
         "现代"
+      ],
+      "resources": [
+        {
+          "title": "Rust Book",
+          "url": "https://doc.rust-lang.org/book/",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "Rust 程序设计语言中文版",
+          "url": "https://kaisery.github.io/trpl-zh-cn/",
+          "source": "Other",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "language"
     },
@@ -168,6 +216,22 @@
         "企业",
         "后端"
       ],
+      "resources": [
+        {
+          "title": "dev.java：Learn Java",
+          "url": "https://dev.java/learn/",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Java 教程",
+          "url": "https://www.runoob.com/java/java-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -185,6 +249,22 @@
         "现代",
         "Android"
       ],
+      "resources": [
+        {
+          "title": "Kotlin Docs",
+          "url": "https://kotlinlang.org/docs/home.html",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Kotlin 教程",
+          "url": "https://www.runoob.com/kotlin/kotlin-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -201,6 +281,22 @@
         "JVM",
         "函数式",
         "大数据"
+      ],
+      "resources": [
+        {
+          "title": "Scala Documentation",
+          "url": "https://docs.scala-lang.org/",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Scala 教程",
+          "url": "https://www.runoob.com/scala/scala-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "language"
     },
@@ -236,6 +332,22 @@
         "前端",
         "全栈"
       ],
+      "resources": [
+        {
+          "title": "MDN：JavaScript",
+          "url": "https://developer.mozilla.org/zh-CN/docs/Web/JavaScript",
+          "source": "MDN",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：JavaScript 教程",
+          "url": "https://www.runoob.com/js/js-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -252,6 +364,22 @@
         "Web",
         "类型",
         "工程化"
+      ],
+      "resources": [
+        {
+          "title": "TypeScript Handbook",
+          "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：TypeScript 教程",
+          "url": "https://www.runoob.com/typescript/ts-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "language"
     },
@@ -270,6 +398,22 @@
         "数据科学",
         "AI"
       ],
+      "resources": [
+        {
+          "title": "Python 官方教程",
+          "url": "https://docs.python.org/zh-cn/3/tutorial/",
+          "source": "Official",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：Python 3 教程",
+          "url": "https://www.runoob.com/python3/python3-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -287,6 +431,22 @@
         "Web",
         "Rails"
       ],
+      "resources": [
+        {
+          "title": "Ruby 官方文档：Ruby in Twenty Minutes",
+          "url": "https://www.ruby-lang.org/en/documentation/quickstart/",
+          "source": "Official",
+          "type": "tutorial",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Ruby 教程",
+          "url": "https://www.runoob.com/ruby/ruby-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -303,6 +463,22 @@
         "脚本",
         "嵌入式",
         "游戏"
+      ],
+      "resources": [
+        {
+          "title": "Programming in Lua",
+          "url": "https://www.lua.org/pil/contents.html",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Lua 教程",
+          "url": "https://www.runoob.com/lua/lua-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "language"
     },
@@ -338,6 +514,22 @@
         "并发",
         "云原生"
       ],
+      "resources": [
+        {
+          "title": "Go 官方学习入口",
+          "url": "https://go.dev/learn/",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Go 语言教程",
+          "url": "https://www.runoob.com/go/go-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -354,6 +546,22 @@
         "编译",
         "Apple",
         "移动"
+      ],
+      "resources": [
+        {
+          "title": "The Swift Programming Language",
+          "url": "https://docs.swift.org/swift-book/documentation/the-swift-programming-language/",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Swift 教程",
+          "url": "https://www.runoob.com/swift/swift-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "language"
     },
@@ -372,6 +580,22 @@
         "Microsoft",
         "Unity"
       ],
+      "resources": [
+        {
+          "title": "Microsoft Learn：C# 文档",
+          "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/",
+          "source": "Official",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：C# 教程",
+          "url": "https://www.runoob.com/csharp/csharp-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -389,6 +613,22 @@
         "跨平台",
         "Flutter"
       ],
+      "resources": [
+        {
+          "title": "Dart 官方文档：Language",
+          "url": "https://dart.dev/language",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "Dart 中文文档：语言概览",
+          "url": "https://dart.cn/language",
+          "source": "Official",
+          "type": "docs",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -405,6 +645,15 @@
         "系统",
         "现代",
         "底层"
+      ],
+      "resources": [
+        {
+          "title": "Zig 官方学习入口",
+          "url": "https://ziglang.org/learn/",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        }
       ],
       "category": "language"
     }

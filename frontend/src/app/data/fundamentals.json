@@ -65,6 +65,22 @@
         "结构",
         "抽象"
       ],
+      "resources": [
+        {
+          "title": "菜鸟教程：数据结构教程",
+          "url": "https://www.runoob.com/data-structures/data-structures-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        },
+        {
+          "title": "VisuAlgo: Data Structures",
+          "url": "https://visualgo.net/en",
+          "source": "Other",
+          "type": "tutorial",
+          "language": "en"
+        }
+      ],
       "category": "fundamentals"
     },
     {
@@ -81,6 +97,22 @@
         "算法",
         "复杂度",
         "思维"
+      ],
+      "resources": [
+        {
+          "title": "菜鸟教程：算法教程",
+          "url": "https://www.runoob.com/w3cnote/algorithm-intro.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        },
+        {
+          "title": "VisuAlgo: Algorithm Visualizations",
+          "url": "https://visualgo.net/en",
+          "source": "Other",
+          "type": "tutorial",
+          "language": "en"
+        }
       ],
       "category": "fundamentals"
     }

@@ -39,6 +39,7 @@ function App() {
     isSearching,
     isModelReady,
     selectedNodeLearningContext,
+    selectedNodeSavedResources,
     unlockedNodeCollection,
     breadcrumbs,
     handleCategoryToggle,
@@ -51,6 +52,8 @@ function App() {
     handleSelectRecentMatch,
     handleSelectRelatedNode,
     handleSelectUnlockedRecord,
+    addSavedResource,
+    removeSavedResource,
     selectAllCategories,
     clearCategories,
     closeDetailPanel,
@@ -174,6 +177,9 @@ function App() {
             onToggleLock={handleToggleLock}
             onNavigateToMap={handleNavigateToMap}
             onSelectNode={handleSelectRelatedNode}
+            savedResources={selectedNodeSavedResources}
+            onAddSavedResource={addSavedResource}
+            onRemoveSavedResource={removeSavedResource}
           />
         )}
       </div>

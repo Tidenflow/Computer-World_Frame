@@ -103,6 +103,22 @@
         "标记语言",
         "结构"
       ],
+      "resources": [
+        {
+          "title": "MDN：HTML",
+          "url": "https://developer.mozilla.org/zh-CN/docs/Web/HTML",
+          "source": "MDN",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：HTML 教程",
+          "url": "https://www.runoob.com/html/html-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "technology"
     },
     {
@@ -119,6 +135,22 @@
         "前端",
         "样式",
         "布局"
+      ],
+      "resources": [
+        {
+          "title": "MDN：CSS",
+          "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS",
+          "source": "MDN",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：CSS 教程",
+          "url": "https://www.runoob.com/css/css-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "technology"
     },
@@ -137,6 +169,22 @@
         "脚本",
         "交互"
       ],
+      "resources": [
+        {
+          "title": "MDN：JavaScript",
+          "url": "https://developer.mozilla.org/zh-CN/docs/Web/JavaScript",
+          "source": "MDN",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：JavaScript 教程",
+          "url": "https://www.runoob.com/js/js-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -153,6 +201,22 @@
         "前端",
         "类型系统",
         "工程化"
+      ],
+      "resources": [
+        {
+          "title": "TypeScript Handbook",
+          "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：TypeScript 教程",
+          "url": "https://www.runoob.com/typescript/ts-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "language"
     },
@@ -205,6 +269,22 @@
         "框架",
         "组件化"
       ],
+      "resources": [
+        {
+          "title": "React 官方文档：Learn React",
+          "url": "https://react.dev/learn",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：React 教程",
+          "url": "https://www.runoob.com/react/react-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "tooling"
     },
     {
@@ -221,6 +301,22 @@
         "前端",
         "框架",
         "渐进式"
+      ],
+      "resources": [
+        {
+          "title": "Vue 官方文档：快速上手",
+          "url": "https://cn.vuejs.org/guide/introduction.html",
+          "source": "Official",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：Vue 3 教程",
+          "url": "https://www.runoob.com/vue3/vue3-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "tooling"
     },
@@ -481,6 +577,22 @@
         "Python",
         "语言"
       ],
+      "resources": [
+        {
+          "title": "Python 官方教程",
+          "url": "https://docs.python.org/zh-cn/3/tutorial/",
+          "source": "Official",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：Python 3 教程",
+          "url": "https://www.runoob.com/python3/python3-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "language"
     },
     {
@@ -548,6 +660,22 @@
         "后端",
         "Node.js",
         "运行时"
+      ],
+      "resources": [
+        {
+          "title": "Node.js Learn",
+          "url": "https://nodejs.org/en/learn",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Node.js 教程",
+          "url": "https://www.runoob.com/nodejs/nodejs-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "technology"
     },
@@ -965,6 +1093,22 @@
         "Git",
         "版本控制"
       ],
+      "resources": [
+        {
+          "title": "Pro Git 中文版",
+          "url": "https://git-scm.com/book/zh/v2",
+          "source": "Official",
+          "type": "docs",
+          "language": "zh"
+        },
+        {
+          "title": "菜鸟教程：Git 教程",
+          "url": "https://www.runoob.com/git/git-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
+      ],
       "category": "tooling"
     },
     {
@@ -981,6 +1125,15 @@
         "工具",
         "Git 生态",
         "托管平台"
+      ],
+      "resources": [
+        {
+          "title": "GitHub Docs：入门",
+          "url": "https://docs.github.com/zh/get-started",
+          "source": "Official",
+          "type": "docs",
+          "language": "zh"
+        }
       ],
       "category": "platform"
     },
@@ -1100,6 +1253,22 @@
         "工具",
         "容器",
         "工程化"
+      ],
+      "resources": [
+        {
+          "title": "Docker Docs：Get started",
+          "url": "https://docs.docker.com/get-started/",
+          "source": "Official",
+          "type": "docs",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：Docker 教程",
+          "url": "https://www.runoob.com/docker/docker-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        }
       ],
       "category": "tooling"
     },

@@ -34,8 +34,18 @@
       ],
       "resources": [
         {
-          "title": "计算机科学导论",
-          "url": "https://example.com"
+          "title": "Harvard CS50: Introduction to Computer Science",
+          "url": "https://www.youtube.com/@cs50",
+          "source": "YouTube",
+          "type": "course",
+          "language": "en"
+        },
+        {
+          "title": "菜鸟教程：数据结构与算法",
+          "url": "https://www.runoob.com/data-structures/data-structures-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
         }
       ],
       "category": "fundamentals"
@@ -58,8 +68,11 @@
       ],
       "resources": [
         {
-          "title": "硬件基础知识",
-          "url": "https://example.com"
+          "title": "Computer Science Crash Course",
+          "url": "https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo",
+          "source": "YouTube",
+          "type": "course",
+          "language": "en"
         }
       ],
       "category": "fundamentals"

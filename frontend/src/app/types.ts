@@ -9,9 +9,24 @@ export type NodeCategory =
   | 'architecture'
   | 'platform'
 
+export type ResourceSource = 'MDN' | 'Runoob' | 'CSDN' | 'YouTube' | 'Official' | 'Other'
+
+export type ResourceType = 'docs' | 'tutorial' | 'video' | 'article' | 'course'
+
+export type ResourceLanguage = 'zh' | 'en'
+
 export interface ResourceLink {
   title: string
   url: string
+  source?: ResourceSource
+  type?: ResourceType
+  language?: ResourceLanguage
+}
+
+export interface SavedResourceLink extends ResourceLink {
+  id: string
+  note?: string
+  createdAt: string
 }
 
 export interface NodeDefinition {
