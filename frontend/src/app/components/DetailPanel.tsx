@@ -5,11 +5,8 @@ import {
   Bookmark,
   CheckCircle2,
   ExternalLink,
-  GitPullRequestArrow,
-  Layers3,
   Lightbulb,
   Link,
-  MapPinned,
   Plus,
   Trash2,
   X,
@@ -101,9 +98,11 @@ export const DetailPanel = ({
 
   const lockable = !isRootNode(node)
   const categoryColor = isRootNode(node) ? ROOT_NODE_COLOR : getNodeCategoryColor(node)
+  const categoryName = isRootNode(node) ? '根节点' : getNodeCategoryName(node)
   const hasRecommendedResources = Boolean(node.resources?.length)
   const hasSavedResources = savedResources.length > 0
   const canManageSavedResources = Boolean(onAddSavedResource)
+  const hasFooterActions = (lockable && onToggleLock) || (node.targetMap && onNavigateToMap)
 
   const resetResourceForm = () => {
     setResourceTitle('')
@@ -139,8 +138,8 @@ export const DetailPanel = ({
       className="absolute bottom-0 right-0 top-0 z-10 flex w-[380px] flex-col border-l border-[#D8DEE8] bg-white shadow-lg"
     >
       <div className="flex items-start justify-between p-5">
-        <div className="flex-1">
-          <div className="mb-2 flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
             <div
               className={isRootNode(node) ? 'h-4 w-4' : 'h-4 w-4 rounded-full'}
               style={{
@@ -152,11 +151,16 @@ export const DetailPanel = ({
               }}
             />
             <Badge variant="secondary" className="text-xs font-medium">
-              {isRootNode(node) ? 'Root' : getNodeCategoryName(node)}
+              {categoryName}
             </Badge>
             <Badge variant="outline" className="text-xs font-medium text-[#64748B]">
               {mapTitle}
             </Badge>
+            {node.stage && (
+              <Badge variant="outline" className="text-xs font-medium text-[#64748B]">
+                Level {node.stage}/5
+              </Badge>
+            )}
           </div>
           <h2 className="text-2xl font-semibold leading-tight text-[#111827]">{node.title}</h2>
           <div className="mt-3 flex items-center gap-2 text-sm text-[#64748B]">
@@ -171,10 +175,10 @@ export const DetailPanel = ({
 
       <Separator />
 
-      <div className="flex-1 space-y-5 overflow-y-auto p-5">
+      <div className="flex-1 space-y-4 overflow-y-auto p-5">
         {node.description && (
-          <div className="rounded-lg border border-[#E5E7EB] bg-[#F8FAFC] p-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-[#111827]">
+          <div className="rounded-md border border-[#E5E7EB] bg-[#F8FAFC] p-3">
+            <div className="mb-1.5 flex items-center gap-2 text-xs font-medium text-[#111827]">
               <Lightbulb className="h-4 w-4 text-[#C0841A]" />
               一句话位置
             </div>
@@ -182,59 +186,17 @@ export const DetailPanel = ({
           </div>
         )}
 
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-[#111827]">
-            <MapPinned className="h-4 w-4 text-[#2563EB]" />
-            属于哪里
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-md border border-[#E5E7EB] p-3">
-              <div className="text-xs text-[#64748B]">地图</div>
-              <div className="mt-1 text-sm font-medium text-[#111827]">{mapTitle}</div>
-            </div>
-            <div className="rounded-md border border-[#E5E7EB] p-3">
-              <div className="text-xs text-[#64748B]">类型</div>
-              <div className="mt-1 text-sm font-medium text-[#111827]">
-                {isRootNode(node) ? '根节点' : getNodeCategoryName(node)}
-              </div>
-            </div>
-          </div>
-        </div>
-
         {node.tags && node.tags.length > 0 && (
-          <div>
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-[#111827]">
-              <Layers3 className="h-4 w-4 text-[#0F766E]" />
-              相关标签
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {node.tags.map((tag, index) => (
-                <Badge key={index} variant="outline" className="text-xs text-[#475569]">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {node.stage && (
-          <div>
-            <div className="mb-2 text-sm font-medium text-[#111827]">理解坡度</div>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-2 flex-1 rounded-full"
-                  style={{
-                    backgroundColor:
-                      i < node.stage
-                        ? categoryColor
-                        : '#E5E7EB',
-                  }}
-                />
-              ))}
-            </div>
-            <div className="mt-1 text-xs text-[#6B7280]">Level {node.stage} / 5</div>
+          <div className="flex flex-wrap gap-1.5">
+            {node.tags.map((tag, index) => (
+              <Badge
+                key={index}
+                variant="outline"
+                className="h-6 rounded px-2 text-xs font-normal text-[#64748B]"
+              >
+                {tag}
+              </Badge>
+            ))}
           </div>
         )}
 
@@ -306,92 +268,81 @@ export const DetailPanel = ({
               )}
             </div>
 
-            <div className="space-y-3">
-              {hasRecommendedResources && (
-                <div>
-                  <div className="mb-2 text-xs font-medium text-[#64748B]">推荐链接</div>
-                  <div className="space-y-2">
-                    {node.resources!.map((resource, index) => {
-                      const metaLabels = getResourceMetaLabels(resource)
+            <div className="space-y-2">
+              {hasRecommendedResources &&
+                node.resources!.map((resource, index) => {
+                  const metaLabels = getResourceMetaLabels(resource)
 
-                      return (
-                        <a
-                          key={`${resource.url}-${index}`}
-                          href={resource.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block rounded-md border border-[#E5E7EB] bg-white px-3 py-2 transition-colors hover:border-[#BFDBFE] hover:bg-[#F8FAFC]"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <span className="text-sm font-medium leading-5 text-[#2563EB]">
-                              {resource.title}
-                            </span>
-                            <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#94A3B8]" />
-                          </div>
-                          {metaLabels.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-1.5">
-                              {metaLabels.map((label) => (
-                                <Badge
-                                  key={label}
-                                  variant="outline"
-                                  className="h-5 rounded px-1.5 text-[11px] font-normal text-[#64748B]"
-                                >
-                                  {label}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </a>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <div className="mb-2 text-xs font-medium text-[#64748B]">我的收藏</div>
-                {hasSavedResources ? (
-                  <div className="space-y-2">
-                    {savedResources.map((resource) => (
-                      <div
-                        key={resource.id}
-                        className="rounded-md border border-[#E5E7EB] bg-[#F8FAFC] px-3 py-2"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <a
-                            href={resource.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex min-w-0 items-start gap-2 text-sm font-medium leading-5 text-[#2563EB] hover:underline"
-                          >
-                            <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                            <span className="break-words">{resource.title}</span>
-                          </a>
-                          {onRemoveSavedResource && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => onRemoveSavedResource(node.id, resource.id)}
-                              className="h-7 w-7 shrink-0 p-0 text-[#94A3B8] hover:text-[#DC2626]"
-                              aria-label={`删除 ${resource.title}`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                        {resource.note && (
-                          <p className="mt-1 text-xs leading-5 text-[#64748B]">{resource.note}</p>
-                        )}
+                  return (
+                    <a
+                      key={`${resource.url}-${index}`}
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-md border border-[#E5E7EB] bg-white px-3 py-2 transition-colors hover:border-[#BFDBFE] hover:bg-[#F8FAFC]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-sm font-medium leading-5 text-[#2563EB]">
+                          {resource.title}
+                        </span>
+                        <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#94A3B8]" />
                       </div>
-                    ))}
+                      {metaLabels.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {metaLabels.map((label) => (
+                            <Badge
+                              key={label}
+                              variant="outline"
+                              className="h-5 rounded px-1.5 text-[11px] font-normal text-[#64748B]"
+                            >
+                              {label}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </a>
+                  )
+                })}
+
+              {hasSavedResources &&
+                savedResources.map((resource) => (
+                  <div
+                    key={resource.id}
+                    className="rounded-md border border-[#E5E7EB] bg-[#F8FAFC] px-3 py-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <a
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex min-w-0 items-start gap-2 text-sm font-medium leading-5 text-[#2563EB] hover:underline"
+                      >
+                        <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        <span className="break-words">{resource.title}</span>
+                      </a>
+                      {onRemoveSavedResource && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onRemoveSavedResource(node.id, resource.id)}
+                          className="h-7 w-7 shrink-0 p-0 text-[#94A3B8] hover:text-[#DC2626]"
+                          aria-label={`删除 ${resource.title}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    {resource.note && (
+                      <p className="mt-1 text-xs leading-5 text-[#64748B]">{resource.note}</p>
+                    )}
+                    <div className="mt-2 text-[11px] text-[#94A3B8]">我的收藏</div>
                   </div>
-                ) : (
-                  <div className="rounded-md border border-dashed border-[#D8DEE8] px-3 py-2 text-xs text-[#94A3B8]">
-                    暂无收藏
-                  </div>
-                )}
-              </div>
+                ))}
+
+              {!hasRecommendedResources && !hasSavedResources && !isAddingResource && (
+                <p className="text-xs leading-5 text-[#94A3B8]">还没有链接，可以先收藏一个常用入口。</p>
+              )}
 
               {isAddingResource && (
                 <form
@@ -448,18 +399,24 @@ export const DetailPanel = ({
             </div>
           </div>
         )}
+      </div>
 
-        {lockable && onToggleLock && (
-          <div className="rounded-lg border border-dashed border-[#D8DEE8] bg-[#F8FAFC] p-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-[#111827]">
-              <GitPullRequestArrow className="h-4 w-4 text-[#64748B]" />
-              我的学习状态
-            </div>
-            <p className="mb-3 text-sm leading-6 text-[#64748B]">
-              {node.unlocked
-                ? '这个概念已经被点亮，可以作为你的学习痕迹继续保留。'
-                : '点亮后，它会进入你的个人地图。'}
-            </p>
+      {hasFooterActions ? (
+        <div className="space-y-2 border-t border-[#E5E7EB] bg-white p-4">
+          {node.targetMap && onNavigateToMap && (
+            <Button
+              onClick={() => onNavigateToMap(node.targetMap!)}
+              className="w-full"
+              style={{
+                backgroundColor: categoryColor,
+              }}
+            >
+              进入 {node.title} 地图
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
+
+          {lockable && onToggleLock && (
             <Button
               variant={node.unlocked ? 'outline' : 'default'}
               onClick={() => {
@@ -472,25 +429,9 @@ export const DetailPanel = ({
             >
               {node.unlocked ? '移出学习痕迹' : '点亮这个概念'}
             </Button>
-          </div>
-        )}
-
-        {node.targetMap && onNavigateToMap && (
-          <div>
-            <Separator className="mb-4" />
-            <Button
-              onClick={() => onNavigateToMap(node.targetMap!)}
-              className="w-full"
-              style={{
-                backgroundColor: categoryColor,
-              }}
-            >
-              进入 {node.title} 地图
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      ) : null}
     </motion.aside>
   )
 }
