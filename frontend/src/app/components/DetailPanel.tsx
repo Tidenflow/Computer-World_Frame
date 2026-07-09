@@ -129,6 +129,163 @@ export const DetailPanel = ({
     resetResourceForm()
   }
 
+  const learningLinksSection =
+    hasRecommendedResources || hasSavedResources || canManageSavedResources ? (
+      <div>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-[#111827]">
+            <Bookmark className="h-4 w-4 text-[#DB2777]" />
+            学习链接
+          </div>
+          {canManageSavedResources && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsAddingResource((isAdding) => !isAdding)
+                setResourceError('')
+              }}
+              className="h-8 gap-1.5 px-2.5 text-xs"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              添加
+            </Button>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          {hasRecommendedResources &&
+            node.resources!.map((resource, index) => {
+              const metaLabels = getResourceMetaLabels(resource)
+
+              return (
+                <a
+                  key={`${resource.url}-${index}`}
+                  href={resource.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-md border border-[#E5E7EB] bg-white px-3 py-2 transition-colors hover:border-[#BFDBFE] hover:bg-[#F8FAFC]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-sm font-medium leading-5 text-[#2563EB]">
+                      {resource.title}
+                    </span>
+                    <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#94A3B8]" />
+                  </div>
+                  {metaLabels.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {metaLabels.map((label) => (
+                        <Badge
+                          key={label}
+                          variant="outline"
+                          className="h-5 rounded px-1.5 text-[11px] font-normal text-[#64748B]"
+                        >
+                          {label}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </a>
+              )
+            })}
+
+          {hasSavedResources &&
+            savedResources.map((resource) => (
+              <div
+                key={resource.id}
+                className="rounded-md border border-[#E5E7EB] bg-[#F8FAFC] px-3 py-2"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <a
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex min-w-0 items-start gap-2 text-sm font-medium leading-5 text-[#2563EB] hover:underline"
+                  >
+                    <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span className="break-words">{resource.title}</span>
+                  </a>
+                  {onRemoveSavedResource && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRemoveSavedResource(node.id, resource.id)}
+                      className="h-7 w-7 shrink-0 p-0 text-[#94A3B8] hover:text-[#DC2626]"
+                      aria-label={`删除 ${resource.title}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+                {resource.note && (
+                  <p className="mt-1 text-xs leading-5 text-[#64748B]">{resource.note}</p>
+                )}
+                <div className="mt-2 text-[11px] text-[#94A3B8]">我的收藏</div>
+              </div>
+            ))}
+
+          {!hasRecommendedResources && !hasSavedResources && !isAddingResource && (
+            <p className="text-xs leading-5 text-[#94A3B8]">还没有链接，可以先收藏一个常用入口。</p>
+          )}
+
+          {isAddingResource && (
+            <form
+              onSubmit={handleResourceSubmit}
+              className="space-y-2 rounded-md border border-[#E5E7EB] bg-white p-3"
+            >
+              <Input
+                value={resourceTitle}
+                onChange={(event) => {
+                  setResourceTitle(event.target.value)
+                  setResourceError('')
+                }}
+                placeholder="标题"
+                aria-label="收藏链接标题"
+              />
+              <div className="relative">
+                <Link className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[#94A3B8]" />
+                <Input
+                  value={resourceUrl}
+                  onChange={(event) => {
+                    setResourceUrl(event.target.value)
+                    setResourceError('')
+                  }}
+                  placeholder="https://"
+                  aria-label="收藏链接 URL"
+                  className="pl-9"
+                />
+              </div>
+              <Textarea
+                value={resourceNote}
+                onChange={(event) => setResourceNote(event.target.value)}
+                placeholder="备注，可选"
+                aria-label="收藏链接备注"
+                className="min-h-16"
+              />
+              {resourceError && <div className="text-xs text-[#DC2626]">{resourceError}</div>}
+              <div className="flex gap-2">
+                <Button type="submit" size="sm" className="h-8 flex-1 gap-1.5 text-xs">
+                  <Plus className="h-3.5 w-3.5" />
+                  保存
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resetResourceForm}
+                  className="h-8 flex-1 text-xs"
+                >
+                  取消
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    ) : null
+
   return (
     <motion.aside
       initial={{ x: 320 }}
@@ -175,7 +332,7 @@ export const DetailPanel = ({
 
       <Separator />
 
-      <div className="flex-1 space-y-4 overflow-y-auto p-5">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
         {node.description && (
           <div className="rounded-md border border-[#E5E7EB] bg-[#F8FAFC] p-3">
             <div className="mb-1.5 flex items-center gap-2 text-xs font-medium text-[#111827]">
@@ -199,6 +356,8 @@ export const DetailPanel = ({
             ))}
           </div>
         )}
+
+        {learningLinksSection}
 
         {learningContext.prerequisiteLabels.length > 0 && (
           <div>
@@ -244,161 +403,6 @@ export const DetailPanel = ({
           </div>
         )}
 
-        {(hasRecommendedResources || hasSavedResources || canManageSavedResources) && (
-          <div>
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-[#111827]">
-                <Bookmark className="h-4 w-4 text-[#DB2777]" />
-                学习链接
-              </div>
-              {canManageSavedResources && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setIsAddingResource((isAdding) => !isAdding)
-                    setResourceError('')
-                  }}
-                  className="h-8 gap-1.5 px-2.5 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  添加
-                </Button>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              {hasRecommendedResources &&
-                node.resources!.map((resource, index) => {
-                  const metaLabels = getResourceMetaLabels(resource)
-
-                  return (
-                    <a
-                      key={`${resource.url}-${index}`}
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block rounded-md border border-[#E5E7EB] bg-white px-3 py-2 transition-colors hover:border-[#BFDBFE] hover:bg-[#F8FAFC]"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm font-medium leading-5 text-[#2563EB]">
-                          {resource.title}
-                        </span>
-                        <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#94A3B8]" />
-                      </div>
-                      {metaLabels.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {metaLabels.map((label) => (
-                            <Badge
-                              key={label}
-                              variant="outline"
-                              className="h-5 rounded px-1.5 text-[11px] font-normal text-[#64748B]"
-                            >
-                              {label}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </a>
-                  )
-                })}
-
-              {hasSavedResources &&
-                savedResources.map((resource) => (
-                  <div
-                    key={resource.id}
-                    className="rounded-md border border-[#E5E7EB] bg-[#F8FAFC] px-3 py-2"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <a
-                        href={resource.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex min-w-0 items-start gap-2 text-sm font-medium leading-5 text-[#2563EB] hover:underline"
-                      >
-                        <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                        <span className="break-words">{resource.title}</span>
-                      </a>
-                      {onRemoveSavedResource && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onRemoveSavedResource(node.id, resource.id)}
-                          className="h-7 w-7 shrink-0 p-0 text-[#94A3B8] hover:text-[#DC2626]"
-                          aria-label={`删除 ${resource.title}`}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                    {resource.note && (
-                      <p className="mt-1 text-xs leading-5 text-[#64748B]">{resource.note}</p>
-                    )}
-                    <div className="mt-2 text-[11px] text-[#94A3B8]">我的收藏</div>
-                  </div>
-                ))}
-
-              {!hasRecommendedResources && !hasSavedResources && !isAddingResource && (
-                <p className="text-xs leading-5 text-[#94A3B8]">还没有链接，可以先收藏一个常用入口。</p>
-              )}
-
-              {isAddingResource && (
-                <form
-                  onSubmit={handleResourceSubmit}
-                  className="space-y-2 rounded-md border border-[#E5E7EB] bg-white p-3"
-                >
-                  <Input
-                    value={resourceTitle}
-                    onChange={(event) => {
-                      setResourceTitle(event.target.value)
-                      setResourceError('')
-                    }}
-                    placeholder="标题"
-                    aria-label="收藏链接标题"
-                  />
-                  <div className="relative">
-                    <Link className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[#94A3B8]" />
-                    <Input
-                      value={resourceUrl}
-                      onChange={(event) => {
-                        setResourceUrl(event.target.value)
-                        setResourceError('')
-                      }}
-                      placeholder="https://"
-                      aria-label="收藏链接 URL"
-                      className="pl-9"
-                    />
-                  </div>
-                  <Textarea
-                    value={resourceNote}
-                    onChange={(event) => setResourceNote(event.target.value)}
-                    placeholder="备注，可选"
-                    aria-label="收藏链接备注"
-                    className="min-h-16"
-                  />
-                  {resourceError && <div className="text-xs text-[#DC2626]">{resourceError}</div>}
-                  <div className="flex gap-2">
-                    <Button type="submit" size="sm" className="h-8 flex-1 gap-1.5 text-xs">
-                      <Plus className="h-3.5 w-3.5" />
-                      保存
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={resetResourceForm}
-                      className="h-8 flex-1 text-xs"
-                    >
-                      取消
-                    </Button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {hasFooterActions ? (
