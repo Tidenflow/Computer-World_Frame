@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { allMaps } from '../data'
 import { localStorageProgressRepository } from '../repositories/local-storage-progress.repository'
+import { localStorageResourcesRepository } from '../repositories/local-storage-resources.repository'
 import {
   buildBreadcrumbs,
   buildNodeLearningContext,
@@ -26,6 +27,7 @@ import { searchWithSemanticFallback } from '../services/search-pipeline'
 import { preloadModel } from '../services/semantic-search'
 import type { Node, NodeCategory, SearchMatch } from '../types'
 import { useProgressState } from './use-progress-state'
+import { useSavedResourcesState } from './use-saved-resources-state'
 import { useSearchState } from './use-search-state'
 
 type ViewMode = '2d' | '3d'
@@ -59,6 +61,9 @@ export function useCwfApp() {
   }, [])
 
   const { unlockedNodes, saveUnlockedNodeSet } = useProgressState(localStorageProgressRepository)
+  const { savedResources, addSavedResource, removeSavedResource } = useSavedResourcesState(
+    localStorageResourcesRepository,
+  )
   const { searchQuery, setSearchQuery, clearSearch } = useSearchState()
 
   const currentMap = allMaps[currentMapId]
@@ -90,6 +95,11 @@ export function useCwfApp() {
         selectedNode,
       ),
     [currentMap, selectedNode, unlockedNodes],
+  )
+
+  const selectedNodeSavedResources = useMemo(
+    () => (selectedNode ? savedResources[selectedNode.id] ?? [] : []),
+    [savedResources, selectedNode],
   )
 
   const unlockedNodeCollection = useMemo(
@@ -231,6 +241,7 @@ export function useCwfApp() {
     isSearching,
     isModelReady,
     selectedNodeLearningContext,
+    selectedNodeSavedResources,
     unlockedNodeCollection,
     breadcrumbs,
     unlockedNodes,
@@ -244,6 +255,8 @@ export function useCwfApp() {
     handleSelectRecentMatch,
     handleSelectRelatedNode,
     handleSelectUnlockedRecord,
+    addSavedResource,
+    removeSavedResource,
     selectAllCategories() {
       setSelectedCategories(createAllCategorySelection())
     },

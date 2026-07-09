@@ -124,6 +124,22 @@
         "开源",
         "发行版"
       ],
+      "resources": [
+        {
+          "title": "菜鸟教程：Linux 教程",
+          "url": "https://www.runoob.com/linux/linux-tutorial.html",
+          "source": "Runoob",
+          "type": "tutorial",
+          "language": "zh"
+        },
+        {
+          "title": "Linux Journey",
+          "url": "https://linuxjourney.com/",
+          "source": "Other",
+          "type": "course",
+          "language": "en"
+        }
+      ],
       "category": "fundamentals"
     },
     {
